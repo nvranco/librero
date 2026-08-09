@@ -46,17 +46,21 @@
      Forzamos 16px en todo campo editable, sin importar la clase de Tailwind. */
   input, textarea, select { font-size: 16px !important; }
 
-  /* Botones: solo negro o blanco (decisión de diseño), con un toque retro
-     de sombra solida tipo sticker/poster en los secundarios. */
+  /* Botones: solo negro o blanco (decisión de diseño). El primario lleva
+     una sombra blanca solida tipo sticker; los secundarios van planos. */
   .btn-primario {
     background: var(--tinta); color: var(--crema);
+    box-shadow: 3px 3px 0 0 var(--papel);
   }
+  .btn-primario:active { box-shadow: 1px 1px 0 0 var(--papel); transform: translate(2px, 2px); }
   .btn-secundario {
     background: var(--papel); color: var(--tinta);
     border: 2px solid var(--tinta);
-    box-shadow: 3px 3px 0 0 var(--tinta);
   }
-  .btn-secundario:active { box-shadow: 1px 1px 0 0 var(--tinta); transform: translate(2px, 2px); }
+
+  /* Safari agrega su propio cromado redondeado a type=search, que se ve
+     como un doble borde encima del nuestro. Lo desactivamos. */
+  input[type="search"] { -webkit-appearance: none; appearance: none; }
 </style>
 {% block head %}{% endblock %}
 </head>

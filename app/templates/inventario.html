@@ -77,8 +77,8 @@
         <div data-rol="detalle" class="hidden mt-3 pt-3 border-t border-borde space-y-2">
           <div data-rol="vista" class="flex gap-2">
             ${libro.estado !== 'vendido' ? '<button type="button" data-accion="vendido" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">Marcar vendido</button>' : ''}
-            <button type="button" data-accion="editar" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">✏️ Editar</button>
-            <button type="button" data-accion="eliminar" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">🗑️ Eliminar</button>
+            <button type="button" data-accion="editar" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">Editar ✏️</button>
+            <button type="button" data-accion="eliminar" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">Eliminar 🗑️</button>
           </div>
           <div data-rol="edicion" class="hidden space-y-2">
             <input data-campo="titulo" value="${escaparHtml(libro.titulo)}" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm">

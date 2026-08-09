@@ -12,7 +12,7 @@
     <div class="bg-papel border border-borde rounded-xl2 shadow-sm p-5 text-center">
       <p class="text-5xl font-bold">{{ cant_libros }}</p>
       <p class="text-gris mt-1">
-        {% if cant_libros == 1 %}libro publicado{% else %}libros publicados{% endif %}
+        {% if cant_libros == 1 %}Libro publicado{% else %}Libros publicados{% endif %}
       </p>
     </div>
 
@@ -55,24 +55,24 @@
             class="tap flex-1 min-w-0 truncate rounded-lg border border-borde px-3 py-2 text-sm bg-crema">
           <button type="button" onclick="copiar('{{ url_publica }}', this)"
             class="tap btn-primario shrink-0 rounded-lg px-4 text-sm font-medium">
-            📋 Copiar
+            Copiar 📋
           </button>
         </div>
       </div>
 
       <a href="{{ url_publica }}" target="_blank" rel="noopener"
         class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
-        👀 Ver mi catálogo público
+        Ver mi catálogo público 👀
       </a>
 
       <a href="{{ url_qr }}" download="qr-{{ libreria.slug }}.png"
         class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
-        🏷️ Descargar QR para el mostrador
+        Descargar QR para el mostrador 🏷️
       </a>
 
       <a href="{{ url_inventario }}"
         class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
-        📚 Ver inventario completo
+        Ver inventario completo 📚
       </a>
     </div>
   </main>
@@ -82,7 +82,7 @@
   <div class="fixed bottom-0 left-0 right-0 bg-crema/95 backdrop-blur-0 border-t border-borde px-5 py-3 safe-b">
     <button id="btn-cargar" type="button"
       class="tap btn-primario w-full rounded-xl2 font-bold text-lg">
-      📷 Cargar estante
+      Cargar estante 📷
     </button>
     <p class="text-center text-xs text-gris mt-2">Sacá entre 1 y 10 fotos de un estante. Después de procesarlas vas a poder revisarlas y publicarlas.</p>
   </div>
