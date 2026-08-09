@@ -1,0 +1,9 @@
+/* Ajustes que Tailwind (via CDN) no cubre bien. Todo lo demas vive en base.html. */
+
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+textarea {
+  resize: vertical;
+}

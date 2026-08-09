@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block titulo %}Admin — Librero{% endblock %}
+{% block contenido %}
+<div class="min-h-screen px-5 py-8 max-w-2xl mx-auto">
+
+  <header class="mb-8">
+    <p class="text-naranja font-bold text-sm">LIBRERO</p>
+    <h1 class="text-2xl font-bold">Alta de librerías</h1>
+  </header>
+
+  {% if error %}
+  <div class="mb-6 rounded-xl2 border border-ambar bg-naranja-claro/30 px-4 py-3 text-sm">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  {% if nueva %}
+  <div class="mb-6 rounded-xl2 border border-verde bg-verde/10 px-4 py-4">
+    <p class="font-bold mb-2">"{{ nueva.nombre }}" creada.</p>
+    <p class="text-sm text-gris mb-1">Mandale este link por WhatsApp — es su panel:</p>
+    <div class="flex items-center gap-2">
+      <input readonly value="{{ nueva.url_panel }}"
+        class="tap flex-1 min-w-0 truncate rounded-lg border border-borde px-3 py-2 text-sm bg-papel">
+      <button type="button" onclick="copiar('{{ nueva.url_panel }}', this)"
+        class="tap shrink-0 rounded-lg bg-tinta text-white px-4 text-sm font-medium">Copiar</button>
+    </div>
+  </div>
+  {% endif %}
+
+  <form method="post" class="bg-papel border border-borde rounded-xl2 p-5 space-y-4 mb-10">
+    <div>
+      <label class="block text-sm font-medium mb-1">Nombre de la librería</label>
+      <input name="nombre" required class="tap w-full rounded-lg border border-borde px-3 py-2"
+        placeholder="Ej: El Anticuario">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Slug (URL pública)</label>
+      <input name="slug" class="tap w-full rounded-lg border border-borde px-3 py-2"
+        placeholder="se-genera-solo-si-lo-dejas-vacio">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">WhatsApp (formato 54911...)</label>
+      <input name="whatsapp" required pattern="[0-9]{10,15}" class="tap w-full rounded-lg border border-borde px-3 py-2"
+        placeholder="5491122334455">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Mensaje de WhatsApp precargado</label>
+      <textarea name="mensaje_wa_template" rows="2" class="w-full rounded-lg border border-borde px-3 py-2 text-sm"
+        >{{ mensaje_wa_default }}</textarea>
+      <p class="text-xs text-gris mt-1">Usá {{ '{titulo}' }} y {{ '{autor}' }} — se completan solos.</p>
+    </div>
+    <button type="submit"
+      class="tap w-full rounded-xl2 bg-naranja text-tinta font-bold text-lg">
+      Crear librería
+    </button>
+  </form>
+
+  <h2 class="text-lg font-bold mb-3">Librerías activas ({{ librerias|length }})</h2>
+  <div class="space-y-2">
+    {% for lib in librerias %}
+    <div class="bg-papel border border-borde rounded-xl2 p-4 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-medium truncate">{{ lib.nombre }}</p>
+        <p class="text-xs text-gris">/{{ lib.slug }} · {{ lib.cant_libros }} libros</p>
+      </div>
+      <a href="/{{ lib.slug }}/inv/{{ lib.token_panel }}"
+        class="tap shrink-0 rounded-lg border border-borde px-3 flex items-center text-sm font-medium">
+        Panel
+      </a>
+    </div>
+    {% else %}
+    <p class="text-gris text-sm">Todavía no diste de alta ninguna librería.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+  function copiar(texto, btn) {
+    navigator.clipboard.writeText(texto).then(function () {
+      var original = btn.textContent;
+      btn.textContent = '¡Listo!';
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    });
+  }
+</script>
+{% endblock %}

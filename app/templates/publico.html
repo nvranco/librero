@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titulo %}{{ libreria.nombre }} — Librero{% endblock %}
+{% block contenido %}
+<div class="min-h-screen flex flex-col">
+
+  <header class="bg-naranja px-5 pt-8 pb-6">
+    <h1 class="text-2xl font-bold text-tinta leading-tight">{{ libreria.nombre }}</h1>
+    <p class="mt-2 text-sm text-tinta/80 leading-snug">
+      Este catálogo es una foto del estante al {{ fecha_hoy }}.
+      Confirmá disponibilidad por WhatsApp.
+    </p>
+  </header>
+
+  <main class="flex-1 px-5 -mt-3">
+    <div class="bg-papel border border-borde rounded-xl2 shadow-sm p-2">
+      <input
+        id="buscador"
+        type="search"
+        autofocus
+        inputmode="search"
+        placeholder="Buscar por título o autor…"
+        class="tap w-full rounded-xl2 px-4 py-3 text-lg outline-none placeholder:text-gris"
+      >
+    </div>
+
+    <div id="resultados" class="mt-4 space-y-3"></div>
+
+    <div id="estado-vacio" class="mt-14 text-center text-gris px-4">
+      <p class="text-4xl mb-3">🔎</p>
+      <p class="text-base">
+        {% if hay_libros %}
+          Escribí un título o autor para empezar a buscar.
+        {% else %}
+          Esta librería todavía está cargando su catálogo. Volvé a pasar más tarde.
+        {% endif %}
+      </p>
+    </div>
+  </main>
+
+  <footer class="px-5 py-4 text-center text-xs text-gris safe-b">
+    Catálogo generado por Librero
+  </footer>
+</div>
+
+<script>
+  // El fetch a /api/{{ libreria.slug }}/catalogo.json y el registro de eventos
+  // (vista, busqueda, clic_whatsapp) se agregan el Día 4.
+  document.getElementById('buscador').addEventListener('input', function () {
+    // placeholder: la búsqueda real llega con el catálogo (Día 4)
+  });
+</script>
+{% endblock %}

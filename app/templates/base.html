@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{% block titulo %}Librero{% endblock %}</title>
+<meta name="theme-color" content="#E08A3C">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          tinta: '#1A1613',
+          naranja: '#E08A3C',
+          'naranja-claro': '#F2C078',
+          crema: '#FAF6EF',
+          papel: '#FFFFFF',
+          borde: '#E3DACB',
+          gris: '#6B6259',
+          ambar: '#C4761E',
+          verde: '#25D366',
+        },
+        fontFamily: {
+          sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto',
+                 '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        },
+        borderRadius: { xl2: '14px' },
+      },
+    },
+  };
+</script>
+<style>
+  :root {
+    --tinta: #1A1613; --naranja: #E08A3C; --naranja-claro: #F2C078;
+    --crema: #FAF6EF; --papel: #FFFFFF; --borde: #E3DACB;
+    --gris: #6B6259; --ambar: #C4761E; --verde: #25D366;
+  }
+  html, body { background: var(--crema); }
+  * { -webkit-tap-highlight-color: transparent; }
+  input:focus, button:focus, a:focus { outline: 2px solid var(--naranja); outline-offset: 2px; }
+  .safe-b { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+  .tap { min-height: 48px; min-width: 48px; }
+</style>
+{% block head %}{% endblock %}
+</head>
+<body class="font-sans text-tinta bg-crema min-h-screen antialiased">
+{% block contenido %}{% endblock %}
+</body>
+</html>

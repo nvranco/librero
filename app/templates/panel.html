@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block titulo %}Panel — {{ libreria.nombre }}{% endblock %}
+{% block contenido %}
+<div class="min-h-screen flex flex-col">
+
+  <header class="bg-tinta px-5 pt-8 pb-6">
+    <p class="text-naranja-claro text-sm font-medium">Panel del librero</p>
+    <h1 class="text-2xl font-bold text-white leading-tight mt-1">{{ libreria.nombre }}</h1>
+  </header>
+
+  <main class="flex-1 px-5 -mt-4 pb-28">
+    <div class="bg-papel border border-borde rounded-xl2 shadow-sm p-5 text-center">
+      <p class="text-5xl font-bold">{{ cant_libros }}</p>
+      <p class="text-gris mt-1">
+        {% if cant_libros == 1 %}libro publicado{% else %}libros publicados{% endif %}
+      </p>
+    </div>
+
+    {% if cant_libros == 0 %}
+    <div class="mt-6 text-center text-gris px-4">
+      <p class="text-4xl mb-3">📷</p>
+      <p>Todavía no cargaste ningún estante. Sacá 5 o 6 fotos y probá.</p>
+    </div>
+    {% endif %}
+
+    <div class="mt-8 space-y-3">
+      <div class="bg-papel border border-borde rounded-xl2 p-4">
+        <p class="text-sm text-gris mb-1">Link público de tu catálogo</p>
+        <div class="flex items-center gap-2">
+          <input readonly value="{{ url_publica }}"
+            class="tap flex-1 min-w-0 truncate rounded-lg border border-borde px-3 py-2 text-sm bg-crema">
+          <button type="button" onclick="copiar('{{ url_publica }}', this)"
+            class="tap shrink-0 rounded-lg bg-tinta text-white px-4 text-sm font-medium">
+            Copiar
+          </button>
+        </div>
+      </div>
+
+      <a href="{{ url_publica }}" target="_blank" rel="noopener"
+        class="tap w-full flex items-center justify-center rounded-xl2 border border-borde bg-papel font-medium">
+        Ver mi catálogo público
+      </a>
+
+      <a href="{{ url_inventario }}"
+        class="tap w-full flex items-center justify-center rounded-xl2 border border-borde bg-papel font-medium">
+        Ver inventario completo
+      </a>
+    </div>
+  </main>
+
+  <div class="fixed bottom-0 left-0 right-0 bg-crema/95 backdrop-blur-0 border-t border-borde px-5 py-3 safe-b">
+    <button type="button" disabled title="Disponible el Día 2"
+      class="tap w-full rounded-xl2 bg-naranja text-tinta font-bold text-lg opacity-60 cursor-not-allowed">
+      + Cargar estante
+    </button>
+    <p class="text-center text-xs text-gris mt-2">La carga de fotos se habilita en el próximo paso de construcción.</p>
+  </div>
+</div>
+
+<script>
+  function copiar(texto, btn) {
+    navigator.clipboard.writeText(texto).then(function () {
+      var original = btn.textContent;
+      btn.textContent = '¡Listo!';
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    });
+  }
+</script>
+{% endblock %}
