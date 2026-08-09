@@ -1,0 +1,4737 @@
+{
+ "bookshelf-of-books-read-from-2021-present-day-v0-lfwvs5vabm2h1.webp": {
+  "etiqueta": "bookshelf-of-books-read-from-2021-present-day-v0-lfwvs5vabm2h1.webp",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "THE WORLD ATLAS OF TATTOO",
+    "autor_detectado": "FRIEDMAN",
+    "titulo_corregido": "The World Atlas of Tattoo",
+    "autor_corregido": "Anna Friedman",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "VINTAGE TATTOOS",
+    "autor_detectado": "CARCER NIVERSE",
+    "titulo_corregido": "Vintage Tattoos",
+    "autor_corregido": "Carol Clerk",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "buni Happiness is a State of Mind",
+    "autor_detectado": "Pagelow",
+    "titulo_corregido": "Buni: Happiness Is a State of Mind",
+    "autor_corregido": "Pagelow",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "TOMORROW, AND TOMORROW. AND TOMORROW",
+    "autor_detectado": "GABRIELLE ZEVIN",
+    "titulo_corregido": "Tomorrow, and Tomorrow, and Tomorrow",
+    "autor_corregido": "Gabrielle Zevin",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "10 MARCHFIELD SQUARE",
+    "autor_detectado": "NICOLA WHYTE",
+    "titulo_corregido": "10 Marchfield Square",
+    "autor_corregido": "Nicola Whyte",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "NO NAMES",
+    "autor_detectado": "GREG HEWETT",
+    "titulo_corregido": "No Names",
+    "autor_corregido": "Greg Hewett",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "BURN",
+    "autor_detectado": "PETER HELLER",
+    "titulo_corregido": "Burn",
+    "autor_corregido": "Peter Heller",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "THE MONKEY WRENCH GANG",
+    "autor_detectado": "EDWARD ABBEY",
+    "titulo_corregido": "The Monkey Wrench Gang",
+    "autor_corregido": "Edward Abbey",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "A CONFEDERACY OF DUNCES",
+    "autor_detectado": "JOHN KENNEDY TOOLE",
+    "titulo_corregido": "A Confederacy of Dunces",
+    "autor_corregido": "John Kennedy Toole",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "THE AUTHENTICITY PROJECT",
+    "autor_detectado": "CLARE POOLEY",
+    "titulo_corregido": "The Authenticity Project",
+    "autor_corregido": "Clare Pooley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HUNTER S. THOMPSON",
+    "autor_detectado": "The Rum Diary",
+    "titulo_corregido": "The Rum Diary",
+    "autor_corregido": "Hunter S. Thompson",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "YOU ARE HERE",
+    "autor_detectado": "David Nichills",
+    "titulo_corregido": "You Are Here",
+    "autor_corregido": "David Nicholls",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "FAHRENHEIT",
+    "autor_detectado": "RAY BRADBURY",
+    "titulo_corregido": "Fahrenheit 451",
+    "autor_corregido": "Ray Bradbury",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "UPGRADE I",
+    "autor_detectado": "BLAKE CROUCH",
+    "titulo_corregido": "Upgrade",
+    "autor_corregido": "Blake Crouch",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "On the Road",
+    "autor_detectado": "JACK KEROUAC",
+    "titulo_corregido": "On the Road",
+    "autor_corregido": "Jack Kerouac",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ERASURE",
+    "autor_detectado": "PERCIVAL EVERETT",
+    "titulo_corregido": "Erasure",
+    "autor_corregido": "Percival Everett",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "THE CASTLE",
+    "autor_detectado": "FRANZ KAFKA",
+    "titulo_corregido": "The Castle",
+    "autor_corregido": "Franz Kafka",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HARK",
+    "autor_detectado": "SAM LIPSYTE",
+    "titulo_corregido": "Hark",
+    "autor_corregido": "Sam Lipsyte",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "FRANKENSTEIN",
+    "autor_detectado": "MARY SHELLEY",
+    "titulo_corregido": "Frankenstein",
+    "autor_corregido": "Mary Shelley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ABUNDANCE",
+    "autor_detectado": "JAKOB GUANZON",
+    "titulo_corregido": "Abundance",
+    "autor_corregido": "Jakob Guanzon",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "BRAVE NEW WORLD",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Brave New World",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "CLASS ACT",
+    "autor_detectado": "STUART WOODS",
+    "titulo_corregido": "Class Act",
+    "autor_corregido": "Stuart Woods",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "THE OUTSIDER",
+    "autor_detectado": "HOWARD FRANCIS",
+    "titulo_corregido": "The Outsider",
+    "autor_corregido": "S.E. Hinton",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "SKIPBO",
+    "autor_detectado": "null",
+    "titulo_corregido": "Skip-Bo",
+    "autor_corregido": null,
+    "confianza": 0.7
+   }
+  ],
+  "cant_libros": 24,
+  "confianza_media": 0.84,
+  "guardrail_disparado": 0,
+  "costo": 0.0036612,
+  "latencia_ms": 7083
+ },
+ "classics-bookshelf-v0-p4i8d1ykz5dh1.jpg": {
+  "etiqueta": "classics-bookshelf-v0-p4i8d1ykz5dh1.jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "THE COLLECTED STORIESOF EUDORA WELTY",
+    "autor_detectado": "EUDORA WELTY",
+    "titulo_corregido": "The Collected Stories of Eudora Welty",
+    "autor_corregido": "Eudora Welty",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "JOHN CHEEVER COLLECTED STORIES",
+    "autor_detectado": "JOHN CHEEVER",
+    "titulo_corregido": "Collected Stories",
+    "autor_corregido": "John Cheever",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Elizabeth TAYLOR Complete Short Stories",
+    "autor_detectado": "Elizabeth TAYLOR",
+    "titulo_corregido": "Complete Short Stories",
+    "autor_corregido": "Elizabeth Taylor",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "Eileen Chang Love in a Fallen City",
+    "autor_detectado": "Eileen Chang",
+    "titulo_corregido": "Love in a Fallen City",
+    "autor_corregido": "Eileen Chang",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "Truman Capote Breakfast at Tiffany's",
+    "autor_detectado": "Truman Capote",
+    "titulo_corregido": "Breakfast at Tiffany's",
+    "autor_corregido": "Truman Capote",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "ALICE MUNRO Dance of the Happy Shades",
+    "autor_detectado": "ALICE MUNRO",
+    "titulo_corregido": "Dance of the Happy Shades",
+    "autor_corregido": "Alice Munro",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "Alice Munro Something I've Been Meaning to Tell You",
+    "autor_detectado": "Alice Munro",
+    "titulo_corregido": "Something I've Been Meaning to Tell You",
+    "autor_corregido": "Alice Munro",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "Alice Munro Who Do You Think You Are?",
+    "autor_detectado": "Alice Munro",
+    "titulo_corregido": "Who Do You Think You Are?",
+    "autor_corregido": "Alice Munro",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "ALISTAIR MACLEOD ISLAND",
+    "autor_detectado": "ALISTAIR MACLEOD",
+    "titulo_corregido": "Island",
+    "autor_corregido": "Alistair MacLeod",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "Raymond Carver WHERE I'M CALLING FROM",
+    "autor_detectado": "Raymond Carver",
+    "titulo_corregido": "Where I'm Calling From",
+    "autor_corregido": "Raymond Carver",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "FIRST LOVE, LAST RITES",
+    "autor_detectado": "Ian McEwan",
+    "titulo_corregido": "First Love, Last Rites",
+    "autor_corregido": "Ian McEwan",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "IN BETWEEN THE SHEETS",
+    "autor_detectado": "Ian McEwan",
+    "titulo_corregido": "In Between the Sheets",
+    "autor_corregido": "Ian McEwan",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Mary Gaitskill Bad Behavior",
+    "autor_detectado": "Mary Gaitskill",
+    "titulo_corregido": "Bad Behavior",
+    "autor_corregido": "Mary Gaitskill",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "THE PENGUIN BOOK OF THE BRITISH SHORT STORY FROM DANIEL DEFOE TO JOHN BUCHAN",
+    "autor_detectado": "",
+    "titulo_corregido": "The Penguin Book of the British Short Story From Daniel Defoe to John Buchan",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "RUSSIAN SHORT STORIES FROM PUSHKIN TO BUIDA",
+    "autor_detectado": "",
+    "titulo_corregido": "Russian Short Stories From Pushkin to Buida",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "The New Penguin Book of American Short Stories from Washington Irving to Lydia Davis",
+    "autor_detectado": "",
+    "titulo_corregido": "The New Penguin Book of American Short Stories From Washington Irving to Lydia Davis",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "THE PENGUIN BOOK OF FRENCH SHORT STORIES FROM MARGUERITE DE NAVARRE TO MARCEL PROUST",
+    "autor_detectado": "",
+    "titulo_corregido": "The Penguin Book of French Short Stories From Marguerite de Navarre to Marcel Proust",
+    "autor_corregido": "",
+    "confianza": 0.7
+   }
+  ],
+  "cant_libros": 17,
+  "confianza_media": 0.89,
+  "guardrail_disparado": 0,
+  "costo": 0.0042012,
+  "latencia_ms": 7954
+ },
+ "dffd.jpeg": {
+  "etiqueta": "dffd.jpeg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "LA ILÍADA",
+    "autor_detectado": "HOMERO",
+    "titulo_corregido": "La Ilíada",
+    "autor_corregido": "Homero",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Ciencia que ladra... la matemática como una de las bellas artes",
+    "autor_detectado": "",
+    "titulo_corregido": "La matemática como una de las bellas artes",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Four Thousand Weeks",
+    "autor_detectado": "Oliver Burkeman",
+    "titulo_corregido": "Four Thousand Weeks",
+    "autor_corregido": "Oliver Burkeman",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "The New ENGLISH Dictionary",
+    "autor_detectado": "",
+    "titulo_corregido": "The New English Dictionary",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "THE ADVENTURES OF TOM SAWYER",
+    "autor_detectado": "MARK TWAIN",
+    "titulo_corregido": "The Adventures of Tom Sawyer",
+    "autor_corregido": "Mark Twain",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "El muro",
+    "autor_detectado": "Jean-Paul Sartre",
+    "titulo_corregido": "El muro",
+    "autor_corregido": "Jean-Paul Sartre",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "CUENTOS DE AMOR, DE LOCURA Y DE MUERTE",
+    "autor_detectado": "Horacio Quiroga",
+    "titulo_corregido": "Cuentos de amor, de locura y de muerte",
+    "autor_corregido": "Horacio Quiroga",
+    "confianza": 1.0
+   }
+  ],
+  "cant_libros": 7,
+  "confianza_media": 0.93,
+  "guardrail_disparado": 0,
+  "costo": 0.0016587,
+  "latencia_ms": 4761
+ },
+ "dfs.jpeg": {
+  "etiqueta": "dfs.jpeg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "EL LIBRO DE LOS BALTIMORE",
+    "autor_detectado": "JOËL DICKER",
+    "titulo_corregido": "El libro de los Baltimore",
+    "autor_corregido": "Joël Dicker",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "ELIGE TU PROPIA AVENTURA VIAJE SUBMARINO",
+    "autor_detectado": "",
+    "titulo_corregido": "Elige tu propia aventura: Viaje submarino",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "ELIGE TU PROPIA AVENTURA ¡SIN ESCAPE!",
+    "autor_detectado": "",
+    "titulo_corregido": "Elige tu propia aventura: ¡Sin escape!",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LOS MEJORES CUENTOS DE CIENCIA FICCION",
+    "autor_detectado": "",
+    "titulo_corregido": "Los mejores cuentos de ciencia ficción",
+    "autor_corregido": "",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "PESADILLA Selección de Douglas F Winter",
+    "autor_detectado": "Douglas F Winter",
+    "titulo_corregido": "Pesadilla",
+    "autor_corregido": "Douglas F. Winter",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "BUSCOLAFELICIDAD.COM",
+    "autor_detectado": "LAURA MASSOLO",
+    "titulo_corregido": "Buscolafelicidad.com",
+    "autor_corregido": "Laura Massolo",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "BUSQUED Magnetizado",
+    "autor_detectado": "",
+    "titulo_corregido": "Magnetizado",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "ANESTESIADOS",
+    "autor_detectado": "Andrea Bernini",
+    "titulo_corregido": "Anestesiados",
+    "autor_corregido": "Andrea Bernini",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Cien años de soledad",
+    "autor_detectado": "Gabriel García Márquez",
+    "titulo_corregido": "Cien años de soledad",
+    "autor_corregido": "Gabriel García Márquez",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Encuentros (El lado B del amor)",
+    "autor_detectado": "Gabriel Rolón",
+    "titulo_corregido": "Encuentros (El lado B del amor)",
+    "autor_corregido": "Gabriel Rolón",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EL CIUDADANO SHERIFF DARÍO KOSOVSKY",
+    "autor_detectado": "DARÍO KOSOVSKY",
+    "titulo_corregido": "El ciudadano sheriff",
+    "autor_corregido": "Darío Kosovsky",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "EL PROBLEMA CARCELARIO RAÚL SALINAS",
+    "autor_detectado": "RAÚL SALINAS",
+    "titulo_corregido": "El problema carcelario",
+    "autor_corregido": "Raúl Salinas",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LOS REDONDOS",
+    "autor_detectado": "Mariano del Mazo - Pablo Perantuono",
+    "titulo_corregido": "Los Redondos",
+    "autor_corregido": "Mariano del Mazo, Pablo Perantuono",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "¡TRÁGUESE ESE SAPO!",
+    "autor_detectado": "BRIAN TRACY",
+    "titulo_corregido": "¡Tráguese ese sapo!",
+    "autor_corregido": "Brian Tracy",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Luis Majul Lanata",
+    "autor_detectado": "Luis Majul",
+    "titulo_corregido": "Lanata",
+    "autor_corregido": "Luis Majul",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "NICOLÁS IGARZÁBAL LA MÁQUINA DE HACER PÁJAROS",
+    "autor_detectado": "NICOLÁS IGARZÁBAL",
+    "titulo_corregido": "La máquina de hacer pájaros",
+    "autor_corregido": "Nicolás Igarzábal",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 16,
+  "confianza_media": 0.87,
+  "guardrail_disparado": 0,
+  "costo": 0.0039787,
+  "latencia_ms": 7696
+ },
+ "fdafdfadsf.jpeg": {
+  "etiqueta": "fdafdfadsf.jpeg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "FRAGMENTOS DEL HORROR",
+    "autor_detectado": "JUNIO",
+    "titulo_corregido": "Fragmentos del horror",
+    "autor_corregido": "Junji Ito",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "INDIGNO DE SER HUMANO",
+    "autor_detectado": "JUNJI ITO OSAMU DAŽAI",
+    "titulo_corregido": "Indigno de ser humano",
+    "autor_corregido": "Osamu Dazai",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "INDIGNO DE SER HUMANO",
+    "autor_detectado": "JUNJI ITO OSAMU DAZAI IVRGA",
+    "titulo_corregido": "Indigno de ser humano 2",
+    "autor_corregido": "Osamu Dazai",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "INDIGNO DE SER HUMANO",
+    "autor_detectado": "JUNJI ITO OSAMU DAŽAI IVREA",
+    "titulo_corregido": "Indigno de ser humano 3",
+    "autor_corregido": "Osamu Dazai",
+    "confianza": 0.95
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYDHARU IVRA",
+    "titulo_corregido": "Demon Slayer 1",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYDHARU IVRA",
+    "titulo_corregido": "Demon Slayer 2",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYOHARU IVREA",
+    "titulo_corregido": "Demon Slayer 3",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYOH",
+    "titulo_corregido": "Demon Slayer 4",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYOHARU GOTOUGE",
+    "titulo_corregido": "Demon Slayer 5",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYOHARU GOTOUGE",
+    "titulo_corregido": "Demon Slayer 6",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYOHARU GOTOUGE",
+    "titulo_corregido": "Demon Slayer 7",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYOHARU GOTOUGE",
+    "titulo_corregido": "Demon Slayer 8",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYOHARU GOTOUGE",
+    "titulo_corregido": "Demon Slayer 9",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DEMON SLAYER",
+    "autor_detectado": "KOYOHARU GOTOUGE",
+    "titulo_corregido": "Demon Slayer 10",
+    "autor_corregido": "Koyoharu Gotouge",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "KEI URANA HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 1",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "KEI URANA HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 2",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "KEI URANA HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 3",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "KEI URANA HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 4",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 5",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 6",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 7",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 8",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "GACHIAKUTA",
+    "autor_detectado": "HIDEYOSHI ANDOU",
+    "titulo_corregido": "Gachiakuta 9",
+    "autor_corregido": "Kei Urana, Hideyoshi Andou",
+    "confianza": 0.8
+   }
+  ],
+  "cant_libros": 23,
+  "confianza_media": 0.88,
+  "guardrail_disparado": 0,
+  "costo": 0.0041337,
+  "latencia_ms": 7424
+ },
+ "image.jpg": {
+  "etiqueta": "image.jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "La dama de blance",
+    "autor_detectado": "",
+    "titulo_corregido": "La dama de blanco",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA NACION",
+    "autor_detectado": "",
+    "titulo_corregido": "La Nación",
+    "autor_corregido": "",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "Los infinitos",
+    "autor_detectado": "",
+    "titulo_corregido": "Los infinitos",
+    "autor_corregido": "",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "ISAAC BASHEVIS SINGER",
+    "autor_detectado": "AMOR Y EXILIO",
+    "titulo_corregido": "Amor y exilio",
+    "autor_corregido": "Isaac Bashevis Singer",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "EL MUNDO DE ROCANNON",
+    "autor_detectado": "",
+    "titulo_corregido": "El mundo de Rocannon",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "ikigai",
+    "autor_detectado": "",
+    "titulo_corregido": "Ikigai",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "ANTHONY BURGES",
+    "autor_detectado": "",
+    "titulo_corregido": "",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Anthony Burgess"
+   },
+   {
+    "titulo_detectado": "BRADEUTY SO MODENCE FICTION",
+    "autor_detectado": "",
+    "titulo_corregido": "",
+    "autor_corregido": "",
+    "confianza": 0.3
+   },
+   {
+    "titulo_detectado": "EORGES PEREC & OULIPO",
+    "autor_detectado": "",
+    "titulo_corregido": "",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Georges Perec & Oulipo"
+   },
+   {
+    "titulo_detectado": "La Esposa joven",
+    "autor_detectado": "BARICCO",
+    "titulo_corregido": "La esposa joven",
+    "autor_corregido": "Alessandro Baricco",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Limame por te",
+    "autor_detectado": "ACIMAN",
+    "titulo_corregido": "Llámame por tu nombre",
+    "autor_corregido": "André Aciman",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "ROBERT GOOLRICK UNA ESPOSA DE FIAR",
+    "autor_detectado": "",
+    "titulo_corregido": "Una esposa de fiar",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Robert Goolrick"
+   },
+   {
+    "titulo_detectado": "El ejercicio del criterio",
+    "autor_detectado": "BENEDETTI",
+    "titulo_corregido": "El ejercicio del criterio",
+    "autor_corregido": "Mario Benedetti",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "La Revolución rusa (1891-1924)",
+    "autor_detectado": "Orlando Fig",
+    "titulo_corregido": "La Revolución rusa (1891-1924)",
+    "autor_corregido": "Orlando Figes",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 14,
+  "confianza_media": 0.64,
+  "guardrail_disparado": 3,
+  "costo": 0.0025539,
+  "latencia_ms": 6752
+ },
+ "images (1).jpg": {
+  "etiqueta": "images (1).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "ANGELES Y Dehonios",
+    "autor_detectado": "",
+    "titulo_corregido": "Ángeles y Demonios",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "EL SIHAT I LA MA",
+    "autor_detectado": "JOU PADGETT",
+    "titulo_corregido": "El siervo y la mano",
+    "autor_corregido": "J.O.U. Padgett",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "MuertE Y EL más allá",
+    "autor_detectado": "CLIFFORD A. PICKOVER",
+    "titulo_corregido": "Muerte y el más allá",
+    "autor_corregido": "Clifford A. Pickover",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HABLAR CON LOS MEUITOS",
+    "autor_detectado": "",
+    "titulo_corregido": "Hablar con los muertos",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "LOLITA",
+    "autor_detectado": "Nabukorv",
+    "titulo_corregido": "Lolita",
+    "autor_corregido": "Vladimir Nabokov",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "DACRE STOKER D",
+    "autor_detectado": "",
+    "titulo_corregido": "Drácula",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Bram Stoker"
+   },
+   {
+    "titulo_detectado": "AGATHA CHRADE",
+    "autor_detectado": "",
+    "titulo_corregido": "",
+    "autor_corregido": "",
+    "confianza": 0.3,
+    "autor_descartado_por_guardrail": "Agatha Christie"
+   },
+   {
+    "titulo_detectado": "GRIM DE LOS VIMPIROS",
+    "autor_detectado": "N. P. LOVECRAFT",
+    "titulo_corregido": "Grimorio de los vampiros",
+    "autor_corregido": "H.P. Lovecraft",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "ROBERT LOVIS STEVENSON",
+    "autor_detectado": "",
+    "titulo_corregido": "",
+    "autor_corregido": "",
+    "confianza": 0.3,
+    "autor_descartado_por_guardrail": "Robert Louis Stevenson"
+   },
+   {
+    "titulo_detectado": "FOITH WHARTon",
+    "autor_detectado": "",
+    "titulo_corregido": "",
+    "autor_corregido": "",
+    "confianza": 0.3,
+    "autor_descartado_por_guardrail": "Edith Wharton"
+   },
+   {
+    "titulo_detectado": "VILLIERS DE UISLE-ADAM",
+    "autor_detectado": "",
+    "titulo_corregido": "",
+    "autor_corregido": "",
+    "confianza": 0.3,
+    "autor_descartado_por_guardrail": "Villiers de l'Isle-Adam"
+   },
+   {
+    "titulo_detectado": "NATHANIEL HAWTHORNE",
+    "autor_detectado": "",
+    "titulo_corregido": "",
+    "autor_corregido": "",
+    "confianza": 0.3,
+    "autor_descartado_por_guardrail": "Nathaniel Hawthorne"
+   },
+   {
+    "titulo_detectado": "LA CUNA DE TEJO",
+    "autor_detectado": "Startón Sancto",
+    "titulo_corregido": "La cuna de Tejo",
+    "autor_corregido": "Straton Sanctos",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "LA GUERRA DE LOS Munaos",
+    "autor_detectado": "JAMES CAN",
+    "titulo_corregido": "La guerra de los mundos",
+    "autor_corregido": "James Kahn",
+    "confianza": 0.6
+   }
+  ],
+  "cant_libros": 14,
+  "confianza_media": 0.53,
+  "guardrail_disparado": 6,
+  "costo": 0.0032014,
+  "latencia_ms": 6821
+ },
+ "images (10).jpg": {
+  "etiqueta": "images (10).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "ZETA",
+    "autor_detectado": "",
+    "titulo_corregido": "Zeta",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "YO ESTOY BIEN-TU ESTAS BIEN",
+    "autor_detectado": "HARRIS",
+    "titulo_corregido": "Yo estoy bien, tú estás bien",
+    "autor_corregido": "Thomas A. Harris",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "agen del Exite",
+    "autor_detectado": "",
+    "titulo_corregido": "El gen del éxito",
+    "autor_corregido": "",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "DANIELLE STEEL UNA CRUEL BENDICIÓN",
+    "autor_detectado": "DANIELLE STEEL",
+    "titulo_corregido": "Una cruel bendición",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Greta Garbo",
+    "autor_detectado": "",
+    "titulo_corregido": "Greta Garbo",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "La Revolucion Deli Dr Askins",
+    "autor_detectado": "Dr Askins",
+    "titulo_corregido": "La revolución dietética del Dr. Atkins",
+    "autor_corregido": "Robert C. Atkins",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "El Libro de Cocina",
+    "autor_detectado": "Gare & Monica",
+    "titulo_corregido": "El libro de cocina",
+    "autor_corregido": "Gare & Monica",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Teteão Sakiya Manda Mote",
+    "autor_detectado": "Teteão Sakiya",
+    "titulo_corregido": "Manga Mote",
+    "autor_corregido": "Tetsuya Sakiya",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "CIENCIA",
+    "autor_detectado": "CARLOS CUADER",
+    "titulo_corregido": "Ciencia",
+    "autor_corregido": "Carlos Cuadra",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "AUTORK REALIZACIÓN",
+    "autor_detectado": "CUTEMOC SANC",
+    "titulo_corregido": "Autorrealización",
+    "autor_corregido": "Cuauhtémoc Sánchez",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "Mujeres de conquista",
+    "autor_detectado": "",
+    "titulo_corregido": "Mujeres de conquista",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "El Japón de Hoy",
+    "autor_detectado": "Konos Ruesg",
+    "titulo_corregido": "El Japón de hoy",
+    "autor_corregido": "Konosuke Matsushita",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "JANE JENSEN",
+    "autor_detectado": "JANE JENSEN",
+    "titulo_corregido": "La ecuación Dante",
+    "autor_corregido": "Jane Jensen",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "LA ECUACION DANTE",
+    "autor_detectado": "",
+    "titulo_corregido": "La ecuación Dante",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "EL HOMBRE QUE SE CONVIRTIÓ EN DIOS",
+    "autor_detectado": "Gerald Messatis",
+    "titulo_corregido": "El hombre que se convirtió en Dios",
+    "autor_corregido": "Gerald Messadié",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA LOCA",
+    "autor_detectado": "AnPlatock",
+    "titulo_corregido": "La loca",
+    "autor_corregido": "Alan Pauls",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "DORFIDI",
+    "autor_detectado": "Posa spana",
+    "titulo_corregido": "Dordogne",
+    "autor_corregido": "Rosa Regàs",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "DISSEO BAJO EL SOL",
+    "autor_detectado": "Rien Remmas",
+    "titulo_corregido": "Odiseo bajo el sol",
+    "autor_corregido": "Rien Poortvliet",
+    "confianza": 0.6
+   }
+  ],
+  "cant_libros": 18,
+  "confianza_media": 0.67,
+  "guardrail_disparado": 0,
+  "costo": 0.0039539,
+  "latencia_ms": 8100
+ },
+ "images (11).jpg": {
+  "etiqueta": "images (11).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "La significación del silencio",
+    "autor_detectado": "",
+    "titulo_corregido": "La significación del silencio",
+    "autor_corregido": "",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "La imaginación y el poder",
+    "autor_detectado": "JORGE VOLPI",
+    "titulo_corregido": "La imaginación y el poder",
+    "autor_corregido": "Jorge Volpi",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "ABRIR las ciencias sociales",
+    "autor_detectado": "",
+    "titulo_corregido": "Abrir las ciencias sociales",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Conrad",
+    "autor_detectado": "",
+    "titulo_corregido": "Conrad",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "LA REVOLUCION MEXICANA",
+    "autor_detectado": "",
+    "titulo_corregido": "La Revolución Mexicana",
+    "autor_corregido": "",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "EL ALAMO",
+    "autor_detectado": "Paco Ignacio Taibo II",
+    "titulo_corregido": "El Álamo",
+    "autor_corregido": "Paco Ignacio Taibo II",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LA INDIA LITERARIA",
+    "autor_detectado": "",
+    "titulo_corregido": "La India Literaria",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "OVIDIO",
+    "autor_detectado": "",
+    "titulo_corregido": "Ovidio",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Henry James",
+    "autor_detectado": "Henry James",
+    "titulo_corregido": "",
+    "autor_corregido": "Henry James",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "PEQUENA ANTOL",
+    "autor_detectado": "",
+    "titulo_corregido": "Pequeña Antología",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "ANTOLOGIA POLITICA",
+    "autor_detectado": "",
+    "titulo_corregido": "Antología Política",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "CASTELLANOS / Bukin Canin",
+    "autor_detectado": "CASTELLANOS",
+    "titulo_corregido": "Castellanos",
+    "autor_corregido": "Rosario Castellanos",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "ESTHER EN ALGUNA PARTE",
+    "autor_detectado": "Eliseo Alberte",
+    "titulo_corregido": "Esther en alguna parte",
+    "autor_corregido": "Eliseo Alberte",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LOS CIEN SENTIDOS SECRETOS",
+    "autor_detectado": "Amy Tan",
+    "titulo_corregido": "Los cien sentidos secretos",
+    "autor_corregido": "Amy Tan",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Los signos en rotación",
+    "autor_detectado": "Octavia Pha",
+    "titulo_corregido": "Los signos en rotación",
+    "autor_corregido": "Octavio Paz",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "GRASS-Als de p",
+    "autor_detectado": "GRASS",
+    "titulo_corregido": "Als die Welt noch jung war",
+    "autor_corregido": "Günter Grass",
+    "confianza": 0.3
+   },
+   {
+    "titulo_detectado": "VIRGILI",
+    "autor_detectado": "VIRGILI",
+    "titulo_corregido": "Eneida",
+    "autor_corregido": "Virgilio",
+    "confianza": 0.4
+   }
+  ],
+  "cant_libros": 17,
+  "confianza_media": 0.71,
+  "guardrail_disparado": 0,
+  "costo": 0.0036139,
+  "latencia_ms": 7472
+ },
+ "images (12).jpg": {
+  "etiqueta": "images (12).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "UN GRITO DE AMOR DESDE EL CENTRO DEL MUNDO",
+    "autor_detectado": "Kyoichi Katayama",
+    "titulo_corregido": "Un grito de amor desde el centro del mundo",
+    "autor_corregido": "Kyoichi Katayama",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Fue",
+    "autor_detectado": "HERRASTI",
+    "titulo_corregido": "Fue",
+    "autor_corregido": "Hernán Ronsino",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Vladimir",
+    "autor_detectado": "Leticia Martin",
+    "titulo_corregido": "Vladimir",
+    "autor_corregido": "Leticia Martin",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "La famila de Pascual Duarte",
+    "autor_detectado": "Camilo Jose Cela.",
+    "titulo_corregido": "La familia de Pascual Duarte",
+    "autor_corregido": "Camilo José Cela",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Ensayos bonsai",
+    "autor_detectado": "Fabián Casas",
+    "titulo_corregido": "Ensayos bonsai",
+    "autor_corregido": "Fabián Casas",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "INSOMNIO",
+    "autor_detectado": "Marina Benjamin",
+    "titulo_corregido": "Insomnio",
+    "autor_corregido": "Marina Benjamin",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "LESS",
+    "autor_detectado": "Adrew Seun Greer",
+    "titulo_corregido": "Less",
+    "autor_corregido": "Andrew Sean Greer",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Bosques que se incendian",
+    "autor_detectado": "WONG",
+    "titulo_corregido": "Bosques que se incendian",
+    "autor_corregido": "Wong",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Otra vuelta de tunn",
+    "autor_detectado": "Henry James",
+    "titulo_corregido": "Otra vuelta de tuerca",
+    "autor_corregido": "Henry James",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "La diagonal Alekhine",
+    "autor_detectado": "LARRUE",
+    "titulo_corregido": "La diagonal Alekhine",
+    "autor_corregido": "Larrue",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "ENTRE EL MUNDO Y YO",
+    "autor_detectado": "TA-NEHISI COATES",
+    "titulo_corregido": "Entre el mundo y yo",
+    "autor_corregido": "Ta-Nehisi Coates",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Memorias de una dama",
+    "autor_detectado": "Santiago Roncagliale",
+    "titulo_corregido": "Memorias de una dama",
+    "autor_corregido": "Santiago Roncagliolo",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Azul de agosto",
+    "autor_detectado": "LEVY",
+    "titulo_corregido": "Azul de agosto",
+    "autor_corregido": "Marc Levy",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Llévame a casa",
+    "autor_detectado": "Jesús Carrasco",
+    "titulo_corregido": "Llévame a casa",
+    "autor_corregido": "Jesús Carrasco",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "LOL CAN",
+    "autor_detectado": "Enrique Langar",
+    "titulo_corregido": "Lolita",
+    "autor_corregido": "Enrique Vila-Matas",
+    "confianza": 0.3
+   },
+   {
+    "titulo_detectado": "MUNDO ANCLADO",
+    "autor_detectado": "Alejandro Espinosa Fuentes",
+    "titulo_corregido": "Mundo anclado",
+    "autor_corregido": "Alejandro Espinosa Fuentes",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "DEBO OLVIDAR QUE EXISTIEBATE",
+    "autor_detectado": "Rafael Cabrera",
+    "titulo_corregido": "Debo olvidar que existí",
+    "autor_corregido": "Rafael Cabrera",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HARNTO ТЕНЕВОНО BONOSED BALA",
+    "autor_detectado": "BLIGADOR FEDOR DOSTORYKE",
+    "titulo_corregido": "Un asunto tenebroso",
+    "autor_corregido": "Honoré de Balzac",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Cien años de soledad",
+    "autor_detectado": "Gabriel García Márquez",
+    "titulo_corregido": "Cien años de soledad",
+    "autor_corregido": "Gabriel García Márquez",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 19,
+  "confianza_media": 0.87,
+  "guardrail_disparado": 0,
+  "costo": 0.0042439,
+  "latencia_ms": 8127
+ },
+ "images (13).jpg": {
+  "etiqueta": "images (13).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "REBECA",
+    "autor_detectado": "DAPHNE DE MAURIER",
+    "titulo_corregido": "Rebeca",
+    "autor_corregido": "Daphne du Maurier",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EL CUENTO DE LA CRIADA",
+    "autor_detectado": "ATWOOD",
+    "titulo_corregido": "El cuento de la criada",
+    "autor_corregido": "Margaret Atwood",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "LA MUJER QUE NO QUERIA AMAR",
+    "autor_detectado": "",
+    "titulo_corregido": "La mujer que no quería amar",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "CIUDADES DE PAPEL",
+    "autor_detectado": "JOHN GREEN",
+    "titulo_corregido": "Ciudades de papel",
+    "autor_corregido": "John Green",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EL CORAZON DE LA BESTIA",
+    "autor_detectado": "MARINA SAN MARTIN",
+    "titulo_corregido": "El corazón de la bestia",
+    "autor_corregido": "Marina San Martín",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "LA CALETA PERDIDA DE CAMERON MEZAROS",
+    "autor_detectado": "",
+    "titulo_corregido": "La caleta perdida de Cameron Mezaros",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "EN EL BOSQUE",
+    "autor_detectado": "HARLAN COBEN",
+    "titulo_corregido": "En el bosque",
+    "autor_corregido": "Harlan Coben",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EL LUGAR SIN LIMITES",
+    "autor_detectado": "JOSÉ DONOSO",
+    "titulo_corregido": "El lugar sin límites",
+    "autor_corregido": "José Donoso",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EN LA CARRETERA",
+    "autor_detectado": "JACK KEROUAC",
+    "titulo_corregido": "En la carretera",
+    "autor_corregido": "Jack Kerouac",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "MIL SOLAS ESPLENDIDOS",
+    "autor_detectado": "KHALED HOSSEINI",
+    "titulo_corregido": "Mil soles espléndidos",
+    "autor_corregido": "Khaled Hosseini",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "CUANDO FUIMOS LOS PERIPELOS",
+    "autor_detectado": "ELOY MORENO",
+    "titulo_corregido": "Cuando fuimos los peripatéticos",
+    "autor_corregido": "Eloy Moreno",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HISTORIA DE DOS CIUDADES",
+    "autor_detectado": "CHARLES DICKENS",
+    "titulo_corregido": "Historia de dos ciudades",
+    "autor_corregido": "Charles Dickens",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EL SILENCIO DE LA CIUDAD BLANCA",
+    "autor_detectado": "EVA GARCIA SAENZ",
+    "titulo_corregido": "El silencio de la ciudad blanca",
+    "autor_corregido": "Eva García Sáenz de Urturi",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LA NOCHE DEL ORACULO",
+    "autor_detectado": "PAUL AUSTER",
+    "titulo_corregido": "La noche del oráculo",
+    "autor_corregido": "Paul Auster",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "DE LA TIERRA A LA LUNA",
+    "autor_detectado": "JULIO VERNE",
+    "titulo_corregido": "De la Tierra a la Luna",
+    "autor_corregido": "Julio Verne",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EL INSTITUTO",
+    "autor_detectado": "STEPHEN KING",
+    "titulo_corregido": "El instituto",
+    "autor_corregido": "Stephen King",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "QUIEN PERDIO LA MENTE",
+    "autor_detectado": "",
+    "titulo_corregido": "Quien perdió la mente",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "LA CIENCIA DE LA DESPEDIDA",
+    "autor_detectado": "",
+    "titulo_corregido": "La ciencia de la despedida",
+    "autor_corregido": "",
+    "confianza": 0.6
+   }
+  ],
+  "cant_libros": 18,
+  "confianza_media": 0.92,
+  "guardrail_disparado": 0,
+  "costo": 0.0026118,
+  "latencia_ms": 7198
+ },
+ "images (14).jpg": {
+  "etiqueta": "images (14).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "MESIONAKORNADO",
+    "autor_detectado": "MARIA DUEÑAS",
+    "titulo_corregido": "Misión Olvido",
+    "autor_corregido": "María Dueñas",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "LAFORTUNA DE MATILDA TURPIS",
+    "autor_detectado": "ALVARO POMBO",
+    "titulo_corregido": "La Fortuna de Matilda Turpin",
+    "autor_corregido": "Álvaro Pombo",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Paroise inhalitada",
+    "autor_detectado": "Ana Maria Matute",
+    "titulo_corregido": "Paraíso Inhabitado",
+    "autor_corregido": "Ana María Matute",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "PALMERAS ENTANIEVE",
+    "autor_detectado": "ELIZ GARAS",
+    "titulo_corregido": "Palmeras en la Nieve",
+    "autor_corregido": "Luz Gabás",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA MUERTE DEL COMENDADOR",
+    "autor_detectado": "Harski Muskan",
+    "titulo_corregido": "La Muerte del Comendador",
+    "autor_corregido": "Haruki Murakami",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LA MUERTE DEL COMENDADOR",
+    "autor_detectado": "Hand",
+    "titulo_corregido": "La Muerte del Comendador",
+    "autor_corregido": "Haruki Murakami",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "El tiempo entre costuras",
+    "autor_detectado": "MARIA DUEÑAS",
+    "titulo_corregido": "El Tiempo Entre Costuras",
+    "autor_corregido": "María Dueñas",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Los jaso prillas ladri",
+    "autor_detectado": "KATHERINE PANCOL",
+    "titulo_corregido": "Los ojos amarillos de los cocodrilos",
+    "autor_corregido": "Katherine Pancol",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "Hombres de aved",
+    "autor_detectado": "Miguel Angel Avacia",
+    "titulo_corregido": "Hombres de Arena",
+    "autor_corregido": "Miguel Ángel Asturias",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "El coronel en uno vive",
+    "autor_detectado": "Gabriel Garcia Maqueas",
+    "titulo_corregido": "El Coronel no Tiene Quien le Escriba",
+    "autor_corregido": "Gabriel García Márquez",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "La pasión turca",
+    "autor_detectado": "",
+    "titulo_corregido": "La Pasión Turca",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "MERONDA DECISE MORE",
+    "autor_detectado": "PAULO COELHO",
+    "titulo_corregido": "Veronika Decide Morir",
+    "autor_corregido": "Paulo Coelho",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Historia de una mujer",
+    "autor_detectado": "",
+    "titulo_corregido": "Historia de una mujer",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "LOS CUATRO ACUERDOS",
+    "autor_detectado": "D. MR",
+    "titulo_corregido": "Los Cuatro Acuerdos",
+    "autor_corregido": "Miguel Ruiz",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "poppyay of ap sojob soy napunjung jouhou",
+    "autor_detectado": "Rafael Sontandreu",
+    "titulo_corregido": "Las Gafas de la Felicidad",
+    "autor_corregido": "Rafael Santandreu",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "El arte de no amargorse la vido",
+    "autor_detectado": "Rafael Sontandreu",
+    "titulo_corregido": "El Arte de No Amargarse la Vida",
+    "autor_corregido": "Rafael Santandreu",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA SENDA DEL EXTASIS",
+    "autor_detectado": "Margo Anand",
+    "titulo_corregido": "La Senda del Éxtasis",
+    "autor_corregido": "Margot Anand",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 17,
+  "confianza_media": 0.75,
+  "guardrail_disparado": 0,
+  "costo": 0.0032914,
+  "latencia_ms": 6418
+ },
+ "images (15).jpg": {
+  "etiqueta": "images (15).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Bar del Infierun",
+    "autor_detectado": "Alejandro Dolina",
+    "titulo_corregido": "Bar del Infierno",
+    "autor_corregido": "Alejandro Dolina",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Mandinga de ame",
+    "autor_detectado": "Luciana De Mello",
+    "titulo_corregido": "Mandinga de amor",
+    "autor_corregido": "Luciana De Mello",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "VINTON",
+    "autor_detectado": "",
+    "titulo_corregido": "Vinton",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "FOIMAL Лика мн",
+    "autor_detectado": "",
+    "titulo_corregido": "Formal",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "LA INDEPENDENCIA ARGENTINA YAMERICANA",
+    "autor_detectado": "FELIX LUNA",
+    "titulo_corregido": "La Independencia Argentina y Americana",
+    "autor_corregido": "Félix Luna",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LA CULTURA EN TIEMPOS DE LA COLONIA",
+    "autor_detectado": "FELIX LUNA",
+    "titulo_corregido": "La Cultura en Tiempos de la Colonia",
+    "autor_corregido": "Félix Luna",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "COLHUECENTOS COR HUMANOS, MORODOR",
+    "autor_detectado": "",
+    "titulo_corregido": "Cuentos",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "ENEMIGOS DEL SISTEMA",
+    "autor_detectado": "BAAR ALDISE",
+    "titulo_corregido": "Enemigos del Sistema",
+    "autor_corregido": "Brian Aldiss",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "MENOS MIEZIOS MAS HIQUETAS AN CHOO обна",
+    "autor_detectado": "",
+    "titulo_corregido": "Menos Miedos, Más Riquezas",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Eduardo Coudet"
+   },
+   {
+    "titulo_detectado": "El Corsatle Negro",
+    "autor_detectado": "",
+    "titulo_corregido": "El Corsario Negro",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Emilio Salgari"
+   },
+   {
+    "titulo_detectado": "ELLIPTICO Y SU HERI",
+    "autor_detectado": "",
+    "titulo_corregido": "El Límite y su Heredero",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Julio Cortázar"
+   },
+   {
+    "titulo_detectado": "Taces altos",
+    "autor_detectado": "ANMARE",
+    "titulo_corregido": "Tacones Altos",
+    "autor_corregido": "Pedro Almodóvar",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "IL COPIOD DY VIPCI",
+    "autor_detectado": "Dan Brows",
+    "titulo_corregido": "El Código Da Vinci",
+    "autor_corregido": "Dan Brown",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "La goharsa azul",
+    "autor_detectado": "BANVILLE",
+    "titulo_corregido": "La Guitarra Azul",
+    "autor_corregido": "John Banville",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA ÉPOCA DE ROKAS",
+    "autor_detectado": "FELIX LUNA",
+    "titulo_corregido": "La Época de Rosas",
+    "autor_corregido": "Félix Luna",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Feliuberto Hernánde",
+    "autor_detectado": "",
+    "titulo_corregido": "Feliz y el Desierto",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Feliberto Hernández"
+   }
+  ],
+  "cant_libros": 16,
+  "confianza_media": 0.66,
+  "guardrail_disparado": 4,
+  "costo": 0.0036589,
+  "latencia_ms": 6959
+ },
+ "images (16).jpg": {
+  "etiqueta": "images (16).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "HO",
+    "autor_detectado": "",
+    "titulo_corregido": "Ho",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "CINTA ROJA",
+    "autor_detectado": "",
+    "titulo_corregido": "Cinta roja",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "ELVIAJE DE CILKA",
+    "autor_detectado": "",
+    "titulo_corregido": "El viaje de Cilka",
+    "autor_corregido": "",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LAS TRES MERMANAS",
+    "autor_detectado": "",
+    "titulo_corregido": "Las tres hermanas",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "LA CASA ALEMANA",
+    "autor_detectado": "ANNETTE HESS",
+    "titulo_corregido": "La casa alemana",
+    "autor_corregido": "Annette Hess",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LIBERACION",
+    "autor_detectado": "",
+    "titulo_corregido": "Liberación",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "DLTIMOS DÍAS EN BERLIN",
+    "autor_detectado": "",
+    "titulo_corregido": "Últimos días en Berlín",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "CATADORA HITLER",
+    "autor_detectado": "",
+    "titulo_corregido": "La catadora de Hitler",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "EL LARGO CARIND A CASA",
+    "autor_detectado": "",
+    "titulo_corregido": "El largo camino a casa",
+    "autor_corregido": "",
+    "confianza": 0.6
+   }
+  ],
+  "cant_libros": 9,
+  "confianza_media": 0.71,
+  "guardrail_disparado": 0,
+  "costo": 0.0018343,
+  "latencia_ms": 4308
+ },
+ "images (17).jpg": {
+  "etiqueta": "images (17).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "CONOCIMIENTO SILENCIOSO",
+    "autor_detectado": "",
+    "titulo_corregido": "El conocimiento silencioso",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "C FURDO INTERIOR",
+    "autor_detectado": "",
+    "titulo_corregido": "El furor interior",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "GARCIA MARQUEZ",
+    "autor_detectado": "",
+    "titulo_corregido": "Cien años de soledad",
+    "autor_corregido": "",
+    "confianza": 0.3,
+    "autor_descartado_por_guardrail": "Gabriel García Márquez"
+   },
+   {
+    "titulo_detectado": "KATE MORTON",
+    "autor_detectado": "LAS HORAS DISTANTES",
+    "titulo_corregido": "Las horas distantes",
+    "autor_corregido": "Kate Morton",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "MALVINAS",
+    "autor_detectado": "EN PRIMERA LINEA",
+    "titulo_corregido": "Malvinas en primera línea",
+    "autor_corregido": "",
+    "confianza": 0.8
+   }
+  ],
+  "cant_libros": 5,
+  "confianza_media": 0.7,
+  "guardrail_disparado": 1,
+  "costo": 0.0015189,
+  "latencia_ms": 3776
+ },
+ "images (18).jpg": {
+  "etiqueta": "images (18).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "William Stryn The Shape of Space and the Test",
+    "autor_detectado": "",
+    "titulo_corregido": "The Shape of Space and the Test",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "William Stryn"
+   },
+   {
+    "titulo_detectado": "ON AUT",
+    "autor_detectado": "",
+    "titulo_corregido": "On Auto",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "THE MOUTH",
+    "autor_detectado": "",
+    "titulo_corregido": "The Mouth",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "MUMMY'S LEGS",
+    "autor_detectado": "Regina Doman",
+    "titulo_corregido": "Mummy's Legs",
+    "autor_corregido": "Regina Doman",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Bad American",
+    "autor_detectado": "",
+    "titulo_corregido": "Bad American",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "THE BIGGEST LIE",
+    "autor_detectado": "",
+    "titulo_corregido": "The Biggest Lie",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "THE END OF TIME",
+    "autor_detectado": "",
+    "titulo_corregido": "The End of Time",
+    "autor_corregido": "",
+    "confianza": 0.8
+   }
+  ],
+  "cant_libros": 7,
+  "confianza_media": 0.71,
+  "guardrail_disparado": 1,
+  "costo": 0.0010393,
+  "latencia_ms": 3515
+ },
+ "images (19).jpg": {
+  "etiqueta": "images (19).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "ULTIMO ROUND",
+    "autor_detectado": "",
+    "titulo_corregido": "Último Round",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "ULTIMO ROUND",
+    "autor_detectado": "",
+    "titulo_corregido": "Último Round",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "Suave es la noche.",
+    "autor_detectado": "Sve Fingersd",
+    "titulo_corregido": "Suave es la noche",
+    "autor_corregido": "F. Scott Fitzgerald",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "FRANÇINS JAILLIENRICO CONCEPTOS PROPUESTOS AL PSICOARÁLISIS",
+    "autor_detectado": "Platiel Morinoke",
+    "titulo_corregido": "Cinco conceptos propuestos al psicoanálisis",
+    "autor_corregido": "François Jullien",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "Platiel Morinoke σας και την ούestas",
+    "autor_detectado": "",
+    "titulo_corregido": "Donde nacen por tus ojos celestes",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Daniel Mordzinski"
+   },
+   {
+    "titulo_detectado": "Natsume Soncki Kokoro",
+    "autor_detectado": "",
+    "titulo_corregido": "Kokoro",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Natsume Soseki"
+   },
+   {
+    "titulo_detectado": "viano que faire Federico Jeanmaise",
+    "autor_detectado": "",
+    "titulo_corregido": "El invierno que fue de Federico Jeanmaire",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Federico Jeanmaire"
+   },
+   {
+    "titulo_detectado": "BLADE RUNNER PHILIP K. DICK",
+    "autor_detectado": "",
+    "titulo_corregido": "Blade Runner",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Philip K. Dick"
+   },
+   {
+    "titulo_detectado": "SERAN LOS ANDROIDES CON OVEJAS BLÁCTICAS",
+    "autor_detectado": "",
+    "titulo_corregido": "¿Sueñan los androides con ovejas eléctricas?",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Philip K. Dick"
+   },
+   {
+    "titulo_detectado": "Jürgen Habermas. Ensayos politicos",
+    "autor_detectado": "",
+    "titulo_corregido": "Ensayos políticos",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Jürgen Habermas"
+   },
+   {
+    "titulo_detectado": "MORENO",
+    "autor_detectado": "Pero annasi",
+    "titulo_corregido": "Moreno",
+    "autor_corregido": "Andrés Asís",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "NUNEZ Cuál es tu tormento",
+    "autor_detectado": "",
+    "titulo_corregido": "¿Cuál es tu tormento?",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Núñez"
+   },
+   {
+    "titulo_detectado": "LA CIUDAD",
+    "autor_detectado": "SOHM 5014",
+    "titulo_corregido": "La ciudad y los perros",
+    "autor_corregido": "Mario Vargas Llosa",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "FRANCIS PONGE DE PARTE DE LAS COSAS",
+    "autor_detectado": "",
+    "titulo_corregido": "De parte de las cosas",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Francis Ponge"
+   },
+   {
+    "titulo_detectado": "BOLO LA NOCHE JOHN WILLIAMS",
+    "autor_detectado": "",
+    "titulo_corregido": "Stoner",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "John Williams"
+   },
+   {
+    "titulo_detectado": "BOLANO CUENTO COMPLETIOS ADAAN",
+    "autor_detectado": "",
+    "titulo_corregido": "Cuentos completos",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Roberto Bolaño"
+   }
+  ],
+  "cant_libros": 16,
+  "confianza_media": 0.45,
+  "guardrail_disparado": 10,
+  "costo": 0.0036589,
+  "latencia_ms": 7251
+ },
+ "images (2).jpg": {
+  "etiqueta": "images (2).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "norma UN HOR",
+    "autor_detectado": "",
+    "titulo_corregido": "Un hombre",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "Mandalas",
+    "autor_detectado": "",
+    "titulo_corregido": "Mandalas",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "EL NUEVO MILENIO",
+    "autor_detectado": "Louis L. Hay",
+    "titulo_corregido": "El nuevo milenio",
+    "autor_corregido": "Louise L. Hay",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "SERENAR LA MENTE",
+    "autor_detectado": "CHIE3",
+    "titulo_corregido": "Serenar la mente",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Raimon Chaves"
+   },
+   {
+    "titulo_detectado": "Wayne De",
+    "autor_detectado": "Wayne Dyer",
+    "titulo_corregido": "Tus zonas erróneas",
+    "autor_corregido": "Wayne Dyer",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "Senderas de mosperaci",
+    "autor_detectado": "",
+    "titulo_corregido": "Senderos de recuperación",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "PODER DAL PENATENA",
+    "autor_detectado": "",
+    "titulo_corregido": "El poder del pensamiento tenaz",
+    "autor_corregido": "",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "COMO PERDONAR",
+    "autor_detectado": "",
+    "titulo_corregido": "Cómo perdonar",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Desarrollomicion",
+    "autor_detectado": "Shakti Gawain",
+    "titulo_corregido": "Desarrollo de la intuición",
+    "autor_corregido": "Shakti Gawain",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "Liberadi",
+    "autor_detectado": "Xavier Pic, C. Ramon Betran",
+    "titulo_corregido": "Liberado. Mi inteligencia emocional",
+    "autor_corregido": "Xavier Picas, Carme Ramon i Bertrand",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "Intimidade Marentinas Walter Rius",
+    "autor_detectado": "Walter Riso",
+    "titulo_corregido": "Intimidades masculinas",
+    "autor_corregido": "Walter Riso",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "AMIGOS",
+    "autor_detectado": "MONCAYO",
+    "titulo_corregido": "Amigos",
+    "autor_corregido": "Moncayo",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "INSPIRACIÓN",
+    "autor_detectado": "",
+    "titulo_corregido": "Inspiración",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Gratitud",
+    "autor_detectado": "Louise Hay",
+    "titulo_corregido": "Gratitud",
+    "autor_corregido": "Louise Hay",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "MARY HIGGINS CLARK",
+    "autor_detectado": "Mary Higgins Clark",
+    "titulo_corregido": "Una segunda oportunidad",
+    "autor_corregido": "Mary Higgins Clark",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "that mooth in tuwang",
+    "autor_detectado": "Inglath coor",
+    "titulo_corregido": "That Month in Tuscany",
+    "autor_corregido": "Inglath Cooper",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "THE DA VINCI CODE",
+    "autor_detectado": "DAN BROWN",
+    "titulo_corregido": "The Da Vinci Code",
+    "autor_corregido": "Dan Brown",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 17,
+  "confianza_media": 0.66,
+  "guardrail_disparado": 1,
+  "costo": 0.0025739,
+  "latencia_ms": 5920
+ },
+ "images (22).jpg": {
+  "etiqueta": "images (22).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "El cine y la estética cambiante",
+    "autor_detectado": "Reyes Bercini",
+    "titulo_corregido": "El cine y la estética cambiante",
+    "autor_corregido": "Reyes Bercini",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "OLIVERIO GRONDO",
+    "autor_detectado": "",
+    "titulo_corregido": "Oliverio Girondo",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Parmenides Garcia Saldaña El rey crielle",
+    "autor_detectado": "Parmenides Garcia Saldaña",
+    "titulo_corregido": "El rey criollo",
+    "autor_corregido": "Parmenides García Saldaña",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Hechos e interpretaciones",
+    "autor_detectado": "Mauricio Beuchat",
+    "titulo_corregido": "Hechos e interpretaciones",
+    "autor_corregido": "Mauricio Beuchat",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Los mejores sonetos de la lengua castellana",
+    "autor_detectado": "ILAN STAVANS",
+    "titulo_corregido": "Los mejores sonetos de la lengua castellana",
+    "autor_corregido": "Ilan Stavans",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Ibargüengoitia Piezas y cuentos para niños",
+    "autor_detectado": "Ibargüengoitia",
+    "titulo_corregido": "Piezas y cuentos para niños",
+    "autor_corregido": "Jorge Ibargüengoitia",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Ibargüengoitia Instrucciones para vivir en México",
+    "autor_detectado": "Ibargüengoitia",
+    "titulo_corregido": "Instrucciones para vivir en México",
+    "autor_corregido": "Jorge Ibargüengoitia",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Inventario II",
+    "autor_detectado": "MARIO BENEDETTI",
+    "titulo_corregido": "Inventario II",
+    "autor_corregido": "Mario Benedetti",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Filiz QlackMemoria roja",
+    "autor_detectado": "Filiz Qlack",
+    "titulo_corregido": "Memoria roja",
+    "autor_corregido": "Fritz Glockner",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "El corazón prestado",
+    "autor_detectado": "Victor Manuel Mendiola",
+    "titulo_corregido": "El corazón prestado",
+    "autor_corregido": "Víctor Manuel Mendiola",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Nuevo catecismo para indios remisos",
+    "autor_detectado": "Juan José Arreola Bestiato",
+    "titulo_corregido": "Nuevo catecismo para indios remisos",
+    "autor_corregido": "Juan José Arreola",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "CARLOS MONSIVAIS",
+    "autor_detectado": "CARLOS MONSIVAIS",
+    "titulo_corregido": "Carlos Monsiváis",
+    "autor_corregido": "Carlos Monsiváis",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Dios en la tierra",
+    "autor_detectado": "José Revueltas",
+    "titulo_corregido": "Dios en la tierra",
+    "autor_corregido": "José Revueltas",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Los orígenes trágicos de la erudición",
+    "autor_detectado": "ANTHONY GRAFTON",
+    "titulo_corregido": "Los orígenes trágicos de la erudición",
+    "autor_corregido": "Anthony Grafton",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "El arco y la lira",
+    "autor_detectado": "OCTAVIO PAZ",
+    "titulo_corregido": "El arco y la lira",
+    "autor_corregido": "Octavio Paz",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Grandeza mexicana",
+    "autor_detectado": "Bernardo de Balbuena",
+    "titulo_corregido": "Grandeza mexicana",
+    "autor_corregido": "Bernardo de Balbuena",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "El Hotel de los Corazones Solitarios",
+    "autor_detectado": "JOSE AGUSTIN",
+    "titulo_corregido": "El hotel de los corazones solitarios",
+    "autor_corregido": "José Agustín",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Se está haciendo tarde",
+    "autor_detectado": "José Agustín",
+    "titulo_corregido": "Se está haciendo tarde",
+    "autor_corregido": "José Agustín",
+    "confianza": 1.0
+   }
+  ],
+  "cant_libros": 18,
+  "confianza_media": 0.95,
+  "guardrail_disparado": 0,
+  "costo": 0.0042164,
+  "latencia_ms": 7400
+ },
+ "images (24).jpg": {
+  "etiqueta": "images (24).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "norma UN HOMARENALTA MADGON",
+    "autor_detectado": "Bawden",
+    "titulo_corregido": "Un hombre en la oscuridad",
+    "autor_corregido": "Jennifer Bawden",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "Mandalas",
+    "autor_detectado": "",
+    "titulo_corregido": "Mandalas",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "EL NUEVO MILENIO",
+    "autor_detectado": "Louise L. Hay",
+    "titulo_corregido": "El Nuevo Milenio",
+    "autor_corregido": "Louise L. Hay",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "SERENAR LA MENTE",
+    "autor_detectado": "RAMONLEE",
+    "titulo_corregido": "Serenar la mente",
+    "autor_corregido": "Ramiro Calle",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Sendmas de operación",
+    "autor_detectado": "",
+    "titulo_corregido": "Sendas de recuperación",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "EL PODER EL HINAMO RENAL",
+    "autor_detectado": "",
+    "titulo_corregido": "El poder del pensamiento tenaz",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Norman Vincent Peale"
+   },
+   {
+    "titulo_detectado": "COMO PERDONAR",
+    "autor_detectado": "",
+    "titulo_corregido": "Cómo perdonar",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Eileen Caddy"
+   },
+   {
+    "titulo_detectado": "Desarrolle sar i",
+    "autor_detectado": "Shakti Gawain",
+    "titulo_corregido": "Desarrolla tu intuición",
+    "autor_corregido": "Shakti Gawain",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Intimidades Masculinas",
+    "autor_detectado": "Walter Riso",
+    "titulo_corregido": "Intimidades Masculinas",
+    "autor_corregido": "Walter Riso",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "AMIGON",
+    "autor_detectado": "MONCATO",
+    "titulo_corregido": "Amigo",
+    "autor_corregido": "E. Moncayo",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "INSPIRACIONS",
+    "autor_detectado": "",
+    "titulo_corregido": "Inspiración",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Gratibal",
+    "autor_detectado": "Louise Hay",
+    "titulo_corregido": "Gratitud",
+    "autor_corregido": "Louise Hay",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "MARY GGINS CLARK",
+    "autor_detectado": "THREE COMPLETE NORELS",
+    "titulo_corregido": "Three Complete Novels",
+    "autor_corregido": "Mary Higgins Clark",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "that month Intasany",
+    "autor_detectado": "",
+    "titulo_corregido": "That Month in Tuscany",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Inglath Cooper"
+   },
+   {
+    "titulo_detectado": "THE DA VINCI CODE",
+    "autor_detectado": "DAN BROUIN",
+    "titulo_corregido": "The Da Vinci Code",
+    "autor_corregido": "Dan Brown",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 15,
+  "confianza_media": 0.67,
+  "guardrail_disparado": 3,
+  "costo": 0.0023664,
+  "latencia_ms": 5882
+ },
+ "images (3).jpg": {
+  "etiqueta": "images (3).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "EOREOMS",
+    "autor_detectado": "DSHL",
+    "titulo_corregido": "CALEIDOSCOPIO",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "JUEGO DE CYMS",
+    "autor_detectado": "Danielle Steel",
+    "titulo_corregido": "JUEGO DE CITAS",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "LA PISTA DEL DESEO",
+    "autor_detectado": "Danielee Steel",
+    "titulo_corregido": "LA PISTA DEL DESEO",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "UNA",
+    "autor_detectado": "Danielle Steel",
+    "titulo_corregido": "UNA VEZ EN LA VIDA",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "IMPOSIBLE",
+    "autor_detectado": "Danielle Steel",
+    "titulo_corregido": "IMPOSIBLE",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "CLONE",
+    "autor_detectado": "Danielle Steel",
+    "titulo_corregido": "CLONE",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA VILLA",
+    "autor_detectado": "Danielle Steel",
+    "titulo_corregido": "LA VILLA",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "HISTORIA DE AMOR",
+    "autor_detectado": "Danielle Steel",
+    "titulo_corregido": "HISTORIA DE AMOR",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "DANIELLE STEEL",
+    "autor_detectado": "DANIELLE STEEL",
+    "titulo_corregido": "DANIELLE STEEL",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "ALBUM DE FAMILIA",
+    "autor_detectado": "Danielle Steel",
+    "titulo_corregido": "ÁLBUM DE FAMILIA",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "ECOS",
+    "autor_detectado": "DANIELLE STEEL",
+    "titulo_corregido": "ECOS",
+    "autor_corregido": "Danielle Steel",
+    "confianza": 0.8
+   }
+  ],
+  "cant_libros": 11,
+  "confianza_media": 0.72,
+  "guardrail_disparado": 0,
+  "costo": 0.0023318,
+  "latencia_ms": 5724
+ },
+ "images (4).jpg": {
+  "etiqueta": "images (4).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Misteriosa Buenos Aires",
+    "autor_detectado": "MANUEL MUJICA LAINEZ",
+    "titulo_corregido": "Misteriosa Buenos Aires",
+    "autor_corregido": "Manuel Mujica Lainez",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Viaje por fat mentiras de la Bistaris Universal",
+    "autor_detectado": "norma",
+    "titulo_corregido": "Viaje por las mentiras de la historia universal",
+    "autor_corregido": "Norma",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "ORRAS COMPLETAS CORPUS HERMETICUM",
+    "autor_detectado": "Talamnguts",
+    "titulo_corregido": "Obras completas: Corpus Hermeticum",
+    "autor_corregido": "Hermes Trismegisto",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Argentina",
+    "autor_detectado": "HISTORIA MINIMA DE",
+    "titulo_corregido": "Historia mínima de Argentina",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "América Latina dengual y descentrada",
+    "autor_detectado": "norma",
+    "titulo_corregido": "América Latina desigual y descentrada",
+    "autor_corregido": "Norma",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "EL DISCURSO LITERARIO DEL CHE GUEVARA",
+    "autor_detectado": "Moty Boar",
+    "titulo_corregido": "El discurso literario del Che Guevara",
+    "autor_corregido": "Pacho O'Donnell",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "LO DISRUPTIVO",
+    "autor_detectado": "Moty Boar",
+    "titulo_corregido": "Lo disruptivo",
+    "autor_corregido": "Moty Boar",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "La excepcionalidad argentina",
+    "autor_detectado": "Vicente Massot",
+    "titulo_corregido": "La excepcionalidad argentina",
+    "autor_corregido": "Vicente Massot",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "la conquista de américa",
+    "autor_detectado": "Tzvetan Todorov",
+    "titulo_corregido": "La conquista de América",
+    "autor_corregido": "Tzvetan Todorov",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "estudios de historia económica argentina",
+    "autor_detectado": "eduardo tituado",
+    "titulo_corregido": "Estudios de historia económica argentina",
+    "autor_corregido": "Eduardo Tiscornia",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "La historia empieza en Egipto",
+    "autor_detectado": "JOSE MIGUEL PARKA",
+    "titulo_corregido": "La historia empieza en Egipto",
+    "autor_corregido": "José Miguel Parra",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "El crimen de la guerra",
+    "autor_detectado": "JUAN BAUTISTA ALBEREI",
+    "titulo_corregido": "El crimen de la guerra",
+    "autor_corregido": "Juan Bautista Alberdi",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 12,
+  "confianza_media": 0.74,
+  "guardrail_disparado": 0,
+  "costo": 0.0022514,
+  "latencia_ms": 5315
+ },
+ "images (5).jpg": {
+  "etiqueta": "images (5).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Poems and Favourite Poems",
+    "autor_detectado": "Jane Austen",
+    "titulo_corregido": "Poems and Favourite Poems",
+    "autor_corregido": "Jane Austen",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "MY LIFE AND HARD TIMES",
+    "autor_detectado": "",
+    "titulo_corregido": "My Life and Hard Times",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "James Thurber"
+   },
+   {
+    "titulo_detectado": "AU BONHEUR DES DAMES (THE LADIES' DELIGHT)",
+    "autor_detectado": "EMILE ZOLA",
+    "titulo_corregido": "Au Bonheur des Dames (The Ladies' Delight)",
+    "autor_corregido": "Émile Zola",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE Enchanted April",
+    "autor_detectado": "ELIZABETH VON ARNIM",
+    "titulo_corregido": "The Enchanted April",
+    "autor_corregido": "Elizabeth von Arnim",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Gentlemen Prefer Blondes and But Gentlemen Marry Brunettes",
+    "autor_detectado": "ANITA LOOS",
+    "titulo_corregido": "Gentlemen Prefer Blondes and But Gentlemen Marry Brunettes",
+    "autor_corregido": "Anita Loos",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "KRISTIN LAVRANSDATTER IL THE WIFE",
+    "autor_detectado": "SIGRID UNDSET",
+    "titulo_corregido": "Kristin Lavransdatter: II The Wife",
+    "autor_corregido": "Sigrid Undset",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "KRISTIN LAVRANSDATTER THE WREATH",
+    "autor_detectado": "SIGRID UNDSET",
+    "titulo_corregido": "Kristin Lavransdatter: I The Wreath",
+    "autor_corregido": "Sigrid Undset",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "GIANTS IN THE EARTH",
+    "autor_detectado": "O.E. KOLVAAG",
+    "titulo_corregido": "Giants in the Earth",
+    "autor_corregido": "Ole Edvart Rølvaag",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "THE LADY IS GUN & THE QUESTIONS",
+    "autor_detectado": "MARK GREENWOOD",
+    "titulo_corregido": "The Lady Is a Gun and Other Questions",
+    "autor_corregido": "Mark Greenwood",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "DIVINE COMEDY",
+    "autor_detectado": "DANTE",
+    "titulo_corregido": "The Divine Comedy",
+    "autor_corregido": "Dante Alighieri",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE INIMITABLE P.G. WODEHOUSE",
+    "autor_detectado": "",
+    "titulo_corregido": "The Inimitable Jeeves",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "P.G. Wodehouse"
+   },
+   {
+    "titulo_detectado": "THE FOUR LOVES",
+    "autor_detectado": "C. S. LEWIS",
+    "titulo_corregido": "The Four Loves",
+    "autor_corregido": "C. S. Lewis",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE MOVING FINGER",
+    "autor_detectado": "AGATHA CHRISTIE",
+    "titulo_corregido": "The Moving Finger",
+    "autor_corregido": "Agatha Christie",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "The Harlequin The Sut and her S",
+    "autor_detectado": "Agatha Christie",
+    "titulo_corregido": "The Harlequin Tea Set and Other Stories",
+    "autor_corregido": "Agatha Christie",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "THE MYSTERIOUS MR. QUIN",
+    "autor_detectado": "Agatha Christie",
+    "titulo_corregido": "The Mysterious Mr. Quin",
+    "autor_corregido": "Agatha Christie",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE IMITATION OF CHRIST",
+    "autor_detectado": "THOMAS A KEMPI",
+    "titulo_corregido": "The Imitation of Christ",
+    "autor_corregido": "Thomas à Kempis",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "12 CLACKS",
+    "autor_detectado": "JAMES THIRBER",
+    "titulo_corregido": "The 13 Clocks",
+    "autor_corregido": "James Thurber",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "FAIRY TALES",
+    "autor_detectado": "HANS CHRISTIAN ANDERSEN",
+    "titulo_corregido": "Fairy Tales",
+    "autor_corregido": "Hans Christian Andersen",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "LITTLE WOMEN",
+    "autor_detectado": "LOUISA MAY ALCOTT",
+    "titulo_corregido": "Little Women",
+    "autor_corregido": "Louisa May Alcott",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "The Wizsed of OL",
+    "autor_detectado": "Baum",
+    "titulo_corregido": "The Wizard of Oz",
+    "autor_corregido": "L. Frank Baum",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "THE WIND IN THE WILLOWS",
+    "autor_detectado": "KENVETY GRAHAME",
+    "titulo_corregido": "The Wind in the Willows",
+    "autor_corregido": "Kenneth Grahame",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 21,
+  "confianza_media": 0.9,
+  "guardrail_disparado": 2,
+  "costo": 0.0034414,
+  "latencia_ms": 7303
+ },
+ "images (6).jpg": {
+  "etiqueta": "images (6).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Salomón Laiter Dad",
+    "autor_detectado": "Joaquin Mortiz",
+    "titulo_corregido": "Salomón Laiter Dad",
+    "autor_corregido": "Joaquín Mortiz",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "ARTE Y SOCIEDAD LATINOAMERICA",
+    "autor_detectado": "",
+    "titulo_corregido": "Arte y Sociedad Latinoamericana",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Los unce de la wil",
+    "autor_detectado": "JUANVILLORO",
+    "titulo_corregido": "Los once de la 'wil",
+    "autor_corregido": "Juan Villoro",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "SIETE NOCHES JUNTO AL MAR",
+    "autor_detectado": "LUIS ZAPATA",
+    "titulo_corregido": "Siete Noches Junto al Mar",
+    "autor_corregido": "Luis Zapata",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "CLA CATEDRAL DE CHIHUAHUA",
+    "autor_detectado": "",
+    "titulo_corregido": "La Catedral de Chihuahua",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "108",
+    "autor_detectado": "AGUILAR",
+    "titulo_corregido": "108",
+    "autor_corregido": "Aguilar",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "La chica que soñaba con un cerillo y un galón de gasolina",
+    "autor_detectado": "Stieg Larsson",
+    "titulo_corregido": "La chica que soñaba con un cerillo y un galón de gasolina",
+    "autor_corregido": "Stieg Larsson",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Millennium 2",
+    "autor_detectado": "",
+    "titulo_corregido": "Millennium 2",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "De-Darwin al DNA y el origen de la humanidad: ROSAURA RU la evolución y sus polémicas",
+    "autor_detectado": "FRANCISCO 1 AYALA",
+    "titulo_corregido": "De Darwin al DNA y el origen de la humanidad: la evolución y sus polémicas",
+    "autor_corregido": "Francisco J. Ayala",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Esplendores y miserias de los criolios",
+    "autor_detectado": "José Joaquin Blanco",
+    "titulo_corregido": "Esplendores y miserias de los criollos",
+    "autor_corregido": "José Joaquín Blanco",
+    "confianza": 0.8
+   }
+  ],
+  "cant_libros": 10,
+  "confianza_media": 0.68,
+  "guardrail_disparado": 0,
+  "costo": 0.0026714,
+  "latencia_ms": 5639
+ },
+ "images (7).jpg": {
+  "etiqueta": "images (7).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "MUJERES DEL ALMA MIA",
+    "autor_detectado": "ISABEL ALLENDE",
+    "titulo_corregido": "Mujeres del alma mía",
+    "autor_corregido": "Isabel Allende",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "PAMUK",
+    "autor_detectado": "",
+    "titulo_corregido": "Pamuk",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "MARGUERITE DURAS",
+    "autor_detectado": "",
+    "titulo_corregido": "Marguerite Duras",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LARREBATO DE",
+    "autor_detectado": "OL V. STEIN",
+    "titulo_corregido": "El arrebato de Lol V. Stein",
+    "autor_corregido": "Marguerite Duras",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "SE MO",
+    "autor_detectado": "",
+    "titulo_corregido": "Se Mo",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "NIKO KAZANTZAKIS",
+    "autor_detectado": "",
+    "titulo_corregido": "Nikos Kazantzakis",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "EL PORRE DE AMS",
+    "autor_detectado": "",
+    "titulo_corregido": "El porvenir de una ilusión",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Sigmund Freud"
+   },
+   {
+    "titulo_detectado": "EL CENTINELA",
+    "autor_detectado": "ARTUR CARE",
+    "titulo_corregido": "El centinela",
+    "autor_corregido": "Arthur C. Clarke",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LOS BASOSDE LOPEZ",
+    "autor_detectado": "JORGE BARGJENGERTIA",
+    "titulo_corregido": "Los pasos de López",
+    "autor_corregido": "Jorge Bergenguer",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "LOS PASOS DE LOPEZ",
+    "autor_detectado": "JORGE BARENGTH",
+    "titulo_corregido": "Los pasos de López",
+    "autor_corregido": "Jorge Bergenguer",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Carlos Slim",
+    "autor_detectado": "",
+    "titulo_corregido": "Carlos Slim",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "SIGMUND FREUD",
+    "autor_detectado": "",
+    "titulo_corregido": "Sigmund Freud",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "KRAM ANTSKY",
+    "autor_detectado": "",
+    "titulo_corregido": "Karamazov",
+    "autor_corregido": "",
+    "confianza": 0.3,
+    "autor_descartado_por_guardrail": "Fyodor Dostoevsky"
+   },
+   {
+    "titulo_detectado": "LOS CIEN SENTIDOS SECRETOS",
+    "autor_detectado": "",
+    "titulo_corregido": "Los cien sentidos secretos",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "EL ALAMO",
+    "autor_detectado": "Paco Ignacio Taibe II",
+    "titulo_corregido": "El Álamo",
+    "autor_corregido": "Paco Ignacio Taibo II",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Ber",
+    "autor_detectado": "Bertolt Bre",
+    "titulo_corregido": "Bertolt Brecht",
+    "autor_corregido": "Bertolt Brecht",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Berto",
+    "autor_detectado": "",
+    "titulo_corregido": "Bertolt Brecht",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "HACIA U CINE TERCER",
+    "autor_detectado": "",
+    "titulo_corregido": "Hacia un tercer cine",
+    "autor_corregido": "",
+    "confianza": 0.6
+   }
+  ],
+  "cant_libros": 18,
+  "confianza_media": 0.63,
+  "guardrail_disparado": 2,
+  "costo": 0.0026414,
+  "latencia_ms": 6276
+ },
+ "images (8).jpg": {
+  "etiqueta": "images (8).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "WHAT IT MEANS WHEN A MAN FALLS FROM THE SKY",
+    "autor_detectado": "LESLEY NNEK ARIMAH",
+    "titulo_corregido": "What It Means When a Man Falls from the Sky",
+    "autor_corregido": "Lesley Nneka Arimah",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "RADIO FREE VERMONT",
+    "autor_detectado": "BILL MCKIBBEN",
+    "titulo_corregido": "Radio Free Vermont",
+    "autor_corregido": "Bill McKibben",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE BRIGHT SIDE SANCTUARY FOR ANIMALS",
+    "autor_detectado": "BECKY MANDELBAUM",
+    "titulo_corregido": "The Bright Side Sanctuary for Animals",
+    "autor_corregido": "Becky Mandelbaum",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE RED CAR",
+    "autor_detectado": "DERMANSKY",
+    "titulo_corregido": "The Red Car",
+    "autor_corregido": "Marcy Dermansky",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "I SEE BUILDINGS FALL LIKE LIGHTNING",
+    "autor_detectado": "KEIRAN GODDARD",
+    "titulo_corregido": "I See Buildings Fall Like Lightning",
+    "autor_corregido": "Kieran Goddard",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "PERPETUAL WEST",
+    "autor_detectado": "MESHA MAREN",
+    "titulo_corregido": "Perpetual West",
+    "autor_corregido": "Mesha Maren",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE LIFE OF SUPER-EARTHS",
+    "autor_detectado": "",
+    "titulo_corregido": "The Life of Super-Earths",
+    "autor_corregido": "",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "FREE RADICALS",
+    "autor_detectado": "MICHAEL BROOKS",
+    "titulo_corregido": "Free Radicals",
+    "autor_corregido": "Michael Brooks",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE DECLINE AND PALI",
+    "autor_detectado": "Henry &",
+    "titulo_corregido": "The Decline and Fall of the Roman Empire",
+    "autor_corregido": "Edward Gibbon",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "THE HOUR OF LEAD",
+    "autor_detectado": "BRUCE HOLBERT",
+    "titulo_corregido": "The Hour of Lead",
+    "autor_corregido": "Bruce Holbert",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "MAKING SENSE o SCIENCE",
+    "autor_detectado": "DEAN",
+    "titulo_corregido": "Making Sense of Science",
+    "autor_corregido": "Dean",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "MY NEXT STEP",
+    "autor_detectado": "",
+    "titulo_corregido": "My Next Step",
+    "autor_corregido": "",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "A NOVEL",
+    "autor_detectado": "SARAH GERARD",
+    "titulo_corregido": "True Love",
+    "autor_corregido": "Sarah Gerard",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Lost Antarctica",
+    "autor_detectado": "JAMES SMOCLINTOCK",
+    "titulo_corregido": "Lost Antarctica",
+    "autor_corregido": "James McClintock",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "THE POSSIBILITIES",
+    "autor_detectado": "YAEL GOLDSTEIN-LOVE",
+    "titulo_corregido": "The Possibilities",
+    "autor_corregido": "Yael Goldstein-Love",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE WRITING GODS",
+    "autor_detectado": "EDWARD DOLNICK",
+    "titulo_corregido": "The Writing Gods",
+    "autor_corregido": "Edward Dolnick",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "THE BAY of ANGELS",
+    "autor_detectado": "ANITA BROOKNER",
+    "titulo_corregido": "The Bay of Angels",
+    "autor_corregido": "Anita Brookner",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "QUAKELAND",
+    "autor_detectado": "KATHET WIDES",
+    "titulo_corregido": "Quakeland",
+    "autor_corregido": "Kathryn Miles",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "The Bridesmaids Union",
+    "autor_detectado": "Jonathan Vatner &",
+    "titulo_corregido": "The Bridesmaids Union",
+    "autor_corregido": "Jonathan Vatner",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HACKING DARVIN GENETIC ENGINEERINGFUTURE OF HUMANITY",
+    "autor_detectado": "",
+    "titulo_corregido": "Hacking Darwin: Genetic Engineering and the Future of Humanity",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Jamie Metzl"
+   },
+   {
+    "titulo_detectado": "FLYING SHOES",
+    "autor_detectado": "AARON",
+    "titulo_corregido": "Flying Shoes",
+    "autor_corregido": "Aaron Blaylock",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "CLOCKWORK FUTURES",
+    "autor_detectado": "Brandy S",
+    "titulo_corregido": "Clockwork Futures",
+    "autor_corregido": "Brandy Schillace",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Lorna Mott Comes Home",
+    "autor_detectado": "Diane Johnson",
+    "titulo_corregido": "Lorna Mott Comes Home",
+    "autor_corregido": "Diane Johnson",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "HUBRIS MAXIMUS",
+    "autor_detectado": "FAIZ SIDDIQUI",
+    "titulo_corregido": "Hubris Maximus",
+    "autor_corregido": "Faiz Siddiqui",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "SPEAK OF THE DEVIL",
+    "autor_detectado": "RICHARD HAWKE",
+    "titulo_corregido": "Speak of the Devil",
+    "autor_corregido": "Richard Hawke",
+    "confianza": 1.0
+   }
+  ],
+  "cant_libros": 25,
+  "confianza_media": 0.9,
+  "guardrail_disparado": 1,
+  "costo": 0.0053064,
+  "latencia_ms": 9681
+ },
+ "images (9).jpg": {
+  "etiqueta": "images (9).jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "GABRIEL GARCÍA MARGUEI",
+    "autor_detectado": "",
+    "titulo_corregido": "Cien años de soledad",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Gabriel García Márquez"
+   },
+   {
+    "titulo_detectado": "ATREVETE!",
+    "autor_detectado": "SARA SERCHOVICH",
+    "titulo_corregido": "¡Atrévete!",
+    "autor_corregido": "Sara Serchovich",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DESPEÑADERO",
+    "autor_detectado": "FLORALA",
+    "titulo_corregido": "Despeñadero",
+    "autor_corregido": "Florencia Luna",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "O antes de ti",
+    "autor_detectado": "Jia Maya",
+    "titulo_corregido": "Yo antes de ti",
+    "autor_corregido": "Jojo Moyes",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "BUEN ALCALDE",
+    "autor_detectado": "",
+    "titulo_corregido": "El buen alcalde",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "John Grisham"
+   },
+   {
+    "titulo_detectado": "BUSCALA FELYCIDAD",
+    "autor_detectado": "",
+    "titulo_corregido": "En busca de la felicidad",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Chris Gardner"
+   },
+   {
+    "titulo_detectado": "MENKO SELORETO",
+    "autor_detectado": "",
+    "titulo_corregido": "México secreto",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Juan Rulfo"
+   },
+   {
+    "titulo_detectado": "ZETAS",
+    "autor_detectado": "RICARDO BAVTEO",
+    "titulo_corregido": "Los Zetas",
+    "autor_corregido": "Ricardo Ravelo",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "LAS JEFAS DEL NARCO",
+    "autor_detectado": "Actars Santamarta",
+    "titulo_corregido": "Las jefas del narco",
+    "autor_corregido": "Arturo Santamaría",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA NOCHE",
+    "autor_detectado": "VICTOR VASQUEZ QUINTAL",
+    "titulo_corregido": "La noche",
+    "autor_corregido": "Víctor Vázquez Quintal",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "PSICOLOGIA DEL MEXICANO",
+    "autor_detectado": "LAROUSSE",
+    "titulo_corregido": "Psicología del mexicano",
+    "autor_corregido": "Santiago Ramírez",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "Pau bunlo Coelho",
+    "autor_detectado": "",
+    "titulo_corregido": "Paulo Coelho",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Paulo Coelho"
+   },
+   {
+    "titulo_detectado": "Ser come al rio que fluye",
+    "autor_detectado": "Pau Coelho",
+    "titulo_corregido": "Ser como el río que fluye",
+    "autor_corregido": "Paulo Coelho",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "PAULO COELHO",
+    "autor_detectado": "",
+    "titulo_corregido": "Paulo Coelho",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Paulo Coelho"
+   },
+   {
+    "titulo_detectado": "Pank Coelha Alph",
+    "autor_detectado": "",
+    "titulo_corregido": "El Alquimista",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Paulo Coelho"
+   },
+   {
+    "titulo_detectado": "EL Mago",
+    "autor_detectado": "",
+    "titulo_corregido": "El Mago",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "John Fowles"
+   },
+   {
+    "titulo_detectado": "JAGUARA",
+    "autor_detectado": "SARA PARETSKY",
+    "titulo_corregido": "Jaguar",
+    "autor_corregido": "Sara Paretsky",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "NIEBLA",
+    "autor_detectado": "",
+    "titulo_corregido": "Niebla",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Miguel de Unamuno"
+   },
+   {
+    "titulo_detectado": "TOSCANA",
+    "autor_detectado": "JAAN",
+    "titulo_corregido": "Bajo el sol de la Toscana",
+    "autor_corregido": "Frances Mayes",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "SPAMA",
+    "autor_detectado": "",
+    "titulo_corregido": "España",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "GORDON THOMA",
+    "autor_detectado": "",
+    "titulo_corregido": "Gordon Thomas",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Gordon Thomas"
+   },
+   {
+    "titulo_detectado": "sexuales",
+    "autor_detectado": "",
+    "titulo_corregido": "Sexualidades",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "EL PSICOANALISTA",
+    "autor_detectado": "John Natureobach",
+    "titulo_corregido": "El psicoanalista",
+    "autor_corregido": "John Katzenbach",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA HISTORIA DEL LOCO",
+    "autor_detectado": "John Katzenbach",
+    "titulo_corregido": "La historia del loco",
+    "autor_corregido": "John Katzenbach",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "AL CALOR DEL VERANO JOHN KATZENBACH",
+    "autor_detectado": "",
+    "titulo_corregido": "Al calor del verano",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "John Katzenbach"
+   },
+   {
+    "titulo_detectado": "Joho Katzenboch JUICIO FINAL",
+    "autor_detectado": "",
+    "titulo_corregido": "Juicio final",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "John Katzenbach"
+   },
+   {
+    "titulo_detectado": "EL ESTUDIANTE JOHN K KATZENBACH",
+    "autor_detectado": "OHN KATZENBACH",
+    "titulo_corregido": "El estudiante",
+    "autor_corregido": "John Katzenbach",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "KATZENBA BACH",
+    "autor_detectado": "JOHN",
+    "titulo_corregido": "El hombre equivocado",
+    "autor_corregido": "John Katzenbach",
+    "confianza": 0.5
+   }
+  ],
+  "cant_libros": 28,
+  "confianza_media": 0.56,
+  "guardrail_disparado": 12,
+  "costo": 0.0056414,
+  "latencia_ms": 10161
+ },
+ "images.jpg": {
+  "etiqueta": "images.jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "AC BA E TSL EL",
+    "autor_detectado": "",
+    "titulo_corregido": "AC BA E TSL EL",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "HARRY POTTER",
+    "autor_detectado": "",
+    "titulo_corregido": "Harry Potter",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "CIENCIA O SANA VEE",
+    "autor_detectado": "",
+    "titulo_corregido": "Ciencia o sana vee",
+    "autor_corregido": "",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "HISTORIA",
+    "autor_detectado": "",
+    "titulo_corregido": "Historia",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "DIARIO 3",
+    "autor_detectado": "",
+    "titulo_corregido": "Diario 3",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "HABITOS ATOMICOS",
+    "autor_detectado": "",
+    "titulo_corregido": "Hábitos Atómicos",
+    "autor_corregido": "",
+    "confianza": 0.8
+   }
+  ],
+  "cant_libros": 6,
+  "confianza_media": 0.63,
+  "guardrail_disparado": 0,
+  "costo": 0.0009143,
+  "latencia_ms": 3320
+ },
+ "lomos.jpg": {
+  "etiqueta": "lomos.jpg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "NAKED HEAT",
+    "autor_detectado": "RICHARD CASTLE",
+    "titulo_corregido": "Naked Heat",
+    "autor_corregido": "Richard Castle",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "BARE BONES",
+    "autor_detectado": "KATHY REICHS",
+    "titulo_corregido": "Bare Bones",
+    "autor_corregido": "Kathy Reichs",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Hierzo en las espinacas...",
+    "autor_detectado": "JEAN-FRANÇOIS BOUVET",
+    "titulo_corregido": "Hierro en las espinacas...",
+    "autor_corregido": "Jean-François Bouvet",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "El misterio de los hermanos siameses",
+    "autor_detectado": "HAIRY QUEEN",
+    "titulo_corregido": "El misterio de los hermanos siameses",
+    "autor_corregido": "Ellery Queen",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA CASA DE BERNARDA ALBA",
+    "autor_detectado": "FEDERICO GARCIA LORCA",
+    "titulo_corregido": "La casa de Bernarda Alba",
+    "autor_corregido": "Federico García Lorca",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Inés del alma mía",
+    "autor_detectado": "ISABEL ALLENDE",
+    "titulo_corregido": "Inés del alma mía",
+    "autor_corregido": "Isabel Allende",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "HISTORIAS DE AMOR DE LA HISTORIA DE FRANCIA",
+    "autor_detectado": "Guy Breton",
+    "titulo_corregido": "Historias de amor de la historia de Francia",
+    "autor_corregido": "Guy Breton",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Fictions",
+    "autor_detectado": "Jorge Luis Borges",
+    "titulo_corregido": "Ficciones",
+    "autor_corregido": "Jorge Luis Borges",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LOS JUEGOS FURTIVOS",
+    "autor_detectado": "Alfonso Chase",
+    "titulo_corregido": "Los juegos furtivos",
+    "autor_corregido": "Alfonso Chase",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LOS AMIGOS Y EL VIENTO",
+    "autor_detectado": "Virginia Grotter",
+    "titulo_corregido": "Los amigos y el viento",
+    "autor_corregido": "Virginia Groussac",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "pres de tinta",
+    "autor_detectado": "Sendy Salas Viques",
+    "titulo_corregido": "Piel de tinta",
+    "autor_corregido": "Sandy Salas Viques",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Salle Merrill Redfield",
+    "autor_detectado": "",
+    "titulo_corregido": "The Celestine Prophecy",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "James Redfield"
+   },
+   {
+    "titulo_detectado": "MATRIMONIO",
+    "autor_detectado": "",
+    "titulo_corregido": "Matrimonio",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "Com Sabor a Cacique y Carmenere",
+    "autor_detectado": "Lévardo Montecinas",
+    "titulo_corregido": "Con sabor a cacique y Carmenere",
+    "autor_corregido": "Eduardo Montecinos",
+    "confianza": 0.8
+   }
+  ],
+  "cant_libros": 14,
+  "confianza_media": 0.82,
+  "guardrail_disparado": 1,
+  "costo": 0.0033339,
+  "latencia_ms": 6656
+ },
+ "WhatsApp Image 2026-08-09 at 11.02.47 AM.jpeg": {
+  "etiqueta": "WhatsApp Image 2026-08-09 at 11.02.47 AM.jpeg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Cohen, Deutsch & Sorrentino",
+    "autor_detectado": "",
+    "titulo_corregido": "Cohen, Deutsch & Sorrentino",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "La isla",
+    "autor_detectado": "Aldous Huxley",
+    "titulo_corregido": "La isla",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY BRAVE NEW WORLD",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Un mundo feliz",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY ISLAND",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "La isla",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "El oficinista",
+    "autor_detectado": "Guillermo Saccomanno",
+    "titulo_corregido": "El oficinista",
+    "autor_corregido": "Guillermo Saccomanno",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "FAHRENHEIT 451",
+    "autor_detectado": "RAY BRADBURY",
+    "titulo_corregido": "Fahrenheit 451",
+    "autor_corregido": "Ray Bradbury",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "EL CASTILLO",
+    "autor_detectado": "Franz Kafka",
+    "titulo_corregido": "El castillo",
+    "autor_corregido": "Franz Kafka",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Planilandia",
+    "autor_detectado": "Edwin Abbott",
+    "titulo_corregido": "Planilandia",
+    "autor_corregido": "Edwin Abbott",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "CANTICOS DE LA LEJANA TIERRA",
+    "autor_detectado": "Arthur C. Clarke",
+    "titulo_corregido": "Cánticos de la lejana Tierra",
+    "autor_corregido": "Arthur C. Clarke",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "qué es (y qué no es) la inteligend",
+    "autor_detectado": "juan carlos calvo",
+    "titulo_corregido": "¿Qué es (y qué no es) la inteligencia artificial?",
+    "autor_corregido": "Juan Carlos Calvo",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "nicolás martorell qué es (y qué no es) la",
+    "autor_detectado": "nicolás martorell",
+    "titulo_corregido": "¿Qué es (y qué no es) el big data?",
+    "autor_corregido": "Nicolás Martorell",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "BREVE ATLAS ANECDOTICO del CIENCI",
+    "autor_detectado": "",
+    "titulo_corregido": "Breve atlas anecdótico de la ciencia",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "viajar al futuro (y volv",
+    "autor_detectado": "",
+    "titulo_corregido": "Viajar al futuro (y volver)",
+    "autor_corregido": "",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "El principe",
+    "autor_detectado": "Nicolas Maquiavelo",
+    "titulo_corregido": "El príncipe",
+    "autor_corregido": "Nicolás Maquiavelo",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY BRAVE NEW WORLD REVISITED",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Brave New World Revisited",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Hacia una moral sin dogmas",
+    "autor_detectado": "José Ingenieros",
+    "titulo_corregido": "Hacia una moral sin dogmas",
+    "autor_corregido": "José Ingenieros",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LA SOCIEDAD DEL CANSANCIO",
+    "autor_detectado": "BYUNG-CHUL HAN",
+    "titulo_corregido": "La sociedad del cansancio",
+    "autor_corregido": "Byung-Chul Han",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HOMBRES Y ENGRANAJES",
+    "autor_detectado": "ERNESTO SABATO",
+    "titulo_corregido": "Hombres y engranajes",
+    "autor_corregido": "Ernesto Sabato",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ARTIFICIAL",
+    "autor_detectado": "MARIANO SIGMAN",
+    "titulo_corregido": "Artificial",
+    "autor_corregido": "Mariano Sigman",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "CONSTITUCIONALISMO DIGITAL",
+    "autor_detectado": "SANTIAGO BILINKIS",
+    "titulo_corregido": "Constitucionalismo digital",
+    "autor_corregido": "Santiago Bilinkis",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "La sociedad del espectáculo",
+    "autor_detectado": "Guy Debord",
+    "titulo_corregido": "La sociedad del espectáculo",
+    "autor_corregido": "Guy Debord",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Antropología del deporte",
+    "autor_detectado": "Besnier - Brownell - Carter",
+    "titulo_corregido": "Antropología del deporte",
+    "autor_corregido": "Besnier - Brownell - Carter",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "DESPERTAR",
+    "autor_detectado": "Sam Harris",
+    "titulo_corregido": "Despertar",
+    "autor_corregido": "Sam Harris",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Serenidad",
+    "autor_detectado": "Heidegger",
+    "titulo_corregido": "Serenidad",
+    "autor_corregido": "Heidegger",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Hablar con los demás",
+    "autor_detectado": "MÁXIMO PAZ",
+    "titulo_corregido": "Hablar con los demás",
+    "autor_corregido": "Máximo Paz",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 25,
+  "confianza_media": 0.82,
+  "guardrail_disparado": 0,
+  "costo": 0.0055937,
+  "latencia_ms": 9319
+ },
+ "WhatsApp Image 2026-08-09 at 11.02.47 AMadfd.jpeg": {
+  "etiqueta": "WhatsApp Image 2026-08-09 at 11.02.47 AMadfd.jpeg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "HUMAN PROBLEM SOLVING",
+    "autor_detectado": "NEWELL AND SIMON",
+    "titulo_corregido": "Human Problem Solving",
+    "autor_corregido": "Allen Newell y Herbert A. Simon",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "MEJOR NO HABLAR DE CIERTAS COSAS",
+    "autor_detectado": "Matuhiori",
+    "titulo_corregido": "Mejor no hablar de ciertas cosas",
+    "autor_corregido": "Matu Hiori",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "EL ARTE DE LA GUERRA",
+    "autor_detectado": "SUN TZU",
+    "titulo_corregido": "El arte de la guerra",
+    "autor_corregido": "Sun Tzu",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Hablar con los demás",
+    "autor_detectado": "MÁXIMO PAZ",
+    "titulo_corregido": "Hablar con los demás",
+    "autor_corregido": "Máximo Paz",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Las olas terapéuticas de salud mental",
+    "autor_detectado": "ÁNGEL GARGIULO",
+    "titulo_corregido": "Las olas: Terapéuticas de salud mental",
+    "autor_corregido": "Ángel Gargiulo",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Serenidad",
+    "autor_detectado": "Heidegger",
+    "titulo_corregido": "Serenidad",
+    "autor_corregido": "Martin Heidegger",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "DESPERTAR",
+    "autor_detectado": "Sam Harris",
+    "titulo_corregido": "Despertar",
+    "autor_corregido": "Sam Harris",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "walter sosa escudero",
+    "autor_detectado": "big data",
+    "titulo_corregido": "Big Data: La ciencia de los datos",
+    "autor_corregido": "Walter Sosa Escudero",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "viajar al futuro (y volver para contarlo)",
+    "autor_detectado": "walter sosa escudero",
+    "titulo_corregido": "Viajar al futuro (y volver para contarlo)",
+    "autor_corregido": "Walter Sosa Escudero",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "¿qué es (y qué no es) la estadística?",
+    "autor_detectado": "demoliendo papers",
+    "titulo_corregido": "¿Qué es (y qué no es) la estadística?",
+    "autor_corregido": "Walter Sosa Escudero",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Ciencia que ladra...",
+    "autor_detectado": "JUAN MANUEL CARBALLEDA",
+    "titulo_corregido": "Breve atlas anecdótico de la ciencia",
+    "autor_corregido": "Juan Manuel Carballeda",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "El Gato y La Caja Ca",
+    "autor_detectado": "juan carlos calvo",
+    "titulo_corregido": "¡Qué porquería las hormonas!",
+    "autor_corregido": "Juan Carlos Calvo",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "nicolás martorell qué es (y qué no es) la inteligencia artificial cql",
+    "autor_detectado": "nicolás martorell",
+    "titulo_corregido": "¿Qué es (y qué no es) la inteligencia artificial?",
+    "autor_corregido": "Nicolás Martorell",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "El príncipe",
+    "autor_detectado": null,
+    "titulo_corregido": "El príncipe",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Nicolás Maquiavelo"
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY BRAVE NEW WORLD REV",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Brave New World Revisited",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Hacia una",
+    "autor_detectado": "José Ingenieros",
+    "titulo_corregido": "Hacia una moral sin dogmas",
+    "autor_corregido": "José Ingenieros",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "BYUNG-CHUL H",
+    "autor_detectado": null,
+    "titulo_corregido": "La sociedad del cansancio",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Byung-Chul Han"
+   },
+   {
+    "titulo_detectado": "BYUNG-CHUL H",
+    "autor_detectado": null,
+    "titulo_corregido": "La expulsión de lo distinto",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Byung-Chul Han"
+   },
+   {
+    "titulo_detectado": "ARTIC",
+    "autor_detectado": "ERNESTO SABATO",
+    "titulo_corregido": "El escritor y sus fantasmas",
+    "autor_corregido": "Ernesto Sábato",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY",
+    "autor_detectado": null,
+    "titulo_corregido": "Un mundo feliz",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Aldous Huxley"
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY",
+    "autor_detectado": null,
+    "titulo_corregido": "Las puertas de la percepción",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Aldous Huxley"
+   }
+  ],
+  "cant_libros": 21,
+  "confianza_media": 0.75,
+  "guardrail_disparado": 5,
+  "costo": 0.0049387,
+  "latencia_ms": 9217
+ },
+ "WhatsApp Image 2026-08-09 at 11.02.48 AMfadfa.jpeg": {
+  "etiqueta": "WhatsApp Image 2026-08-09 at 11.02.48 AMfadfa.jpeg",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Mujercitas",
+    "autor_detectado": "LOUISA M. ALCOTT",
+    "titulo_corregido": "Mujercitas",
+    "autor_corregido": "Louisa May Alcott",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "RECUENTOS PARA DEMIÁN",
+    "autor_detectado": "JORGE BUCAY",
+    "titulo_corregido": "Recuentos para Damián",
+    "autor_corregido": "Jorge Bucay",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "El duque y yo",
+    "autor_detectado": "JULIA QUINN",
+    "titulo_corregido": "El duque y yo",
+    "autor_corregido": "Julia Quinn",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Por culpa de Miss Bridgerton",
+    "autor_detectado": "JULIA QUINN",
+    "titulo_corregido": "Por culpa de Miss Bridgerton",
+    "autor_corregido": "Julia Quinn",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Te doy mi corazón",
+    "autor_detectado": "JULIA QUINN",
+    "titulo_corregido": "Te doy mi corazón",
+    "autor_corregido": "Julia Quinn",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EL AMOR Y OTROS CHOQUES DE TREN",
+    "autor_detectado": "LEAH KUNER",
+    "titulo_corregido": "El amor y otros choques de tren",
+    "autor_corregido": "Leah Konen",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Lamalo como quieras",
+    "autor_detectado": "BRIGID KEMMERER",
+    "titulo_corregido": "Llámalo como quieras",
+    "autor_corregido": "Brigid Kemmerer",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "KARMA INSTANTE",
+    "autor_detectado": "MARISSA MEYER",
+    "titulo_corregido": "Karma instante",
+    "autor_corregido": "Marissa Meyer",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "VIRUS LETAL",
+    "autor_detectado": "JAMES DASHNER",
+    "titulo_corregido": "Virus letal",
+    "autor_corregido": "James Dashner",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "PRUEBA DE FUEGO",
+    "autor_detectado": "JAMES DASHNER",
+    "titulo_corregido": "Prueba de fuego",
+    "autor_corregido": "James Dashner",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "La llegada",
+    "autor_detectado": "L. M. Montgomery",
+    "titulo_corregido": "La llegada",
+    "autor_corregido": "Lucy Maud Montgomery",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Seduciendo a Mr. Bridgerton",
+    "autor_detectado": "JULIA QUINN",
+    "titulo_corregido": "Seduciendo a Mr. Bridgerton",
+    "autor_corregido": "Julia Quinn",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "El vizconde que me amó",
+    "autor_detectado": "JULIA QUINN",
+    "titulo_corregido": "El vizconde que me amó",
+    "autor_corregido": "Julia Quinn",
+    "confianza": 1.0
+   }
+  ],
+  "cant_libros": 13,
+  "confianza_media": 0.98,
+  "guardrail_disparado": 0,
+  "costo": 0.0024462,
+  "latencia_ms": 5380
+ },
+ "WhatsApp Image 2026-08-09 at 11.02.47 AM.jpeg [bn]": {
+  "etiqueta": "WhatsApp Image 2026-08-09 at 11.02.47 AM.jpeg [bn]",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Cohen, Deutsch & Sorrentino",
+    "autor_detectado": "",
+    "titulo_corregido": "Cohen, Deutsch & Sorrentino",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "La isla",
+    "autor_detectado": "Aldous Huxley",
+    "titulo_corregido": "La isla",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "BRAVE NEW WORLD",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Brave New World",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "ISLAND",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Island",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "El oficinista",
+    "autor_detectado": "Guillermo Saccomanno",
+    "titulo_corregido": "El oficinista",
+    "autor_corregido": "Guillermo Saccomanno",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "FAHRENHEIT 451",
+    "autor_detectado": "RAY BRADBURY",
+    "titulo_corregido": "Fahrenheit 451",
+    "autor_corregido": "Ray Bradbury",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "EL CASTILLO",
+    "autor_detectado": "Franz Kafka",
+    "titulo_corregido": "El castillo",
+    "autor_corregido": "Franz Kafka",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Planilandia",
+    "autor_detectado": "Edwin Abbott",
+    "titulo_corregido": "Planilandia",
+    "autor_corregido": "Edwin Abbott",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "CANTICOS DE LA LEJANA TIERRA",
+    "autor_detectado": "Arthur C. Clarke",
+    "titulo_corregido": "Cánticos de la lejana tierra",
+    "autor_corregido": "Arthur C. Clarke",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "nicolás martorell qué es (y qué no es) la",
+    "autor_detectado": "",
+    "titulo_corregido": "Qué es (y qué no es) la inteligencia artificial",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Nicolás Martorell"
+   },
+   {
+    "titulo_detectado": "BREVE ATLAS ANECDOTICO del CIENCIA",
+    "autor_detectado": "JUAN MANUEL CARB",
+    "titulo_corregido": "Breve Atlas Anecdótico del Ciencia",
+    "autor_corregido": "Juan Manuel Carbajo",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "viajar al futuro (y volv",
+    "autor_detectado": "",
+    "titulo_corregido": "Viajar al futuro (y volver)",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "big data",
+    "autor_detectado": "",
+    "titulo_corregido": "Big Data",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "DESPERTAR",
+    "autor_detectado": "Sam Harris",
+    "titulo_corregido": "Despertar",
+    "autor_corregido": "Sam Harris",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Serenidad",
+    "autor_detectado": "MÁXIMO PAZ",
+    "titulo_corregido": "Serenidad",
+    "autor_corregido": "Máximo Paz",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Hablar con los demás MÁXIMO PAZ",
+    "autor_detectado": "",
+    "titulo_corregido": "Hablar con los demás",
+    "autor_corregido": "",
+    "confianza": 0.4,
+    "autor_descartado_por_guardrail": "Máximo Paz"
+   },
+   {
+    "titulo_detectado": "Heidegger",
+    "autor_detectado": "",
+    "titulo_corregido": "Heidegger",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "El príncipe",
+    "autor_detectado": "Nicolas Maquiavelo",
+    "titulo_corregido": "El príncipe",
+    "autor_corregido": "Nicolás Maquiavelo",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "BRAVE NEW WORLD REVISITED",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Brave New World Revisited",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Hacia una moral sin dogmas",
+    "autor_detectado": "José. Ingenieros",
+    "titulo_corregido": "Hacia una moral sin dogmas",
+    "autor_corregido": "José Ingenieros",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "LA SOCIEDAD DEL CANSANCIO",
+    "autor_detectado": "BYUNG-CHUL HAN",
+    "titulo_corregido": "La sociedad del cansancio",
+    "autor_corregido": "Byung-Chul Han",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "HOMBRES Y ENGRANAJES",
+    "autor_detectado": "BYUNG-CHUL HAN",
+    "titulo_corregido": "Hombres y engranajes",
+    "autor_corregido": "Byung-Chul Han",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "ARTIFICIAL",
+    "autor_detectado": "ERNESTO SABATO",
+    "titulo_corregido": "Artificial",
+    "autor_corregido": "Ernesto Sábato",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "CONSTITUCIONALISMO DIGITAL",
+    "autor_detectado": "ANDRÉS GIL DOMÍNGUEZ",
+    "titulo_corregido": "Constitucionalismo digital",
+    "autor_corregido": "Andrés Gil Domínguez",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "La sociedad del espectáculo",
+    "autor_detectado": "Guy Debord",
+    "titulo_corregido": "La sociedad del espectáculo",
+    "autor_corregido": "Guy Debord",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Antropología del deporte",
+    "autor_detectado": "Besnier - Brownell - Carter",
+    "titulo_corregido": "Antropología del deporte",
+    "autor_corregido": "Besnier - Brownell - Carter",
+    "confianza": 1.0
+   }
+  ],
+  "cant_libros": 26,
+  "confianza_media": 0.87,
+  "guardrail_disparado": 2,
+  "costo": 0.0040262,
+  "latencia_ms": 7139
+ },
+ "WhatsApp Image 2026-08-09 at 11.02.47 AM.jpeg [mas_contraste]": {
+  "etiqueta": "WhatsApp Image 2026-08-09 at 11.02.47 AM.jpeg [mas_contraste]",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Cohen, Deutsch & Sorrentino",
+    "autor_detectado": "",
+    "titulo_corregido": "Cohen, Deutsch & Sorrentino",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "La isla",
+    "autor_detectado": "Aldous Huxley",
+    "titulo_corregido": "La isla",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY BRAVE NEW WORLD",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Brave New World",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY ISLAND",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Island",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Guillermo Saccomanno El oficinista",
+    "autor_detectado": "Guillermo Saccomanno",
+    "titulo_corregido": "El oficinista",
+    "autor_corregido": "Guillermo Saccomanno",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "FAHRENHEIT 451",
+    "autor_detectado": "RAY BRADBURY",
+    "titulo_corregido": "Fahrenheit 451",
+    "autor_corregido": "Ray Bradbury",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "EL CASTILLO",
+    "autor_detectado": "Franz Kafka",
+    "titulo_corregido": "El castillo",
+    "autor_corregido": "Franz Kafka",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Planilandia",
+    "autor_detectado": "Edwin Abbott",
+    "titulo_corregido": "Planilandia",
+    "autor_corregido": "Edwin Abbott",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "CANTICOS DE LA LEJANA TIERRA",
+    "autor_detectado": "Arthur C. Clarke",
+    "titulo_corregido": "Cánticos de la lejana tierra",
+    "autor_corregido": "Arthur C. Clarke",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "BREVE ATLAS ANECDO ECDÓTICO CIENCI NCIA",
+    "autor_detectado": "nicolás martorell",
+    "titulo_corregido": "Breve atlas anecdótico de la ciencia",
+    "autor_corregido": "Nicolás Martorell",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "El principe",
+    "autor_detectado": "Nicolas Maquiavelo",
+    "titulo_corregido": "El príncipe",
+    "autor_corregido": "Nicolás Maquiavelo",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY BRAVE NEW WORLD REVISITED",
+    "autor_detectado": "ALDOUS HUXLEY",
+    "titulo_corregido": "Brave New World Revisited",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Hacia una moral sin dogmas",
+    "autor_detectado": "José Ingenieros",
+    "titulo_corregido": "Hacia una moral sin dogmas",
+    "autor_corregido": "José Ingenieros",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Losada",
+    "autor_detectado": "BYUNG-CHUL HAN",
+    "titulo_corregido": "Losada",
+    "autor_corregido": "Byung-Chul Han",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "BYUNG-CHUL HAN LA SOCIEDAD DEL CANSANCIO",
+    "autor_detectado": "BYUNG-CHUL HAN",
+    "titulo_corregido": "La sociedad del cansancio",
+    "autor_corregido": "Byung-Chul Han",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HOMBRES Y ENGRANAJES",
+    "autor_detectado": "ERNESTO SABATO",
+    "titulo_corregido": "Hombres y engranajes",
+    "autor_corregido": "Ernesto Sábato",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "ARTIFICIAL",
+    "autor_detectado": "MARIANO SIGMAN SANTIAGO BILINKIS",
+    "titulo_corregido": "Artificial",
+    "autor_corregido": "Mariano Sigman, Santiago Bilinkis",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "CONSTITUCIONALISMO DIGITAL",
+    "autor_detectado": "ANDRÉS GIL DOMÍNGUEZ",
+    "titulo_corregido": "Constitucionalismo digital",
+    "autor_corregido": "Andrés Gil Domínguez",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "La sociedad del espectáculo",
+    "autor_detectado": "Guy Debord",
+    "titulo_corregido": "La sociedad del espectáculo",
+    "autor_corregido": "Guy Debord",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Antropología del deporte",
+    "autor_detectado": "Besnier - Brownell - Carter",
+    "titulo_corregido": "Antropología del deporte",
+    "autor_corregido": "Besnier, Brownell, Carter",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 20,
+  "confianza_media": 0.85,
+  "guardrail_disparado": 0,
+  "costo": 0.0047187,
+  "latencia_ms": 7409
+ },
+ "WhatsApp Image 2026-08-09 at 11.02.47 AM.jpeg [mas_brillo]": {
+  "etiqueta": "WhatsApp Image 2026-08-09 at 11.02.47 AM.jpeg [mas_brillo]",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "Cohen, Deutsch & Sorrentino",
+    "autor_detectado": "",
+    "titulo_corregido": "Cohen, Deutsch & Sorrentino",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "La isla",
+    "autor_detectado": "Aldous Huxley",
+    "titulo_corregido": "La isla",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY BRAVE NEW WORLD",
+    "autor_detectado": "Aldous Huxley",
+    "titulo_corregido": "Brave New World",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY ISLAND",
+    "autor_detectado": "Aldous Huxley",
+    "titulo_corregido": "Island",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Guillermo Saccomanno El oficinista",
+    "autor_detectado": "Guillermo Saccomanno",
+    "titulo_corregido": "El oficinista",
+    "autor_corregido": "Guillermo Saccomanno",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "FAHRENHEIT 451",
+    "autor_detectado": "RAY BRADBURY",
+    "titulo_corregido": "Fahrenheit 451",
+    "autor_corregido": "Ray Bradbury",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "LE CASTILLO",
+    "autor_detectado": "Franz Kafka",
+    "titulo_corregido": "El castillo",
+    "autor_corregido": "Franz Kafka",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "Planilandia",
+    "autor_detectado": "Edwin Abbott",
+    "titulo_corregido": "Planilandia",
+    "autor_corregido": "Edwin Abbott",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "CANTICOS DE LA LEJANA TIERRA",
+    "autor_detectado": "Arthur C. Clarke",
+    "titulo_corregido": "Cánticos de la lejana Tierra",
+    "autor_corregido": "Arthur C. Clarke",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "juan carlos calvo ¡qué porquer",
+    "autor_detectado": "Juan Carlos Calvo",
+    "titulo_corregido": "¡Qué porquería de lectura!",
+    "autor_corregido": "Juan Carlos Calvo",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "big data",
+    "autor_detectado": "",
+    "titulo_corregido": "Big data",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "viajar al futuro (y volv",
+    "autor_detectado": "",
+    "titulo_corregido": "Viajar al futuro (y volver)",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "¿qué es (y qué no es) la",
+    "autor_detectado": "",
+    "titulo_corregido": "¿Qué es (y qué no es) la inteligencia?",
+    "autor_corregido": "",
+    "confianza": 0.5
+   },
+   {
+    "titulo_detectado": "nicolás martorell qué es (y qué no es) la inteligenc",
+    "autor_detectado": "Nicolás Martorell",
+    "titulo_corregido": "¿Qué es (y qué no es) la inteligencia?",
+    "autor_corregido": "Nicolás Martorell",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "BREVE ATLAS ANECDOTICO CIENCIA",
+    "autor_detectado": "JUAN MANUEL CARD",
+    "titulo_corregido": "Breve atlas anecdótico de la ciencia",
+    "autor_corregido": "Juan Manuel Cardona",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "El principe",
+    "autor_detectado": "Nicolas Maquiavelo",
+    "titulo_corregido": "El príncipe",
+    "autor_corregido": "Nicolás Maquiavelo",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "ALDOUS HUXLEY BRAVE NEW WORLD REVISITED",
+    "autor_detectado": "Aldous Huxley",
+    "titulo_corregido": "Brave New World Revisited",
+    "autor_corregido": "Aldous Huxley",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "José. Ingenieros",
+    "autor_detectado": "José Ingenieros",
+    "titulo_corregido": "Hacia una moral sin dogmas",
+    "autor_corregido": "José Ingenieros",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "Hacia una moral sin dogmas",
+    "autor_detectado": "Losada",
+    "titulo_corregido": "Hacia una moral sin dogmas",
+    "autor_corregido": "José Ingenieros",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "BYUNG-CHUL HAN",
+    "autor_detectado": "Byung-Chul Han",
+    "titulo_corregido": "La sociedad del cansancio",
+    "autor_corregido": "Byung-Chul Han",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "BYUNG-CHUL HAN LA SOCIEDAD DEL CANSANCIO",
+    "autor_detectado": "Byung-Chul Han",
+    "titulo_corregido": "La sociedad del cansancio",
+    "autor_corregido": "Byung-Chul Han",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "ERNESTO SABATO",
+    "autor_detectado": "Ernesto Sábato",
+    "titulo_corregido": "Hombres y engranajes",
+    "autor_corregido": "Ernesto Sábato",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "HOMBRES Y ENGRANAJES",
+    "autor_detectado": "MARIAND SIGMAN",
+    "titulo_corregido": "Hombres y engranajes",
+    "autor_corregido": "Mariano Sigman",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "ARTIFICIAL",
+    "autor_detectado": "SANTIAGO BILINKIS",
+    "titulo_corregido": "Artificial: La nueva inteligencia y el futuro de la humanidad",
+    "autor_corregido": "Santiago Bilinkis",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "CONSTITUCIONALISMO DIGITAL",
+    "autor_detectado": "ANDRÉS GIL DOMÍNGUEZ",
+    "titulo_corregido": "Constitucionalismo digital",
+    "autor_corregido": "Andrés Gil Domínguez",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "La sociedad del espectáculo",
+    "autor_detectado": "Guy Debord",
+    "titulo_corregido": "La sociedad del espectáculo",
+    "autor_corregido": "Guy Debord",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "Antropología del deporte",
+    "autor_detectado": "Besnier - Brownell - Carter",
+    "titulo_corregido": "Antropología del deporte",
+    "autor_corregido": "Besnier, Brownell & Carter",
+    "confianza": 1.0
+   },
+   {
+    "titulo_detectado": "DESPERTAR",
+    "autor_detectado": "Sam Harris",
+    "titulo_corregido": "Despertar: Una guía a la espiritualidad sin religión",
+    "autor_corregido": "Sam Harris",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Serenidad",
+    "autor_detectado": "",
+    "titulo_corregido": "Serenidad",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Hablar con los demás MÁXIMO PAZ",
+    "autor_detectado": "Máximo Paz",
+    "titulo_corregido": "Hablar con los demás",
+    "autor_corregido": "Máximo Paz",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Yamientas",
+    "autor_detectado": "",
+    "titulo_corregido": "Herramientas de trabajo",
+    "autor_corregido": "",
+    "confianza": 0.3
+   },
+   {
+    "titulo_detectado": "Heidegger",
+    "autor_detectado": "Heidegger",
+    "titulo_corregido": "Heidegger",
+    "autor_corregido": "Martin Heidegger",
+    "confianza": 0.6
+   }
+  ],
+  "cant_libros": 32,
+  "confianza_media": 0.79,
+  "guardrail_disparado": 0,
+  "costo": 0.0069112,
+  "latencia_ms": 11654
+ },
+ "images.jpg [bn]": {
+  "etiqueta": "images.jpg [bn]",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "AC BA E TSL EBG",
+    "autor_detectado": "",
+    "titulo_corregido": "AC BA E TSL EBG",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "MIMARIPOSSY",
+    "autor_detectado": "",
+    "titulo_corregido": "MIMARIPOSSY",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "EL JARDIN DE LAS MARIPOSAS",
+    "autor_detectado": "",
+    "titulo_corregido": "El jardín de las mariposas",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "HARRY POTTER",
+    "autor_detectado": "",
+    "titulo_corregido": "Harry Potter",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA CHICA DEL TREN",
+    "autor_detectado": "",
+    "titulo_corregido": "La chica del tren",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "LA SOMBRA DEL VIENTO",
+    "autor_detectado": "Carlos Ruiz Zafón",
+    "titulo_corregido": "La sombra del viento",
+    "autor_corregido": "Carlos Ruiz Zafón",
+    "confianza": 0.9
+   },
+   {
+    "titulo_detectado": "HISTORIA",
+    "autor_detectado": "",
+    "titulo_corregido": "Historia",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "DIARIO 3",
+    "autor_detectado": "",
+    "titulo_corregido": "Diario 3",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "EL SABIO",
+    "autor_detectado": "",
+    "titulo_corregido": "El sabio",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "Hábitos atómicos",
+    "autor_detectado": "",
+    "titulo_corregido": "Hábitos atómicos",
+    "autor_corregido": "",
+    "confianza": 0.8
+   }
+  ],
+  "cant_libros": 10,
+  "confianza_media": 0.69,
+  "guardrail_disparado": 0,
+  "costo": 0.0013593,
+  "latencia_ms": 3357
+ },
+ "images.jpg [mas_contraste]": {
+  "etiqueta": "images.jpg [mas_contraste]",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "AC BA E T E R E L L",
+    "autor_detectado": "",
+    "titulo_corregido": "Acaba en tereré",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "S DE ANARIPOSAS",
+    "autor_detectado": "",
+    "titulo_corregido": "De mariposas",
+    "autor_corregido": "",
+    "confianza": 0.6
+   },
+   {
+    "titulo_detectado": "D Harry Porter",
+    "autor_detectado": "",
+    "titulo_corregido": "Harry Potter",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "DIARIO 3",
+    "autor_detectado": "",
+    "titulo_corregido": "Diario 3",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "DIARIO DE SARAH",
+    "autor_detectado": "",
+    "titulo_corregido": "Diario de Sarah",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "histoncas mónicas",
+    "autor_detectado": "",
+    "titulo_corregido": "Historias mímicas",
+    "autor_corregido": "",
+    "confianza": 0.6
+   }
+  ],
+  "cant_libros": 6,
+  "confianza_media": 0.67,
+  "guardrail_disparado": 0,
+  "costo": 0.0009293,
+  "latencia_ms": 2787
+ },
+ "images.jpg [mas_brillo]": {
+  "etiqueta": "images.jpg [mas_brillo]",
+  "ok": true,
+  "libros": [
+   {
+    "titulo_detectado": "AC BA ES TE C",
+    "autor_detectado": "",
+    "titulo_corregido": "Acaba este libro",
+    "autor_corregido": "",
+    "confianza": 0.4
+   },
+   {
+    "titulo_detectado": "HP RRY POTTER",
+    "autor_detectado": "",
+    "titulo_corregido": "Harry Potter",
+    "autor_corregido": "",
+    "confianza": 0.7
+   },
+   {
+    "titulo_detectado": "DIARIO 3",
+    "autor_detectado": "",
+    "titulo_corregido": "Diario 3",
+    "autor_corregido": "",
+    "confianza": 0.8
+   },
+   {
+    "titulo_detectado": "Hábitos Atómicos",
+    "autor_detectado": "",
+    "titulo_corregido": "Hábitos Atómicos",
+    "autor_corregido": "",
+    "confianza": 0.9
+   }
+  ],
+  "cant_libros": 4,
+  "confianza_media": 0.7,
+  "guardrail_disparado": 0,
+  "costo": 0.0007093,
+  "latencia_ms": 2485
+ }
+}

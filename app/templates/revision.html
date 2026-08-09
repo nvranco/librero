@@ -175,8 +175,22 @@
       libro.autor = inputAutor.value.trim();
       renderTodo();
     }
-    inputTitulo.addEventListener('blur', guardar);
-    inputAutor.addEventListener('blur', guardar);
+
+    // En mobile no hay Enter para pasar de titulo a autor: el usuario toca
+    // directo el segundo input. Ese toque dispara blur en el primero antes
+    // de que el segundo reciba el foco, asi que si guardar() (que llama a
+    // renderTodo() y borra estos inputs) corriera ahi mismo, el toque que
+    // iba para el segundo input caeria sobre una fila ya reconstruida y no
+    // pasaria nada. Por eso esperamos un tick y solo cerramos la edicion si
+    // el foco termino afuera de la fila.
+    function alSalirDelCampo() {
+      setTimeout(() => {
+        if (fila.contains(document.activeElement)) return;
+        guardar();
+      }, 0);
+    }
+    inputTitulo.addEventListener('blur', alSalirDelCampo);
+    inputAutor.addEventListener('blur', alSalirDelCampo);
     inputTitulo.addEventListener('keydown', (e) => { if (e.key === 'Enter') inputAutor.focus(); });
     inputAutor.addEventListener('keydown', (e) => { if (e.key === 'Enter') guardar(); });
   }
