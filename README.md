@@ -40,3 +40,6 @@ FastAPI + un Postgres + un volumen en `/data` para las fotos (sin volumen se
 pierden en cada deploy — ver trampas conocidas del documento de requisitos).
 
 Variables de entorno: ver [`.env.example`](.env.example).
+
+
+Deploy verificado: 2026-08-09T01:17:18Z
