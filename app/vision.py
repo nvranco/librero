@@ -1,8 +1,17 @@
 """Pipeline de vision: 1 llamada a OpenRouter por foto, contrato JSON estricto.
 
-Decisiones (requisitos §7): no pedimos bounding boxes, prohibimos explicitamente
-la alucinacion de titulos, 1 reintento si el JSON viene invalido, y logueamos
-siempre latencia/tokens/respuesta cruda como baseline de calidad y unit economics.
+Decisiones (requisitos §7): no pedimos bounding boxes, 1 reintento si el JSON
+viene invalido, y logueamos siempre latencia/tokens/respuesta cruda como
+baseline de calidad y unit economics.
+
+Correccion via internet (extension sobre §7/E3): el modelo corre con el
+plugin de busqueda web de OpenRouter (sufijo ":online") para normalizar
+mayusculas/minusculas y corregir errores de lectura contra datos reales,
+pero la lectura literal del lomo (detectado) se guarda SIEMPRE aparte de la
+version corregida (corregido) — nunca se pisa, sigue siendo el dataset de
+evaluacion del OCR (titulo_raw/autor_raw en la DB). La regla de "no inventar
+libros que no esten en la imagen" sigue siendo no negociable: la busqueda
+puede corregir un libro ya detectado, nunca agregar uno nuevo.
 """
 
 import base64
@@ -20,17 +29,32 @@ logger = logging.getLogger("librero.vision")
 
 _LADO_MAYOR = 2048
 _JPEG_QUALITY = 85
+_MODELO_ONLINE = f"{OPENROUTER_MODEL}:online"
 
 _PROMPT = (
     "Sos un asistente que cataloga libros a partir de fotos de estanterias. "
     "Devolve UNICAMENTE un JSON valido con la clave \"libros\", sin texto "
-    "adicional, sin explicaciones y sin markdown. Para cada lomo legible, "
-    "extrae titulo y autor tal como aparecen, sin corregir ni completar con "
-    "conocimiento externo. Si un lomo es parcialmente ilegible, incluilo con "
-    "la confianza baja. Si no distinguis el autor, deja el campo vacio. No "
-    "inventes libros que no esten en la imagen. Si no hay ningun libro visible "
-    'en la imagen, devolve exactamente {"libros": []}.\n\n'
-    'Formato exacto: {"libros":[{"titulo":"...","autor":"...","confianza":0.0}]}'
+    "adicional, sin explicaciones y sin markdown.\n\n"
+    "Para cada lomo legible, primero anota exactamente lo que ves escrito "
+    "(titulo_detectado, autor_detectado), letra por letra, sin corregir nada "
+    "todavia. Si un lomo es parcialmente ilegible, incluilo igual con "
+    "confianza baja. Si no distinguis el autor, deja autor_detectado vacio. "
+    "No inventes libros que no esten en la imagen — esta regla no tiene "
+    "excepciones, ni siquiera para completar una coleccion.\n\n"
+    "Despues, para cada libro que detectaste (solo esos, ninguno mas), busca "
+    "en internet para confirmar la edicion real y completa "
+    "titulo_corregido/autor_corregido: normalizando mayusculas/minusculas al "
+    "uso estandar del idioma del libro, corrigiendo errores de OCR evidentes "
+    "(letras confundidas, palabras cortadas), y completando el autor si el "
+    "lomo no lo mostraba pero la busqueda lo confirma sin ambiguedad. Si no "
+    "encontras una coincidencia confiable, copia el valor detectado tal cual "
+    "en el campo corregido (no adivines ni elijas la opcion que te parezca "
+    "mas probable).\n\n"
+    "Si no hay ningun libro visible en la imagen, devolve exactamente "
+    '{"libros": []}.\n\n'
+    "Formato exacto: {\"libros\":[{\"titulo_detectado\":\"...\","
+    "\"autor_detectado\":\"...\",\"titulo_corregido\":\"...\","
+    "\"autor_corregido\":\"...\",\"confianza\":0.0}]}"
 )
 
 
@@ -68,7 +92,7 @@ def _parsear_respuesta(texto: str) -> dict:
 async def _llamar_openrouter(foto_bytes_resized: bytes) -> tuple[str, dict]:
     data_uri = "data:image/jpeg;base64," + base64.b64encode(foto_bytes_resized).decode("ascii")
     body = {
-        "model": OPENROUTER_MODEL,
+        "model": _MODELO_ONLINE,
         "response_format": {"type": "json_object"},
         "messages": [
             {
@@ -96,7 +120,8 @@ async def _llamar_openrouter(foto_bytes_resized: bytes) -> tuple[str, dict]:
 
 
 async def analizar_foto(foto_bytes: bytes) -> list[dict]:
-    """Devuelve [{"titulo", "autor", "confianza"}, ...]. 1 reintento ante fallo."""
+    """Devuelve [{"titulo_detectado", "autor_detectado", "titulo_corregido",
+    "autor_corregido", "confianza"}, ...]. 1 reintento ante fallo."""
     if not OPENROUTER_API_KEY:
         raise ErrorVision("OPENROUTER_API_KEY no configurada.")
 
@@ -111,7 +136,7 @@ async def analizar_foto(foto_bytes: bytes) -> list[dict]:
             latencia_ms = round((time.monotonic() - inicio) * 1000)
             logger.info(
                 "vision_ok intento=%s modelo=%s latencia_ms=%s tokens=%s respuesta=%r",
-                intento, OPENROUTER_MODEL, latencia_ms, uso, texto_crudo[:2000],
+                intento, _MODELO_ONLINE, latencia_ms, uso, texto_crudo[:2000],
             )
             libros = datos.get("libros", [])
             if not isinstance(libros, list):
@@ -122,7 +147,7 @@ async def analizar_foto(foto_bytes: bytes) -> list[dict]:
             latencia_ms = round((time.monotonic() - inicio) * 1000)
             logger.warning(
                 "vision_fallo intento=%s modelo=%s latencia_ms=%s error=%s",
-                intento, OPENROUTER_MODEL, latencia_ms, exc,
+                intento, _MODELO_ONLINE, latencia_ms, exc,
             )
 
     raise ErrorVision(f"Fallo el analisis de la foto tras 2 intentos: {ultimo_error}")

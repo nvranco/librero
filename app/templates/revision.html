@@ -68,19 +68,31 @@
     btnPublicar.classList.toggle('opacity-60', aprobados === 0);
   }
 
+  function fueCorregido(libro) {
+    return libro.titulo !== libro.titulo_raw || (libro.autor || '') !== (libro.autor_raw || '');
+  }
+
   function renderFila(libro) {
     const contenedor = document.getElementById(`libros-foto-${libro.foto_id}`);
     if (!contenedor) return;
 
     const bajaConfianza = libro.confianza < UMBRAL_CONFIANZA;
+    const corregido = fueCorregido(libro);
     const fila = document.createElement('div');
     fila.className = `bg-papel border ${bajaConfianza ? 'border-ambar' : 'border-borde'} rounded-xl2 p-3 flex items-start gap-3`;
     fila.dataset.id = libro.id;
 
     fila.innerHTML = `
-      <div class="flex-1 min-w-0 cursor-text" data-rol="texto">
-        <p class="font-medium truncate" data-campo="titulo">${escaparHtml(libro.titulo)}</p>
-        <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+      <div class="flex-1 min-w-0">
+        <div class="cursor-text" data-rol="texto">
+          <p class="font-medium truncate" data-campo="titulo">${escaparHtml(libro.titulo)}</p>
+          <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+        </div>
+        ${corregido ? `
+          <button type="button" data-rol="ver-original" class="text-xs text-naranja font-medium mt-1">
+            Corregido — vio "${escaparHtml(libro.titulo_raw)}${libro.autor_raw ? ' / ' + escaparHtml(libro.autor_raw) : ''}" en la foto ↩
+          </button>
+        ` : ''}
       </div>
       <button type="button" data-rol="toggle"
         class="tap shrink-0 rounded-lg font-bold text-lg ${libro.aprobado ? 'bg-verde/15 text-verde' : 'bg-tinta/10 text-gris'} px-3">
@@ -94,6 +106,16 @@
     });
 
     fila.querySelector('[data-rol="texto"]').addEventListener('click', () => editarFila(fila, libro));
+
+    const btnOriginal = fila.querySelector('[data-rol="ver-original"]');
+    if (btnOriginal) {
+      btnOriginal.addEventListener('click', (e) => {
+        e.stopPropagation();
+        libro.titulo = libro.titulo_raw;
+        libro.autor = libro.autor_raw;
+        renderTodo();
+      });
+    }
 
     contenedor.appendChild(fila);
   }

@@ -120,13 +120,18 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
             continue
 
         for libro in libros_detectados:
-            titulo = str(libro.get("titulo", "")).strip()
-            autor = str(libro.get("autor", "")).strip()
+            titulo_detectado = str(libro.get("titulo_detectado", "")).strip()
+            autor_detectado = str(libro.get("autor_detectado", "")).strip()
+            # Si el modelo no encontro una correccion confiable tiene que devolver
+            # el campo corregido igual al detectado (instrucción del prompt); el
+            # "or" de acá es solo por las dudas de que venga vacío.
+            titulo_corregido = str(libro.get("titulo_corregido", "") or titulo_detectado).strip()
+            autor_corregido = str(libro.get("autor_corregido", "") or autor_detectado).strip()
             confianza = float(libro.get("confianza", 0) or 0)
-            if not titulo:
+            if not titulo_detectado:
                 continue
 
-            clave = (normalizar(titulo), normalizar(autor))
+            clave = (normalizar(titulo_corregido), normalizar(autor_corregido))
             if clave in vistos:
                 continue
             vistos.add(clave)
@@ -135,9 +140,10 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
                 """
                 INSERT INTO libros
                     (libreria_id, lote_id, foto_id, titulo_raw, autor_raw, titulo, autor, confianza, estado)
-                VALUES ($1, $2, $3, $4, $5, $4, $5, $6, 'pendiente')
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pendiente')
                 """,
-                libreria_id, lote_id, foto_id, titulo, autor, confianza,
+                libreria_id, lote_id, foto_id,
+                titulo_detectado, autor_detectado, titulo_corregido, autor_corregido, confianza,
             )
 
     await db.pool().execute(

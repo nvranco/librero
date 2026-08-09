@@ -71,7 +71,7 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
     )
     libros = await db.pool().fetch(
         """
-        SELECT id, foto_id, titulo, autor, confianza
+        SELECT id, foto_id, titulo, autor, titulo_raw, autor_raw, confianza
         FROM libros WHERE lote_id = $1
         ORDER BY foto_id, confianza ASC
         """,
