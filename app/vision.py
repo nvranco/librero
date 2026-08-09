@@ -4,14 +4,18 @@ Decisiones (requisitos §7): no pedimos bounding boxes, 1 reintento si el JSON
 viene invalido, y logueamos siempre latencia/tokens/respuesta cruda como
 baseline de calidad y unit economics.
 
-Correccion via internet (extension sobre §7/E3): el modelo corre con el
-plugin de busqueda web de OpenRouter (sufijo ":online") para normalizar
-mayusculas/minusculas y corregir errores de lectura contra datos reales,
-pero la lectura literal del lomo (detectado) se guarda SIEMPRE aparte de la
-version corregida (corregido) — nunca se pisa, sigue siendo el dataset de
-evaluacion del OCR (titulo_raw/autor_raw en la DB). La regla de "no inventar
-libros que no esten en la imagen" sigue siendo no negociable: la busqueda
-puede corregir un libro ya detectado, nunca agregar uno nuevo.
+Correccion de titulo/autor (extension sobre §7/E3): el modelo normaliza
+mayusculas/minusculas y expande nombres de autor parciales, pero la lectura
+literal del lomo (detectado) se guarda SIEMPRE aparte de la version corregida
+(corregido) — nunca se pisa, sigue siendo el dataset de evaluacion del OCR
+(titulo_raw/autor_raw en la DB).
+
+Sin busqueda web: se probo el mismo prompt con y sin el plugin ":online" de
+OpenRouter sobre 49 libros en 7 fotos reales. Accuracy identica (49/49
+titulos, 38/39 autores) pero ":online" cuesta 5x mas ($0.067 vs $0.013 por
+lote) y agrega ~3s de latencia por foto. Lo unico que aportaba la busqueda
+era completar autores que no estan en el lomo — que es exactamente lo que
+sanear_libro bloquea por ser invencion. Ver _bench.py.
 """
 
 import base64
@@ -31,7 +35,6 @@ logger = logging.getLogger("librero.vision")
 
 _LADO_MAYOR = 2048
 _JPEG_QUALITY = 85
-_MODELO_ONLINE = f"{OPENROUTER_MODEL}:online"
 
 _PROMPT = (
     "Sos un asistente que cataloga libros a partir de fotos de estanterias. "
@@ -53,20 +56,19 @@ _PROMPT = (
     "real al buscar la correccion. El autor SIEMPRE es el nombre de una o "
     "mas personas — nunca pongas el nombre de una coleccion editorial en "
     "autor_detectado ni en autor_corregido.\n\n"
-    "Despues, para cada libro que detectaste (solo esos, ninguno mas), busca "
-    "en internet para confirmar la edicion real y completa "
+    "Despues, para cada libro que detectaste (solo esos, ninguno mas), completa "
     "titulo_corregido/autor_corregido: normalizando mayusculas/minusculas al "
     "uso estandar del idioma del libro, corrigiendo errores de OCR evidentes "
     "(letras confundidas, palabras cortadas), y expandiendo el autor si el "
     "lomo mostraba una parte de su nombre real (ej. apellido solo, nombre "
-    "abreviado) y la busqueda confirma el nombre completo sin ambiguedad.\n\n"
+    "abreviado) y podes completarlo sin ambiguedad.\n\n"
     "REGLA CRITICA sobre autor_corregido, sin excepciones: NUNCA completes "
     "autor_corregido con el nombre de una persona si autor_detectado esta "
     "vacio o es el nombre de una coleccion/serie (es decir, si no hay NINGUN "
     "nombre de persona, ni siquiera parcial, visible en la foto). En ese "
     "caso dejá autor_corregido igual a autor_detectado (vacio o la "
-    "coleccion) y bajá confianza a 0.4 o menos. No importa si la busqueda te "
-    "sugiere un autor probable para ese titulo o esa coleccion: sin un "
+    "coleccion) y bajá confianza a 0.4 o menos. No importa si conoces un "
+    "autor probable para ese titulo o esa coleccion: sin un "
     "nombre real visible en la foto como punto de partida, completar el "
     "autor es adivinar, no corregir, y un autor inventado con confianza alta "
     "es el peor resultado posible de este sistema — peor que dejarlo vacio.\n\n"
@@ -173,7 +175,7 @@ def _parsear_respuesta(texto: str) -> dict:
 async def _llamar_openrouter(foto_bytes_resized: bytes) -> tuple[str, dict]:
     data_uri = "data:image/jpeg;base64," + base64.b64encode(foto_bytes_resized).decode("ascii")
     body = {
-        "model": _MODELO_ONLINE,
+        "model": OPENROUTER_MODEL,
         "response_format": {"type": "json_object"},
         "messages": [
             {
@@ -217,7 +219,7 @@ async def analizar_foto(foto_bytes: bytes) -> list[dict]:
             latencia_ms = round((time.monotonic() - inicio) * 1000)
             logger.info(
                 "vision_ok intento=%s modelo=%s latencia_ms=%s tokens=%s respuesta=%r",
-                intento, _MODELO_ONLINE, latencia_ms, uso, texto_crudo[:2000],
+                intento, OPENROUTER_MODEL, latencia_ms, uso, texto_crudo[:2000],
             )
             libros = datos.get("libros", [])
             if not isinstance(libros, list):
@@ -236,7 +238,7 @@ async def analizar_foto(foto_bytes: bytes) -> list[dict]:
             latencia_ms = round((time.monotonic() - inicio) * 1000)
             logger.warning(
                 "vision_fallo intento=%s modelo=%s latencia_ms=%s error=%s",
-                intento, _MODELO_ONLINE, latencia_ms, exc,
+                intento, OPENROUTER_MODEL, latencia_ms, exc,
             )
 
     raise ErrorVision(f"Fallo el analisis de la foto tras 2 intentos: {ultimo_error}")

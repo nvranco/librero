@@ -1,0 +1,65 @@
+{
+  "6": [
+    {"titulo": "¡Sin escape!", "autor": "", "autor_visible_en_foto": false, "nota": "colección Elige tu propia aventura"},
+    {"titulo": "Viaje submarino", "autor": "", "autor_visible_en_foto": false, "nota": "colección Elige tu propia aventura"},
+    {"titulo": "El libro de los Baltimore", "autor": "Joël Dicker", "autor_visible_en_foto": true},
+    {"titulo": "Los mejores cuentos de ciencia-ficción", "autor": "", "autor_visible_en_foto": false, "nota": "antología sin autor en lomo"},
+    {"titulo": "Pesadilla", "autor": "Douglas E. Winter", "autor_visible_en_foto": true, "nota": "'Selección de Douglas E. Winter'"},
+    {"titulo": "Buscolafelicidad.com", "autor": "Laura Massolo", "autor_visible_en_foto": true},
+    {"titulo": "Magnetizado", "autor": "Carlos Busqued", "autor_visible_en_foto": true, "nota": "en el lomo solo 'BUSQUED'"},
+    {"titulo": "Anestesiados", "autor": "Andrea Bernini", "autor_visible_en_foto": true}
+  ],
+  "7": [
+    {"titulo": "Despertar", "autor": "Sam Harris", "autor_visible_en_foto": true},
+    {"titulo": "Serenidad", "autor": "Martin Heidegger", "autor_visible_en_foto": true},
+    {"titulo": "Hablar con los demás", "autor": "Máximo Paz", "autor_visible_en_foto": true},
+    {"titulo": "Las olas", "autor": "Ángel Gargiulo", "autor_visible_en_foto": true},
+    {"titulo": "Mejor no hablar de ciertas cosas", "autor": "Hatum Marchiori", "autor_visible_en_foto": true},
+    {"titulo": "El arte de la guerra", "autor": "Sun Tzu", "autor_visible_en_foto": true},
+    {"titulo": "Human Problem Solving", "autor": "Newell and Simon", "autor_visible_en_foto": true}
+  ],
+  "8": [
+    {"titulo": "Antropología del deporte", "autor": "Besnier - Brownell - Carter", "autor_visible_en_foto": true},
+    {"titulo": "La sociedad del espectáculo", "autor": "Guy Debord", "autor_visible_en_foto": true},
+    {"titulo": "Constitucionalismo digital", "autor": "Andrés Gil Domínguez", "autor_visible_en_foto": true},
+    {"titulo": "Artificial", "autor": "Mariano Sigman, Santiago Bilinkis", "autor_visible_en_foto": true},
+    {"titulo": "Hombres y engranajes", "autor": "Ernesto Sabato", "autor_visible_en_foto": true},
+    {"titulo": "La sociedad del cansancio", "autor": "Byung-Chul Han", "autor_visible_en_foto": true},
+    {"titulo": "Psicopolítica", "autor": "Byung-Chul Han", "autor_visible_en_foto": true},
+    {"titulo": "Hacia una moral sin dogmas", "autor": "José Ingenieros", "autor_visible_en_foto": true},
+    {"titulo": "Brave New World Revisited", "autor": "Aldous Huxley", "autor_visible_en_foto": true},
+    {"titulo": "El príncipe", "autor": "Nicolás Maquiavelo", "autor_visible_en_foto": true}
+  ],
+  "9": [
+    {"titulo": "qué es (y qué no es) la inteligencia artificial", "autor": "Nicolás Martorell", "autor_visible_en_foto": true},
+    {"titulo": "¡qué porquería las hormonas!", "autor": "Juan Carlos Calvo", "autor_visible_en_foto": true},
+    {"titulo": "Breve atlas anecdótico de la ciencia", "autor": "Juan Manuel Carballeda", "autor_visible_en_foto": true},
+    {"titulo": "Demoliendo papers", "autor": "", "autor_visible_en_foto": false, "nota": "solo 'Ciencia que ladra' en el lomo; autor real Diego Golombek"},
+    {"titulo": "¿qué es (y qué no es) la estadística?", "autor": "Walter Sosa Escudero", "autor_visible_en_foto": true},
+    {"titulo": "viajar al futuro (y volver para contarlo)", "autor": "Walter Sosa Escudero", "autor_visible_en_foto": true},
+    {"titulo": "big data", "autor": "Walter Sosa Escudero", "autor_visible_en_foto": true}
+  ],
+  "10": [
+    {"titulo": "Achieving Competence in Science", "autor": "Cohen, Deutsch & Sorrentino", "autor_visible_en_foto": true},
+    {"titulo": "La isla", "autor": "Aldous Huxley", "autor_visible_en_foto": true},
+    {"titulo": "Brave New World", "autor": "Aldous Huxley", "autor_visible_en_foto": true},
+    {"titulo": "Island", "autor": "Aldous Huxley", "autor_visible_en_foto": true},
+    {"titulo": "El oficinista", "autor": "Guillermo Saccomanno", "autor_visible_en_foto": true},
+    {"titulo": "Fahrenheit 451", "autor": "Ray Bradbury", "autor_visible_en_foto": true},
+    {"titulo": "El castillo", "autor": "Franz Kafka", "autor_visible_en_foto": true},
+    {"titulo": "Planilandia", "autor": "Edwin Abbott", "autor_visible_en_foto": true},
+    {"titulo": "Cánticos de la lejana Tierra", "autor": "Arthur C. Clarke", "autor_visible_en_foto": true}
+  ],
+  "11": [
+    {"titulo": "había una vez el átomo", "autor": "", "autor_visible_en_foto": false, "nota": "autor real Gabriel Gellon, NO impreso en el lomo"},
+    {"titulo": "el científico también es un ser humano", "autor": "", "autor_visible_en_foto": false, "nota": "autor real Pablo Kreimer, NO impreso"},
+    {"titulo": "elogio del desequilibrio", "autor": "", "autor_visible_en_foto": false, "nota": "autor real Marcelino Cereijido, NO impreso"},
+    {"titulo": "bio... ¿qué?", "autor": "", "autor_visible_en_foto": false, "nota": "autor real Alberto Díaz, NO impreso"},
+    {"titulo": "una tumba para los romanov", "autor": "", "autor_visible_en_foto": false, "nota": "autor real Raúl Alzogaray, NO impreso"}
+  ],
+  "12": [
+    {"titulo": "La Ilíada", "autor": "Homero", "autor_visible_en_foto": true},
+    {"titulo": "la matemática como una de las bellas artes", "autor": "", "autor_visible_en_foto": false, "nota": "autor real Pablo Amster, NO impreso"},
+    {"titulo": "Four Thousand Weeks", "autor": "Oliver Burkeman", "autor_visible_en_foto": true}
+  ]
+}
