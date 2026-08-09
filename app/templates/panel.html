@@ -77,10 +77,6 @@
         Ver inventario completo 📚
       </a>
     </div>
-
-    <!-- Acción destructiva para el librero (para nosotros es solo un archivado):
-         va separada, chica y con confirmación en dos pasos, para que no se
-         toque de casualidad al buscar el botón de cargar estante. -->
   </main>
 
   <input id="input-fotos" type="file" accept="image/*" multiple class="hidden">
@@ -128,13 +124,7 @@
 
   let rotacionMensajes = null;
   let animacionBarra = null;
-  let fadeMensaje = null;
   let progresoActual = 4;
-
-  // Cuánto se sostiene la pantalla de "listo" antes de pasar a la revisión.
-  // La barra tarda 700ms en llegar al 100% (transition-duration del elemento);
-  // el resto es para que el conteo final se pueda leer y no se corte de golpe.
-  const ESPERA_ANTES_DE_REVISAR = 1400;
 
   function ponerBarra(pct) {
     progresoActual = Math.max(progresoActual, Math.min(pct, 97));
@@ -147,7 +137,7 @@
     rotacionMensajes = setInterval(() => {
       i = (i + 1) % MENSAJES_PROCESO.length;
       cargaDetalle.style.opacity = '0';
-      fadeMensaje = setTimeout(() => {
+      setTimeout(() => {
         cargaDetalle.textContent = MENSAJES_PROCESO[i];
         cargaDetalle.style.opacity = '1';
       }, 200);
@@ -164,14 +154,8 @@
   function frenarProgreso() {
     clearInterval(rotacionMensajes);
     clearInterval(animacionBarra);
-    // El fade del mensaje tiene su propio timeout adentro del intervalo: sin
-    // esto, hasta 200ms después de frenar te pisaba el mensaje final con uno
-    // de la rotación, y ahora que la pantalla se sostiene se llegaba a ver.
-    clearTimeout(fadeMensaje);
     rotacionMensajes = null;
     animacionBarra = null;
-    fadeMensaje = null;
-    cargaDetalle.style.opacity = '1';
   }
 
   btnCargar.addEventListener('click', function () {
@@ -262,31 +246,17 @@
       }
 
       if (cantLibros === 0) {
-        // Todo repetido. Igual se abre la revisión: ahí ve cuáles matcheó y
-        // cierra el lote de una, en vez de quedar colgado como pendiente.
         cargaBarra.style.width = '100%';
         cargaMensaje.textContent = 'Ese estante ya lo tenías cargado entero';
         cargaDetalle.textContent = `Los ${dups} libros de estas fotos ya están en tu catálogo.`;
-        setTimeout(function () {
-          irA(`/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/lote/${loteId}`, 'adelante');
-        }, ESPERA_ANTES_DE_REVISAR);
+        reactivarBoton();
         return;
       }
 
-      // Cierre: la barra termina de llenarse y el conteo final queda quieto un
-      // momento antes de pasar a la revisión, para que el número se pueda leer.
       cargaBarra.style.width = '100%';
       cargaMensaje.textContent = `Listo: ${cantLibros} libro${cantLibros === 1 ? '' : 's'}`;
       cargaDetalle.textContent = 'Abriendo la revisión…';
-      if (cantLibros > 0 || dups > 0) {
-        cargaContador.classList.remove('hidden');
-        let final = `📚 ${cantLibros} libro${cantLibros === 1 ? '' : 's'} para revisar`;
-        if (dups > 0) final += ` · 🔁 ${dups} que ya tenías`;
-        cargaContador.textContent = final;
-      }
-      setTimeout(function () {
-        irA(`/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/lote/${loteId}`, 'adelante');
-      }, ESPERA_ANTES_DE_REVISAR);
+      window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/lote/${loteId}`;
     } catch (err) {
       frenarProgreso();
       cargaMensaje.textContent = 'Se perdió la conexión revisando el lote. Refrescá la página.';
@@ -299,6 +269,5 @@
     btnCargar.disabled = false;
     btnCargar.classList.remove('opacity-60');
   }
-
 </script>
 {% endblock %}
