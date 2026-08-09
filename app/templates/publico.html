@@ -32,6 +32,10 @@
           Esta librería todavía está cargando su catálogo. Volvé a pasar más tarde.
         {% endif %}
       </p>
+      <a id="btn-whatsapp-generico" target="_blank" rel="noopener"
+        class="hidden tap btn-whatsapp mt-4 inline-flex items-center justify-center gap-2 rounded-xl2 font-medium px-6">
+        Preguntar por WhatsApp 💬
+      </a>
     </div>
   </main>
 
@@ -92,6 +96,29 @@
   const resultados = document.getElementById('resultados');
   const estadoVacio = document.getElementById('estado-vacio');
   const mensajeVacio = document.getElementById('mensaje-vacio');
+  const btnWhatsappGenerico = document.getElementById('btn-whatsapp-generico');
+
+  // Mensaje para un libro puntual: si no tiene autor cargado, sacamos "de
+  // {autor}" del template en vez de mandar un mensaje con un hueco vacío.
+  function armarMensajeLibro(libro) {
+    const template = libro.autor ? MENSAJE_TEMPLATE : MENSAJE_TEMPLATE.replace(' de {autor}', '');
+    return template.replace('{titulo}', libro.titulo).replace('{autor}', libro.autor || '');
+  }
+
+  function mostrarBotonGenerico(q) {
+    const mensaje = q
+      ? `Hola! Busqué "${q}" en tu catálogo y no lo encontré. ¿Lo tenés igual o me avisás si lo conseguís?`
+      : 'Hola! Quería consultarte por un libro que no encontré en tu catálogo.';
+    btnWhatsappGenerico.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+    btnWhatsappGenerico.onclick = () => {
+      registrarEvento('clic_whatsapp', { libro_id: null, generico: true, q: q || '' });
+    };
+    btnWhatsappGenerico.classList.remove('hidden');
+  }
+
+  function ocultarBotonGenerico() {
+    btnWhatsappGenerico.classList.add('hidden');
+  }
 
   let catalogo = [];
   let catalogoListo = false;
@@ -114,6 +141,7 @@
     if (!q.trim()) {
       resultados.innerHTML = '';
       estadoVacio.classList.remove('hidden');
+      ocultarBotonGenerico();
       mensajeVacio.textContent = catalogo.length > 0
         ? 'Escribí un título o autor para empezar a buscar.'
         : 'Esta librería todavía está cargando su catálogo. Volvé a pasar más tarde.';
@@ -142,12 +170,18 @@
     if (lista.length === 0) {
       resultados.innerHTML = '';
       estadoVacio.classList.remove('hidden');
-      mensajeVacio.textContent = buscador.value.trim()
-        ? 'No encontramos ningún libro con ese título o autor.'
-        : 'Escribí un título o autor para empezar a buscar.';
+      const q = buscador.value.trim();
+      if (q) {
+        mensajeVacio.textContent = 'No encontramos ningún libro con ese título o autor.';
+        mostrarBotonGenerico(q);
+      } else {
+        mensajeVacio.textContent = 'Escribí un título o autor para empezar a buscar.';
+        ocultarBotonGenerico();
+      }
       return;
     }
     estadoVacio.classList.add('hidden');
+    ocultarBotonGenerico();
     resultados.innerHTML = lista.map((libro, i) => `
       <div class="bg-papel border border-borde rounded-xl2 p-4" data-idx="${i}">
         <button type="button" data-rol="expandir" class="tap w-full text-left">
@@ -170,9 +204,7 @@
       el.querySelector('[data-rol="expandir"]').addEventListener('click', () => {
         detalle.classList.toggle('hidden');
       });
-      const mensaje = MENSAJE_TEMPLATE
-        .replace('{titulo}', libro.titulo)
-        .replace('{autor}', libro.autor || '');
+      const mensaje = armarMensajeLibro(libro);
       const enlace = el.querySelector('[data-rol="whatsapp"]');
       enlace.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
       enlace.addEventListener('click', () => {
