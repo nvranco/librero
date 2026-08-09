@@ -107,7 +107,7 @@
         <ol class="mt-4 space-y-2 text-sm">
           <li class="flex gap-3">
             <span class="tap shrink-0 w-7 h-7 rounded-full bg-tinta text-crema font-bold text-sm flex items-center justify-center">1</span>
-            <span><strong>Luz de frente, nunca a contraluz.</strong> Sin ventana ni luz fuerte detrás. Sin flash.</span>
+            <span><strong>Luz de frente, nunca a contraluz.</strong> Sin ventana ni luz fuerte detrás — mejor con buena luz de ambiente.</span>
           </li>
           <li class="flex gap-3">
             <span class="tap shrink-0 w-7 h-7 rounded-full bg-tinta text-crema font-bold text-sm flex items-center justify-center">2</span>
@@ -115,7 +115,7 @@
           </li>
           <li class="flex gap-3">
             <span class="tap shrink-0 w-7 h-7 rounded-full bg-tinta text-crema font-bold text-sm flex items-center justify-center">3</span>
-            <span><strong>Estante derecho, sin ángulo forzado.</strong></span>
+            <span><strong>Estante derecho, sin ángulo forzado.</strong> Se leen mejor los lomos y quedan menos libros con "autor no detectado" para corregir a mano.</span>
           </li>
         </ol>
 
@@ -203,8 +203,6 @@
     animacionBarra = null;
   }
 
-  const CLAVE_GUIA_VISTA = 'librero_guia_fotos_vista';
-
   function abrirSelectorFotos() {
     inputFotos.value = '';
     inputFotos.click();
@@ -218,19 +216,14 @@
     modalGuia.classList.add('hidden');
   }
 
-  btnCargar.addEventListener('click', function () {
-    if (localStorage.getItem(CLAVE_GUIA_VISTA)) {
-      abrirSelectorFotos();
-    } else {
-      abrirGuia();
-    }
-  });
+  // La guia aparece siempre antes de cargar fotos, en cada lote — no solo la
+  // primera vez.
+  btnCargar.addEventListener('click', abrirGuia);
 
   btnVerGuia.addEventListener('click', abrirGuia);
   btnCerrarGuia.addEventListener('click', cerrarGuia);
 
   btnConfirmarGuia.addEventListener('click', function () {
-    localStorage.setItem(CLAVE_GUIA_VISTA, '1');
     cerrarGuia();
     abrirSelectorFotos();
   });
