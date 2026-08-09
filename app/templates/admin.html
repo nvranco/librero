@@ -64,10 +64,14 @@
           <p class="font-medium truncate">{{ lib.nombre }}</p>
           <p class="text-xs text-gris">/{{ lib.slug }} · {{ lib.cant_libros }} libros</p>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
           <a href="/{{ lib.slug }}/panel/{{ lib.token_panel }}" target="_blank" rel="noopener"
             class="tap btn-secundario rounded-lg px-3 flex items-center text-sm font-medium">
             Panel ↗
+          </a>
+          <a href="/admin/{{ token }}/librerias/{{ lib.id }}/metricas" target="_blank" rel="noopener"
+            class="tap btn-secundario rounded-lg px-3 flex items-center text-sm font-medium">
+            Métricas 📊
           </a>
           <button type="button" data-accion="borrar"
             class="tap rounded-lg px-3 flex items-center text-sm font-medium text-terracota border-2 border-terracota">

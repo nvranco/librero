@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block titulo %}Métricas — {{ libreria.nombre }}{% endblock %}
+{% block contenido %}
+<div class="min-h-screen px-5 py-8 max-w-3xl mx-auto">
+
+  <header class="mb-6">
+    <a href="/admin/{{ token }}" class="text-celeste text-sm font-medium">← Volver al admin</a>
+    <h1 class="text-2xl font-bold mt-1">{{ libreria.nombre }}</h1>
+    <p class="text-xs text-gris">Dada de alta el {{ libreria.creado_en.strftime('%d/%m/%Y') }}</p>
+  </header>
+
+  <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">Catálogo público</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ resumen.vistas_total }}</p>
+      <p class="text-xs text-gris">Vistas totales</p>
+      <p class="text-xs text-gris mt-1">{{ resumen.vistas_qr }} por QR · {{ resumen.vistas_link }} por link</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ resumen.busquedas_total }}</p>
+      <p class="text-xs text-gris">Búsquedas</p>
+      <p class="text-xs text-gris mt-1">{{ resumen.busquedas_sin_resultado }} sin resultado</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ resumen.clics_total }}</p>
+      <p class="text-xs text-gris">Clics a WhatsApp</p>
+      <p class="text-xs text-gris mt-1">{{ resumen.clics_por_libro }} por libro · {{ resumen.clics_genericos }} genéricos</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ resumen.sesiones_unicas }}</p>
+      <p class="text-xs text-gris">Sesiones únicas</p>
+    </div>
+  </div>
+
+  <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">Inventario</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ libros.publicados }}</p>
+      <p class="text-xs text-gris">Publicados</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ libros.vendidos }}</p>
+      <p class="text-xs text-gris">Vendidos</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ libros.pendientes }}</p>
+      <p class="text-xs text-gris">Pendientes de revisión</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ libros.duplicados_detectados }}</p>
+      <p class="text-xs text-gris">Duplicados detectados</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ libros.archivados }}</p>
+      <p class="text-xs text-gris">Archivados (reinicios)</p>
+    </div>
+  </div>
+
+  <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">Lotes</h2>
+  <div class="grid grid-cols-3 gap-2 mb-8">
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ lotes.total }}</p>
+      <p class="text-xs text-gris">Total cargados</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ lotes.publicados }}</p>
+      <p class="text-xs text-gris">Publicados</p>
+    </div>
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="text-2xl font-bold">{{ lotes.archivados }}</p>
+      <p class="text-xs text-gris">Archivados (reinicios)</p>
+    </div>
+  </div>
+
+  {% if top_busquedas_sin_resultado %}
+  <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">Búsquedas sin resultado (lo que te piden y no tenés)</h2>
+  <div class="bg-papel border border-borde rounded-xl2 divide-y divide-borde mb-8">
+    {% for q, cant in top_busquedas_sin_resultado %}
+    <div class="flex items-center justify-between px-4 py-2 text-sm">
+      <span class="truncate">"{{ q }}"</span>
+      <span class="text-gris shrink-0 ml-3">{{ cant }}×</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if top_libros_consultados %}
+  <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">Libros más consultados por WhatsApp</h2>
+  <div class="bg-papel border border-borde rounded-xl2 divide-y divide-borde mb-8">
+    {% for titulo, cant in top_libros_consultados %}
+    <div class="flex items-center justify-between px-4 py-2 text-sm">
+      <span class="truncate">{{ titulo }}</span>
+      <span class="text-gris shrink-0 ml-3">{{ cant }}×</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">Actividad reciente</h2>
+  <div class="bg-papel border border-borde rounded-xl2 divide-y divide-borde mb-10">
+    {% for e in eventos_recientes %}
+    <div class="px-4 py-2 text-sm flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-medium">
+          {% if e.tipo == 'vista' %}👀 Vista{% if e.payload.src %} ({{ e.payload.src }}){% endif %}
+          {% elif e.tipo == 'busqueda' %}🔎 Búsqueda: "{{ e.payload.q }}" — {{ e.payload.resultados }} resultado{{ 's' if e.payload.resultados != 1 else '' }}
+          {% elif e.tipo == 'clic_whatsapp' %}💬 WhatsApp{% if e.payload.generico %} (genérico){% elif e.payload.titulo %}: {{ e.payload.titulo }}{% endif %}
+          {% elif e.tipo == 'inventario_reiniciado' %}🧹 Inventario reiniciado ({{ e.payload.libros_archivados }} libros)
+          {% else %}{{ e.tipo }}
+          {% endif %}
+        </p>
+      </div>
+      <span class="text-xs text-gris shrink-0 whitespace-nowrap">{{ e.creado_en.strftime('%d/%m %H:%M') }}</span>
+    </div>
+    {% else %}
+    <p class="px-4 py-6 text-center text-sm text-gris">Todavía no hay actividad registrada.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

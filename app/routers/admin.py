@@ -4,7 +4,9 @@ Un token incorrecto devuelve 404, no 401: no queremos confirmarle a nadie que
 la ruta existe (decisión D2, aplicada también acá).
 """
 
+import json
 import secrets
+from collections import Counter
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -107,6 +109,102 @@ async def admin_crear(
             "nueva": nueva,
             "error": error,
             "token": token,
+        },
+    )
+
+
+@router.get("/admin/{token}/librerias/{libreria_id}/metricas", response_class=HTMLResponse)
+async def admin_metricas(request: Request, token: str, libreria_id: int):
+    """Panel de lectura de la tabla eventos + estado del catalogo para una
+    libreria puntual. Todo se agrega en Python (no en SQL) porque el volumen
+    de eventos de un MVP es chico y así queda mas facil de leer/ajustar."""
+    _validar_token(token)
+
+    libreria = await db.pool().fetchrow(
+        "SELECT id, slug, nombre, creado_en FROM librerias WHERE id = $1", libreria_id
+    )
+    if libreria is None:
+        raise HTTPException(status_code=404)
+
+    filas_eventos = await db.pool().fetch(
+        "SELECT tipo, payload, session_id, creado_en FROM eventos "
+        "WHERE libreria_id = $1 ORDER BY creado_en DESC",
+        libreria_id,
+    )
+    eventos = []
+    for f in filas_eventos:
+        try:
+            payload = json.loads(f["payload"]) if f["payload"] else {}
+        except (TypeError, ValueError):
+            payload = {}
+        eventos.append({
+            "tipo": f["tipo"], "payload": payload,
+            "session_id": f["session_id"], "creado_en": f["creado_en"],
+        })
+
+    vistas = [e for e in eventos if e["tipo"] == "vista"]
+    vistas_qr = sum(1 for e in vistas if e["payload"].get("src") == "qr")
+    busquedas = [e for e in eventos if e["tipo"] == "busqueda"]
+    busquedas_sin_resultado = [e for e in busquedas if (e["payload"].get("resultados") or 0) == 0]
+    clics = [e for e in eventos if e["tipo"] == "clic_whatsapp"]
+    clics_genericos = [e for e in clics if e["payload"].get("generico")]
+    clics_por_libro = [e for e in clics if not e["payload"].get("generico")]
+    sesiones_unicas = len({e["session_id"] for e in eventos if e["session_id"]})
+
+    top_busquedas_sin_resultado = Counter(
+        (e["payload"].get("q") or "").strip().lower()
+        for e in busquedas_sin_resultado if (e["payload"].get("q") or "").strip()
+    ).most_common(15)
+
+    top_libros_consultados = Counter(
+        e["payload"].get("titulo") or "(sin título)" for e in clics_por_libro
+    ).most_common(15)
+
+    filas_libros = await db.pool().fetchrow(
+        """
+        SELECT
+            COUNT(*) FILTER (WHERE estado = 'publicado' AND archivado_en IS NULL) AS publicados,
+            COUNT(*) FILTER (WHERE estado = 'vendido' AND archivado_en IS NULL) AS vendidos,
+            COUNT(*) FILTER (WHERE estado = 'pendiente' AND archivado_en IS NULL) AS pendientes,
+            COUNT(*) FILTER (WHERE duplicado_de IS NOT NULL) AS duplicados_detectados,
+            COUNT(*) FILTER (WHERE archivado_en IS NOT NULL) AS archivados
+        FROM libros WHERE libreria_id = $1
+        """,
+        libreria_id,
+    )
+    filas_lotes = await db.pool().fetchrow(
+        """
+        SELECT
+            COUNT(*) AS total,
+            COUNT(*) FILTER (WHERE estado = 'publicado') AS publicados,
+            COUNT(*) FILTER (WHERE archivado_en IS NOT NULL) AS archivados
+        FROM lotes WHERE libreria_id = $1
+        """,
+        libreria_id,
+    )
+
+    return templates.TemplateResponse(
+        request,
+        "metricas.html",
+        {
+            "libreria": libreria,
+            "token": token,
+            "resumen": {
+                "vistas_total": len(vistas),
+                "vistas_qr": vistas_qr,
+                "vistas_link": len(vistas) - vistas_qr,
+                "busquedas_total": len(busquedas),
+                "busquedas_sin_resultado": len(busquedas_sin_resultado),
+                "clics_total": len(clics),
+                "clics_genericos": len(clics_genericos),
+                "clics_por_libro": len(clics_por_libro),
+                "sesiones_unicas": sesiones_unicas,
+            },
+            "libros": filas_libros,
+            "lotes": filas_lotes,
+            "top_busquedas_sin_resultado": top_busquedas_sin_resultado,
+            "top_libros_consultados": top_libros_consultados,
+            "eventos_recientes": eventos[:40],
         },
     )
 
