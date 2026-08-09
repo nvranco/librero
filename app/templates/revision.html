@@ -197,8 +197,17 @@
 
   function renderTodo() {
     document.querySelectorAll('[id^="libros-foto-"]').forEach((el) => { el.innerHTML = ''; });
-    estado.forEach(renderFila);
-    DUPLICADOS.forEach(renderDuplicado);   // siempre al final de cada foto
+    // Orden dentro de cada foto: primero lo que el sistema detectó bien,
+    // despues los candidatos a rechazar (baja confianza). Se ordena por la
+    // confianza original, no por el toggle aprobado/rechazado del usuario,
+    // para que la lista no salte de lugar cada vez que tocás un check.
+    const ordenados = [...estado].sort((a, b) => {
+      const aBien = a.confianza >= UMBRAL_CONFIANZA ? 0 : 1;
+      const bBien = b.confianza >= UMBRAL_CONFIANZA ? 0 : 1;
+      return aBien - bBien;
+    });
+    ordenados.forEach(renderFila);
+    DUPLICADOS.forEach(renderDuplicado);   // los repetidos, siempre al final de cada foto
     actualizarContador();
   }
 

@@ -169,6 +169,7 @@
 
   let rotacionMensajes = null;
   let animacionBarra = null;
+  let fadeMensaje = null;
   let progresoActual = 4;
 
   function ponerBarra(pct) {
@@ -176,31 +177,36 @@
     cargaBarra.style.width = progresoActual + '%';
   }
 
-  function arrancarProgreso(cantFotos) {
+  // La barra y el mensaje se mueven todo el tiempo, sin depender de en qué
+  // paso real está el backend: lo único que importa para el librero es ver
+  // que algo sigue pasando, no el detalle exacto de qué foto va.
+  function arrancarProgreso() {
     let i = 0;
     cargaDetalle.textContent = MENSAJES_PROCESO[0];
     rotacionMensajes = setInterval(() => {
       i = (i + 1) % MENSAJES_PROCESO.length;
       cargaDetalle.style.opacity = '0';
-      setTimeout(() => {
+      fadeMensaje = setTimeout(() => {
         cargaDetalle.textContent = MENSAJES_PROCESO[i];
         cargaDetalle.style.opacity = '1';
       }, 200);
-    }, 2600);
+    }, 2200);
 
     // Avance continuo aunque el backend todavía no haya devuelto nada: se
     // acerca asintóticamente al 97% para no quedarse clavada ni mentir que terminó.
     animacionBarra = setInterval(() => {
       const restante = 97 - progresoActual;
-      ponerBarra(progresoActual + Math.max(restante * 0.015, 0.15));
-    }, 400);
+      ponerBarra(progresoActual + Math.max(restante * 0.02, 0.2));
+    }, 150);
   }
 
   function frenarProgreso() {
     clearInterval(rotacionMensajes);
     clearInterval(animacionBarra);
+    clearTimeout(fadeMensaje);
     rotacionMensajes = null;
     animacionBarra = null;
+    fadeMensaje = null;
   }
 
   function abrirSelectorFotos() {
@@ -266,9 +272,9 @@
       return;
     }
 
-    cargaMensaje.textContent = `Procesando ${archivos.length} foto${archivos.length > 1 ? 's' : ''}…`;
+    cargaMensaje.textContent = 'Procesando tu estante…';
     ponerBarra(12);
-    arrancarProgreso(archivos.length);
+    arrancarProgreso();
     sondearLote(loteId);
   }
 
@@ -277,16 +283,10 @@
       const resp = await fetch(`${API_LOTES}/${loteId}`);
       const datos = await resp.json();
 
-      // Progreso real: las fotos se procesan en paralelo y los libros se
-      // insertan apenas cada una termina, así que el conteo sube en vivo.
-      const listas = datos.fotos_listas || 0;
-      const total = datos.cant_fotos || 1;
+      // La barra y el mensaje ya avanzan solos (arrancarProgreso). Acá solo
+      // usamos el dato real para el contador de libros encontrados, que sí
+      // vale la pena mostrar en vivo.
       const cantLibros = (datos.libros || []).length;
-
-      if (listas > 0) {
-        ponerBarra(12 + (listas / total) * 80);
-        cargaMensaje.textContent = `Procesando ${listas} de ${total} foto${total > 1 ? 's' : ''}…`;
-      }
       const dups = datos.duplicados || 0;
       if (cantLibros > 0 || dups > 0) {
         cargaContador.classList.remove('hidden');
@@ -301,9 +301,9 @@
       }
 
       frenarProgreso();
+      cargaBarra.style.width = '100%';
 
       if (cantLibros === 0 && dups === 0) {
-        cargaBarra.style.width = '100%';
         cargaMensaje.textContent = 'No se detectó ningún libro legible en esas fotos.';
         cargaDetalle.textContent = 'Probá con más luz o acercándote un poco a los lomos.';
         reactivarBoton();
@@ -311,17 +311,19 @@
       }
 
       if (cantLibros === 0) {
-        cargaBarra.style.width = '100%';
         cargaMensaje.textContent = 'Ese estante ya lo tenías cargado entero';
         cargaDetalle.textContent = `Los ${dups} libros de estas fotos ya están en tu catálogo.`;
         reactivarBoton();
         return;
       }
 
-      cargaBarra.style.width = '100%';
       cargaMensaje.textContent = `Listo: ${cantLibros} libro${cantLibros === 1 ? '' : 's'}`;
       cargaDetalle.textContent = 'Abriendo la revisión…';
-      window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/lote/${loteId}`;
+      // Pequeño delay para que se alcance a ver la barra llena y el mensaje
+      // final antes de saltar a la pantalla de revisión.
+      setTimeout(() => {
+        window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/lote/${loteId}`;
+      }, 600);
     } catch (err) {
       frenarProgreso();
       cargaMensaje.textContent = 'Se perdió la conexión revisando el lote. Refrescá la página.';
