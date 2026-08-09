@@ -112,6 +112,22 @@
     document.documentElement.dataset.nav = dir;
   })();
 
+  // Volver con el gesto/botón del navegador restaura la página desde bfcache
+  // sin volver a parsear el <head>, así que el script de arriba no corre otra
+  // vez y la dirección quedaría con el valor de la carga anterior (adelante).
+  // pagereveal sí se dispara en cada revelado, antes del primer pintado.
+  window.addEventListener('pagereveal', function () {
+    var marca = null;
+    try { marca = sessionStorage.getItem('librero-nav'); sessionStorage.removeItem('librero-nav'); } catch (e) {}
+    if (marca) {
+      document.documentElement.dataset.nav = marca;
+    } else if (window.__libreroRevelado) {
+      // Ya se había revelado y nadie dejó marca: volvimos acá desde bfcache.
+      document.documentElement.dataset.nav = 'atras';
+    }
+    window.__libreroRevelado = true;
+  });
+
   // Navegación desde JS. Los links usan data-nav (ver el listener de abajo).
   function irA(url, direccion) {
     try { sessionStorage.setItem('librero-nav', direccion || 'adelante'); } catch (e) {}
