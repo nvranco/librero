@@ -68,7 +68,64 @@
   /* Los buscadores ya tienen su propio borde negro de 2px: el anillo de
      foco de arriba se sumaba como un segundo borde. Solo el borde. */
   input[type="search"]:focus { outline: none; }
+
+  /* ---- Transiciones entre pantallas ----------------------------------
+     Navegación real (recarga de página), animada con la View Transitions
+     API: el navegador saca una foto de la pantalla que se va y la cruza
+     con la que entra. Los navegadores que no la soportan navegan seco,
+     sin animación y sin romperse — por eso no hay fallback en JS.
+
+     Ida: la actual sale hacia la izquierda, la nueva entra desde la
+     derecha. Volver: al revés. El desplazamiento es de 25% y no de 100%
+     porque combinado con el fade se lee más rápido y no marea. */
+  @view-transition { navigation: auto; }
+
+  @keyframes salir-izq  { to   { transform: translateX(-25%); opacity: 0; } }
+  @keyframes entrar-der { from { transform: translateX(25%);  opacity: 0; } }
+  @keyframes salir-der  { to   { transform: translateX(25%);  opacity: 0; } }
+  @keyframes entrar-izq { from { transform: translateX(-25%); opacity: 0; } }
+
+  ::view-transition-old(root) {
+    animation: salir-izq 260ms cubic-bezier(.4, 0, .2, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: entrar-der 300ms cubic-bezier(.4, 0, .2, 1) both;
+  }
+  html[data-nav="atras"]::view-transition-old(root) { animation-name: salir-der; }
+  html[data-nav="atras"]::view-transition-new(root) { animation-name: entrar-izq; }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  }
 </style>
+<script>
+  // Corre antes del primer pintado: deja marcada en <html> la dirección de la
+  // animación para que el CSS de arriba ya la tenga cuando arranca la transición.
+  (function () {
+    var dir = null;
+    try { dir = sessionStorage.getItem('librero-nav'); sessionStorage.removeItem('librero-nav'); } catch (e) {}
+    if (!dir) {
+      // Botón/gesto "atrás" del navegador: nadie dejó la marca, la deducimos.
+      var nav = performance.getEntriesByType('navigation')[0];
+      dir = (nav && nav.type === 'back_forward') ? 'atras' : 'adelante';
+    }
+    document.documentElement.dataset.nav = dir;
+  })();
+
+  // Navegación desde JS. Los links usan data-nav (ver el listener de abajo).
+  function irA(url, direccion) {
+    try { sessionStorage.setItem('librero-nav', direccion || 'adelante'); } catch (e) {}
+    window.location.href = url;
+  }
+
+  // Un solo listener para todos los links: 'adelante' es el default, así que
+  // solo hace falta marcar data-nav="atras" en los de volver.
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest && e.target.closest('a[data-nav]');
+    if (!link) return;
+    try { sessionStorage.setItem('librero-nav', link.dataset.nav); } catch (err) {}
+  }, true);
+</script>
 {% block head %}{% endblock %}
 </head>
 <body class="font-sans text-tinta bg-crema min-h-screen antialiased">
