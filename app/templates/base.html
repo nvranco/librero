@@ -20,6 +20,7 @@
           gris: '#6B6259',
           terracota: '#C97B63',
           ambar: '#C79A3D',
+          whatsapp: '#25D366',
         },
         fontFamily: {
           sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto',
@@ -34,7 +35,7 @@
   :root {
     --tinta: #1A1613; --celeste: #4E9FBF; --celeste-claro: #BFE3EE;
     --crema: #F5EFDD; --papel: #FFFFFF; --borde: #DCD3BB;
-    --gris: #6B6259; --terracota: #C97B63; --ambar: #C79A3D;
+    --gris: #6B6259; --terracota: #C97B63; --ambar: #C79A3D; --whatsapp: #25D366;
   }
   html, body { background: var(--crema); }
   * { -webkit-tap-highlight-color: transparent; }
@@ -46,16 +47,17 @@
      Forzamos 16px en todo campo editable, sin importar la clase de Tailwind. */
   input, textarea, select { font-size: 16px !important; }
 
-  /* Botones: solo negro o blanco (decisión de diseño). El primario lleva
-     una sombra blanca solida tipo sticker; los secundarios van planos. */
+  /* Botones: negro o blanco (decisión de diseño), con la excepción puntual
+     de WhatsApp que usa su verde de marca para mantener el reconocimiento. */
   .btn-primario {
     background: var(--tinta); color: var(--crema);
-    box-shadow: 3px 3px 0 0 var(--papel);
   }
-  .btn-primario:active { box-shadow: 1px 1px 0 0 var(--papel); transform: translate(2px, 2px); }
   .btn-secundario {
     background: var(--papel); color: var(--tinta);
-    border: 2px solid var(--tinta);
+    border: 2px solid rgba(26, 22, 19, 0.7);
+  }
+  .btn-whatsapp {
+    background: var(--whatsapp); color: var(--papel);
   }
 
   /* Safari agrega su propio cromado redondeado a type=search, que se ve
