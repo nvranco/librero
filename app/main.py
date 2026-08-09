@@ -4,6 +4,7 @@ Un solo servicio FastAPI: backend + templates server-side. Sin build step,
 sin Node (ver stack, requisitos §8).
 """
 
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -12,7 +13,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app import db
-from app.routers import admin, panel, publico
+from app.routers import admin, api_librero, panel, publico
+
+# Los logs de app.vision (latencia/tokens/respuesta cruda del modelo) son el
+# baseline de calidad y de unit economics del pipeline (requisitos §7 y §9).
+# Sin nivel INFO explicito, Uvicorn los descarta antes de que lleguen a Railway.
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 
 @asynccontextmanager
@@ -40,6 +48,7 @@ async def health():
 # cualquier ruta literal de un segmento (como /health) tiene que registrarse
 # ANTES de incluir este router, o el catch-all se la come primero.
 app.include_router(admin.router)
+app.include_router(api_librero.router)
 app.include_router(panel.router)
 app.include_router(publico.router)
 

@@ -29,9 +29,31 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 | Ruta | Quién | Estado |
 |---|---|---|
 | `/{slug}` | Lector | Estructura final, sin buscador funcional (llega Día 4) |
-| `/{slug}/inv/{token}` | Librero | Home del panel, carga de fotos deshabilitada (llega Día 2) |
+| `/{slug}/inv/{token}` | Librero | Home del panel; la carga de fotos desde la UI llega Día 3 (P3, revisión) |
 | `/admin/{token_admin}` | Vos | Alta de librerías — funcional |
 | `/health` | — | Chequeo de vida + conexión a DB |
+
+## API (Día 2 — pipeline de visión)
+
+```
+POST /api/{slug}/{token}/lotes         multipart, 1-10 fotos -> 202 {lote_id}
+GET  /api/{slug}/{token}/lotes/{id}    -> {estado, cant_fotos, libros[]}
+```
+
+Sube las fotos, las guarda en `DATA_DIR/{libreria_id}/{lote_id}/`, y procesa
+cada una en background: resize a 2048px/JPEG q85 → 1 llamada a OpenRouter →
+parseo de JSON estricto → dedupe por (título, autor) normalizados dentro del
+lote → insert en `libros` con `estado=pendiente`. Una foto que falla se
+loguea y no tira el lote entero. El lote pasa a `estado=revision` cuando
+termina — la pantalla de revisión (P3, aprobar/corregir/publicar) es Día 3.
+
+**Requiere `OPENROUTER_API_KEY` seteada** (variable de entorno). Sin ella,
+cada foto falla de forma controlada (se loguea el motivo) y el lote queda en
+`revision` con cero libros — no rompe nada, pero no hay nada que revisar.
+
+Los logs de cada llamada al modelo (latencia, tokens, respuesta cruda) van a
+stdout con el logger `librero.vision` — es el baseline de calidad y de unit
+economics del requisito §7/§9.
 
 ## Deploy
 

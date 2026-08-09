@@ -15,3 +15,10 @@ def slugify(texto: str) -> str:
     texto = texto.lower().strip()
     texto = re.sub(r"[^a-z0-9]+", "-", texto)
     return texto.strip("-") or "libreria"
+
+
+def normalizar(texto: str) -> str:
+    """Para dedupe dentro de un lote: sin acentos, minusculas, espacios colapsados."""
+    texto = unicodedata.normalize("NFKD", texto or "").encode("ascii", "ignore").decode("ascii")
+    texto = texto.lower().strip()
+    return re.sub(r"\s+", " ", texto)
