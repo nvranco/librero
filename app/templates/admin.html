@@ -58,15 +58,39 @@
   <h2 class="text-lg font-bold mb-3">Librerías activas ({{ librerias|length }})</h2>
   <div class="space-y-2">
     {% for lib in librerias %}
-    <div class="bg-papel border border-borde rounded-xl2 p-4 flex items-center justify-between gap-3">
-      <div class="min-w-0">
-        <p class="font-medium truncate">{{ lib.nombre }}</p>
-        <p class="text-xs text-gris">/{{ lib.slug }} · {{ lib.cant_libros }} libros</p>
+    <div class="bg-papel border border-borde rounded-xl2 p-4" data-id="{{ lib.id }}" data-nombre="{{ lib.nombre }}">
+      <div class="flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <p class="font-medium truncate">{{ lib.nombre }}</p>
+          <p class="text-xs text-gris">/{{ lib.slug }} · {{ lib.cant_libros }} libros</p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <a href="/{{ lib.slug }}/panel/{{ lib.token_panel }}" target="_blank" rel="noopener"
+            class="tap btn-secundario rounded-lg px-3 flex items-center text-sm font-medium">
+            Panel ↗
+          </a>
+          <button type="button" data-accion="borrar"
+            class="tap rounded-lg px-3 flex items-center text-sm font-medium text-terracota border-2 border-terracota">
+            Borrar
+          </button>
+        </div>
       </div>
-      <a href="/{{ lib.slug }}/panel/{{ lib.token_panel }}" target="_blank" rel="noopener"
-        class="tap btn-secundario shrink-0 rounded-lg px-3 flex items-center text-sm font-medium">
-        Panel ↗
-      </a>
+      <div data-rol="confirmar" class="hidden mt-3 pt-3 border-t border-borde">
+        <p class="text-sm"><strong>¿Borrar "{{ lib.nombre }}" para siempre?</strong></p>
+        <p class="text-xs text-gris mt-1">
+          Se elimina la librería con sus {{ lib.cant_libros }} libros, lotes y fotos. No se puede deshacer.
+        </p>
+        <div class="mt-2 flex gap-2">
+          <button type="button" data-accion="confirmar-borrar"
+            class="tap flex-1 rounded-lg bg-terracota text-crema text-sm font-bold">
+            Sí, borrar para siempre
+          </button>
+          <button type="button" data-accion="cancelar-borrar"
+            class="tap flex-1 btn-secundario rounded-lg text-sm font-medium">
+            Cancelar
+          </button>
+        </div>
+      </div>
     </div>
     {% else %}
     <p class="text-gris text-sm">Todavía no diste de alta ninguna librería.</p>
@@ -82,5 +106,41 @@
       setTimeout(function () { btn.textContent = original; }, 1500);
     });
   }
+
+  const TOKEN_ADMIN = "{{ token }}";
+
+  document.querySelectorAll('[data-id]').forEach((tarjeta) => {
+    const id = tarjeta.dataset.id;
+    const confirmar = tarjeta.querySelector('[data-rol="confirmar"]');
+    const btnBorrar = tarjeta.querySelector('[data-accion="borrar"]');
+    const btnConfirmar = tarjeta.querySelector('[data-accion="confirmar-borrar"]');
+    const btnCancelar = tarjeta.querySelector('[data-accion="cancelar-borrar"]');
+
+    btnBorrar.addEventListener('click', () => {
+      confirmar.classList.remove('hidden');
+      btnBorrar.classList.add('hidden');
+    });
+
+    btnCancelar.addEventListener('click', () => {
+      confirmar.classList.add('hidden');
+      btnBorrar.classList.remove('hidden');
+    });
+
+    btnConfirmar.addEventListener('click', async () => {
+      btnConfirmar.disabled = true;
+      btnCancelar.disabled = true;
+      btnConfirmar.textContent = 'Borrando…';
+      try {
+        const resp = await fetch(`/admin/${TOKEN_ADMIN}/librerias/${id}/borrar`, { method: 'POST' });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        tarjeta.remove();
+      } catch (err) {
+        alert('No se pudo borrar. Probá de nuevo.');
+        btnConfirmar.disabled = false;
+        btnCancelar.disabled = false;
+        btnConfirmar.textContent = 'Sí, borrar para siempre';
+      }
+    });
+  });
 </script>
 {% endblock %}

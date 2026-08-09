@@ -52,6 +52,7 @@ async def admin_home(request: Request, token: str):
             "mensaje_wa_default": MENSAJE_WA_DEFAULT,
             "nueva": None,
             "error": None,
+            "token": token,
         },
     )
 
@@ -105,5 +106,20 @@ async def admin_crear(
             "mensaje_wa_default": MENSAJE_WA_DEFAULT,
             "nueva": nueva,
             "error": error,
+            "token": token,
         },
     )
+
+
+@router.post("/admin/{token}/librerias/{libreria_id}/borrar")
+async def admin_borrar_libreria(token: str, libreria_id: int):
+    """Borrado duro: elimina la libreria y, en cascada, sus lotes/fotos/libros/
+    eventos (ver FKs en schema.sql). No hay vuelta atras — a diferencia de
+    "vaciar inventario" (que archiva), esto saca la fila entera de la base.
+    Las fotos que haya en el volumen /data quedan huerfanas en disco, pero no
+    se sirven mas (el registro que las referencia ya no existe)."""
+    _validar_token(token)
+    resultado = await db.pool().execute("DELETE FROM librerias WHERE id = $1", libreria_id)
+    if resultado == "DELETE 0":
+        raise HTTPException(status_code=404, detail="No existe esa librería.")
+    return {"ok": True}
