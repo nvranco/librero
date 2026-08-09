@@ -70,81 +70,164 @@
   input[type="search"]:focus { outline: none; }
 
   /* ---- Transiciones entre pantallas ----------------------------------
-     Navegación real (recarga de página), animada con la View Transitions
-     API: el navegador saca una foto de la pantalla que se va y la cruza
-     con la que entra. Los navegadores que no la soportan navegan seco,
-     sin animación y sin romperse — por eso no hay fallback en JS.
+     Cada pantalla es una navegación real, así que no se puede animar la
+     que entra hasta que exista. En vez de eso se anima una cortina opaca:
+     tapa la pantalla actual deslizándose, recién ahí se navega, y del otro
+     lado se descorre cuando la página nueva TERMINÓ de cargar.
 
-     Ida: la actual sale hacia la izquierda, la nueva entra desde la
-     derecha. Volver: al revés. El desplazamiento es de 25% y no de 100%
-     porque combinado con el fade se lee más rápido y no marea. */
-  @view-transition { navigation: auto; }
+     Se probó antes con la View Transitions API y fallaba justo en la ida:
+     el navegador descarta la transición si la página destino tarda en
+     pintar, y Tailwind viene por CDN y bloquea el primer pintado. Volver sí
+     andaba, porque el panel se restauraba de bfcache y pintaba al toque.
+     Con la cortina, cuánto se espera lo decidimos nosotros.
 
-  @keyframes salir-izq  { to   { transform: translateX(-25%); opacity: 0; } }
-  @keyframes entrar-der { from { transform: translateX(25%);  opacity: 0; } }
-  @keyframes salir-der  { to   { transform: translateX(25%);  opacity: 0; } }
-  @keyframes entrar-izq { from { transform: translateX(-25%); opacity: 0; } }
-
-  ::view-transition-old(root) {
-    animation: salir-izq 260ms cubic-bezier(.4, 0, .2, 1) both;
+     La cortina nunca transforma el contenido de la página: si lo hiciera,
+     las barras position:fixed de abajo (Cargar estante, Publicar) pasarían
+     a posicionarse contra el elemento animado y pegarían un salto. */
+  #cortina {
+    position: fixed; inset: 0; z-index: 90;
+    background: var(--crema);
+    display: flex; align-items: center; justify-content: center;
+    visibility: hidden;
+    transform: translateX(100%);
   }
-  ::view-transition-new(root) {
-    animation: entrar-der 300ms cubic-bezier(.4, 0, .2, 1) both;
+  #cortina.visible { visibility: visible; }
+
+  /* La página que entra arranca tapada desde el primer pintado: sin esto se
+     vería un fogonazo del contenido nuevo antes de que la cortina se corra. */
+  html[data-entrando] #cortina { visibility: visible; transform: none; }
+
+  @keyframes cortina-desde-der { from { transform: translateX(100%); }  to { transform: none; } }
+  @keyframes cortina-desde-izq { from { transform: translateX(-100%); } to { transform: none; } }
+  @keyframes cortina-hacia-izq { from { transform: none; } to { transform: translateX(-100%); } }
+  @keyframes cortina-hacia-der { from { transform: none; } to { transform: translateX(100%); } }
+
+  /* Tapar es más rápido que destapar: al irte querés que reaccione ya, al
+     llegar querés ver aparecer la pantalla. */
+  #cortina.tapa-der   { animation: cortina-desde-der 220ms cubic-bezier(.4, 0, .2, 1) both; }
+  #cortina.tapa-izq   { animation: cortina-desde-izq 220ms cubic-bezier(.4, 0, .2, 1) both; }
+  #cortina.destapa-izq { animation: cortina-hacia-izq 320ms cubic-bezier(.22, .61, .36, 1) both; }
+  #cortina.destapa-der { animation: cortina-hacia-der 320ms cubic-bezier(.22, .61, .36, 1) both; }
+
+  /* El spinner solo aparece si la espera se hace notar (ver DEMORA_SPINNER).
+     En una navegación rápida no llega a verse, que es lo que se busca. */
+  #cortina-spinner {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid var(--borde);
+    border-top-color: var(--tinta);
+    opacity: 0; transition: opacity 200ms ease-in;
+    animation: girar 700ms linear infinite;
   }
-  html[data-nav="atras"]::view-transition-old(root) { animation-name: salir-der; }
-  html[data-nav="atras"]::view-transition-new(root) { animation-name: entrar-izq; }
+  #cortina-spinner.visible { opacity: 1; }
+  @keyframes girar { to { transform: rotate(360deg); } }
 
   @media (prefers-reduced-motion: reduce) {
-    ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+    #cortina, #cortina-spinner { animation-duration: 1ms !important; transition: none; }
   }
 </style>
 <script>
-  // Corre antes del primer pintado: deja marcada en <html> la dirección de la
-  // animación para que el CSS de arriba ya la tenga cuando arranca la transición.
+  // Marca la dirección ANTES del primer pintado, para que el CSS de arriba ya
+  // tenga la cortina tapando cuando el navegador pinta por primera vez.
   (function () {
-    var dir = null;
-    try { dir = sessionStorage.getItem('librero-nav'); sessionStorage.removeItem('librero-nav'); } catch (e) {}
-    if (!dir) {
-      // Botón/gesto "atrás" del navegador: nadie dejó la marca, la deducimos.
-      var nav = performance.getEntriesByType('navigation')[0];
-      dir = (nav && nav.type === 'back_forward') ? 'atras' : 'adelante';
-    }
-    document.documentElement.dataset.nav = dir;
-  })();
-
-  // Volver con el gesto/botón del navegador restaura la página desde bfcache
-  // sin volver a parsear el <head>, así que el script de arriba no corre otra
-  // vez y la dirección quedaría con el valor de la carga anterior (adelante).
-  // pagereveal sí se dispara en cada revelado, antes del primer pintado.
-  window.addEventListener('pagereveal', function () {
     var marca = null;
     try { marca = sessionStorage.getItem('librero-nav'); sessionStorage.removeItem('librero-nav'); } catch (e) {}
-    if (marca) {
-      document.documentElement.dataset.nav = marca;
-    } else if (window.__libreroRevelado) {
-      // Ya se había revelado y nadie dejó marca: volvimos acá desde bfcache.
-      document.documentElement.dataset.nav = 'atras';
-    }
-    window.__libreroRevelado = true;
-  });
-
-  // Navegación desde JS. Los links usan data-nav (ver el listener de abajo).
-  function irA(url, direccion) {
-    try { sessionStorage.setItem('librero-nav', direccion || 'adelante'); } catch (e) {}
-    window.location.href = url;
-  }
-
-  // Un solo listener para todos los links: 'adelante' es el default, así que
-  // solo hace falta marcar data-nav="atras" en los de volver.
-  document.addEventListener('click', function (e) {
-    var link = e.target.closest && e.target.closest('a[data-nav]');
-    if (!link) return;
-    try { sessionStorage.setItem('librero-nav', link.dataset.nav); } catch (err) {}
-  }, true);
+    if (marca) document.documentElement.dataset.entrando = marca;
+  })();
 </script>
 {% block head %}{% endblock %}
 </head>
 <body class="font-sans text-tinta bg-crema min-h-screen antialiased">
+<!-- Primero en el body a propósito: si estuviera al final, el navegador podría
+     llegar a pintar el contenido antes de parsear la cortina y se vería un
+     fogonazo de la pantalla nueva. Va por encima de todo por su z-index, no
+     por su posición en el documento. -->
+<div id="cortina" aria-hidden="true"><div id="cortina-spinner"></div></div>
+
 {% block contenido %}{% endblock %}
+
+<script>
+(function () {
+  var cortina = document.getElementById('cortina');
+  var spinner = document.getElementById('cortina-spinner');
+
+  var sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var DURACION_TAPAR = sinMovimiento ? 0 : 220;  // igual que .tapa-* en el CSS
+  var DEMORA_SPINNER = 450;   // recién si la espera se hace notar
+  var ESPERA_MAXIMA = 3000;   // si algo se cuelga, destapar igual
+
+  function limpiar() {
+    cortina.className = '';
+    spinner.classList.remove('visible');
+    delete document.documentElement.dataset.entrando;
+  }
+
+  // ---- Salida: tapar y recién entonces navegar ------------------------
+  window.irA = function (url, direccion) {
+    var atras = direccion === 'atras';
+    try {
+      sessionStorage.setItem('librero-nav', atras ? 'atras' : 'adelante');
+      // El instante del click viaja a la página siguiente: así el spinner se
+      // muestra 450ms después de tocar y no 450ms después de cada carga, que
+      // lo haría aparecer, desaparecer al cambiar de página, y volver.
+      sessionStorage.setItem('librero-nav-t', String(Date.now()));
+    } catch (e) {}
+
+    cortina.className = 'visible ' + (atras ? 'tapa-izq' : 'tapa-der');
+    setTimeout(function () { spinner.classList.add('visible'); }, DEMORA_SPINNER);
+    setTimeout(function () { window.location.href = url; }, DURACION_TAPAR);
+  };
+
+  // ---- Links: 'adelante' es el default, volver se marca data-nav="atras"
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var link = e.target.closest && e.target.closest('a[href]');
+    if (!link) return;
+    // Fuera: descargas (el QR), pestañas nuevas (el catálogo público),
+    // anclas y cualquier cosa que salga del sitio.
+    if (link.target || link.hasAttribute('download')) return;
+    if (link.origin !== window.location.origin) return;
+    if (link.getAttribute('href').charAt(0) === '#') return;
+
+    e.preventDefault();
+    window.irA(link.href, link.dataset.nav);
+  });
+
+  // ---- Entrada: destapar cuando la página TERMINÓ de cargar -----------
+  if (document.documentElement.dataset.entrando) {
+    var direccion = document.documentElement.dataset.entrando;
+    var yaDestapado = false;
+
+    // Lo que falta para cumplir los 450ms desde el click, no desde esta carga.
+    var desde = 0;
+    try { desde = parseInt(sessionStorage.getItem('librero-nav-t'), 10) || 0; } catch (e) {}
+    try { sessionStorage.removeItem('librero-nav-t'); } catch (e) {}
+    var restante = desde ? Math.max(0, DEMORA_SPINNER - (Date.now() - desde)) : DEMORA_SPINNER;
+    var timerSpinner = setTimeout(function () { spinner.classList.add('visible'); }, restante);
+
+    var destapar = function () {
+      if (yaDestapado) return;
+      yaDestapado = true;
+      clearTimeout(timerSpinner);
+      spinner.classList.remove('visible');
+      cortina.className = 'visible ' + (direccion === 'atras' ? 'destapa-der' : 'destapa-izq');
+      cortina.addEventListener('animationend', limpiar, { once: true });
+      // Si animationend no llega (animación cancelada, pestaña en segundo
+      // plano), la cortina quedaría tapando para siempre y la app parecería
+      // colgada. Nunca dejar que eso dependa de un solo evento.
+      setTimeout(limpiar, 600);
+    };
+
+    // 'load' y no 'DOMContentLoaded': Tailwind viene por CDN y genera el CSS
+    // al ejecutarse. Destapar antes mostraría la pantalla a medio estilar.
+    if (document.readyState === 'complete') requestAnimationFrame(destapar);
+    else window.addEventListener('load', function () { requestAnimationFrame(destapar); });
+    setTimeout(destapar, ESPERA_MAXIMA);
+  }
+
+  // Volver con el gesto del navegador restaura desde bfcache: la página puede
+  // reaparecer con la cortina tapando de cuando te fuiste. Se limpia siempre.
+  window.addEventListener('pageshow', function (e) { if (e.persisted) limpiar(); });
+})();
+</script>
 </body>
 </html>
