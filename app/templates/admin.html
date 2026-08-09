@@ -4,25 +4,25 @@
 <div class="min-h-screen px-5 py-8 max-w-2xl mx-auto">
 
   <header class="mb-8">
-    <p class="text-naranja font-bold text-sm">LIBRERO</p>
+    <p class="text-celeste font-bold text-sm">LIBRERO</p>
     <h1 class="text-2xl font-bold">Alta de librerías</h1>
   </header>
 
   {% if error %}
-  <div class="mb-6 rounded-xl2 border border-ambar bg-naranja-claro/30 px-4 py-3 text-sm">
+  <div class="mb-6 rounded-xl2 border-2 border-ambar bg-ambar/10 px-4 py-3 text-sm">
     {{ error }}
   </div>
   {% endif %}
 
   {% if nueva %}
-  <div class="mb-6 rounded-xl2 border border-verde bg-verde/10 px-4 py-4">
+  <div class="mb-6 rounded-xl2 border-2 border-celeste bg-celeste-claro/30 px-4 py-4">
     <p class="font-bold mb-2">"{{ nueva.nombre }}" creada.</p>
     <p class="text-sm text-gris mb-1">Mandale este link por WhatsApp — es su panel:</p>
     <div class="flex items-center gap-2">
       <input readonly value="{{ nueva.url_panel }}"
         class="tap flex-1 min-w-0 truncate rounded-lg border border-borde px-3 py-2 text-sm bg-papel">
       <button type="button" onclick="copiar('{{ nueva.url_panel }}', this)"
-        class="tap shrink-0 rounded-lg bg-tinta text-white px-4 text-sm font-medium">Copiar</button>
+        class="tap btn-primario shrink-0 rounded-lg px-4 text-sm font-medium">📋 Copiar</button>
     </div>
   </div>
   {% endif %}
@@ -50,7 +50,7 @@
       <p class="text-xs text-gris mt-1">Usá {{ '{titulo}' }} y {{ '{autor}' }} — se completan solos.</p>
     </div>
     <button type="submit"
-      class="tap w-full rounded-xl2 bg-naranja text-tinta font-bold text-lg">
+      class="tap btn-primario w-full rounded-xl2 font-bold text-lg">
       Crear librería
     </button>
   </form>
@@ -64,7 +64,7 @@
         <p class="text-xs text-gris">/{{ lib.slug }} · {{ lib.cant_libros }} libros</p>
       </div>
       <a href="/{{ lib.slug }}/inv/{{ lib.token_panel }}"
-        class="tap shrink-0 rounded-lg border border-borde px-3 flex items-center text-sm font-medium">
+        class="tap btn-secundario shrink-0 rounded-lg px-3 flex items-center text-sm font-medium">
         Panel
       </a>
     </div>

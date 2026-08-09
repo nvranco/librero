@@ -3,7 +3,7 @@
 {% block contenido %}
 <div class="min-h-screen flex flex-col">
 
-  <header class="bg-naranja px-5 pt-8 pb-6">
+  <header class="bg-celeste px-5 pt-8 pb-6 border-b-2 border-tinta">
     <h1 class="text-2xl font-bold text-tinta leading-tight">{{ libreria.nombre }}</h1>
     <p class="mt-2 text-sm text-tinta/80 leading-snug">
       Este catálogo es una foto del estante al {{ fecha_hoy }}.
@@ -12,14 +12,15 @@
   </header>
 
   <main class="flex-1 px-5 -mt-3 pb-10">
-    <div class="bg-papel border border-borde rounded-xl2 shadow-sm p-2">
+    <div class="bg-papel border-2 border-tinta rounded-xl2 p-2 flex items-center gap-2">
+      <span class="pl-2 text-xl" aria-hidden="true">🔍</span>
       <input
         id="buscador"
         type="search"
         autofocus
         inputmode="search"
         placeholder="Buscar por título o autor…"
-        class="tap w-full rounded-xl2 px-4 py-3 text-lg outline-none placeholder:text-gris"
+        class="tap flex-1 min-w-0 rounded-xl2 px-2 py-3 text-lg outline-none placeholder:text-gris"
       >
     </div>
 
@@ -159,9 +160,8 @@
         <div data-rol="detalle" class="hidden mt-3 pt-3 border-t border-borde">
           <p class="text-xs text-gris mb-3">Visto el ${formatearFecha(libro.visto)}</p>
           <a data-rol="whatsapp" target="_blank" rel="noopener"
-            class="tap w-full flex items-center justify-center gap-2 rounded-xl2 text-white font-medium"
-            style="background-color: var(--verde)">
-            Consultar por WhatsApp
+            class="tap btn-primario w-full flex items-center justify-center gap-2 rounded-xl2 font-medium">
+            💬 Consultar por WhatsApp
           </a>
         </div>
       </div>

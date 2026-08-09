@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block titulo %}Librero{% endblock %}</title>
-<meta name="theme-color" content="#E08A3C">
+<meta name="theme-color" content="#4E9FBF">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -12,14 +12,14 @@
       extend: {
         colors: {
           tinta: '#1A1613',
-          naranja: '#E08A3C',
-          'naranja-claro': '#F2C078',
-          crema: '#FAF6EF',
+          celeste: '#4E9FBF',
+          'celeste-claro': '#BFE3EE',
+          crema: '#F5EFDD',
           papel: '#FFFFFF',
-          borde: '#E3DACB',
+          borde: '#DCD3BB',
           gris: '#6B6259',
-          ambar: '#C4761E',
-          verde: '#25D366',
+          terracota: '#C97B63',
+          ambar: '#C79A3D',
         },
         fontFamily: {
           sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto',
@@ -32,15 +32,31 @@
 </script>
 <style>
   :root {
-    --tinta: #1A1613; --naranja: #E08A3C; --naranja-claro: #F2C078;
-    --crema: #FAF6EF; --papel: #FFFFFF; --borde: #E3DACB;
-    --gris: #6B6259; --ambar: #C4761E; --verde: #25D366;
+    --tinta: #1A1613; --celeste: #4E9FBF; --celeste-claro: #BFE3EE;
+    --crema: #F5EFDD; --papel: #FFFFFF; --borde: #DCD3BB;
+    --gris: #6B6259; --terracota: #C97B63; --ambar: #C79A3D;
   }
   html, body { background: var(--crema); }
   * { -webkit-tap-highlight-color: transparent; }
-  input:focus, button:focus, a:focus { outline: 2px solid var(--naranja); outline-offset: 2px; }
+  input:focus, button:focus, a:focus { outline: 2px solid var(--celeste); outline-offset: 2px; }
   .safe-b { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
   .tap { min-height: 48px; min-width: 48px; }
+
+  /* iOS hace zoom automatico al enfocar un input con font-size < 16px.
+     Forzamos 16px en todo campo editable, sin importar la clase de Tailwind. */
+  input, textarea, select { font-size: 16px !important; }
+
+  /* Botones: solo negro o blanco (decisión de diseño), con un toque retro
+     de sombra solida tipo sticker/poster en los secundarios. */
+  .btn-primario {
+    background: var(--tinta); color: var(--crema);
+  }
+  .btn-secundario {
+    background: var(--papel); color: var(--tinta);
+    border: 2px solid var(--tinta);
+    box-shadow: 3px 3px 0 0 var(--tinta);
+  }
+  .btn-secundario:active { box-shadow: 1px 1px 0 0 var(--tinta); transform: translate(2px, 2px); }
 </style>
 {% block head %}{% endblock %}
 </head>

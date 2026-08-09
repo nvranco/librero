@@ -4,7 +4,7 @@
 <div class="min-h-screen flex flex-col">
 
   <header class="bg-tinta px-5 pt-8 pb-6">
-    <p class="text-naranja-claro text-sm font-medium">Panel del librero</p>
+    <p class="text-celeste-claro text-sm font-medium">Panel del librero</p>
     <h1 class="text-2xl font-bold text-white leading-tight mt-1">{{ libreria.nombre }}</h1>
   </header>
 
@@ -24,10 +24,10 @@
     {% endif %}
 
     <div id="carga-estado" class="mt-6 hidden">
-      <div class="bg-papel border-2 border-naranja rounded-xl2 p-4 shadow-sm">
+      <div class="bg-papel border-2 border-celeste rounded-xl2 p-4 shadow-sm">
         <p id="carga-mensaje" class="font-bold text-lg">Subiendo fotos…</p>
         <div class="mt-2 h-1.5 w-full bg-borde rounded-full overflow-hidden">
-          <div id="carga-barra" class="h-full bg-naranja w-1/3 animate-pulse"></div>
+          <div id="carga-barra" class="h-full bg-celeste w-1/3 animate-pulse"></div>
         </div>
       </div>
     </div>
@@ -54,25 +54,25 @@
           <input readonly value="{{ url_publica }}"
             class="tap flex-1 min-w-0 truncate rounded-lg border border-borde px-3 py-2 text-sm bg-crema">
           <button type="button" onclick="copiar('{{ url_publica }}', this)"
-            class="tap shrink-0 rounded-lg bg-tinta text-white px-4 text-sm font-medium">
-            Copiar
+            class="tap btn-primario shrink-0 rounded-lg px-4 text-sm font-medium">
+            📋 Copiar
           </button>
         </div>
       </div>
 
       <a href="{{ url_publica }}" target="_blank" rel="noopener"
-        class="tap w-full flex items-center justify-center rounded-xl2 border border-borde bg-papel font-medium">
-        Ver mi catálogo público
+        class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
+        👀 Ver mi catálogo público
       </a>
 
       <a href="{{ url_qr }}" download="qr-{{ libreria.slug }}.png"
-        class="tap w-full flex items-center justify-center rounded-xl2 border border-borde bg-papel font-medium">
-        Descargar QR para el mostrador
+        class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
+        🏷️ Descargar QR para el mostrador
       </a>
 
       <a href="{{ url_inventario }}"
-        class="tap w-full flex items-center justify-center rounded-xl2 border border-borde bg-papel font-medium">
-        Ver inventario completo
+        class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
+        📚 Ver inventario completo
       </a>
     </div>
   </main>
@@ -81,8 +81,8 @@
 
   <div class="fixed bottom-0 left-0 right-0 bg-crema/95 backdrop-blur-0 border-t border-borde px-5 py-3 safe-b">
     <button id="btn-cargar" type="button"
-      class="tap w-full rounded-xl2 bg-naranja text-tinta font-bold text-lg">
-      + Cargar estante
+      class="tap btn-primario w-full rounded-xl2 font-bold text-lg">
+      📷 Cargar estante
     </button>
     <p class="text-center text-xs text-gris mt-2">Sacá entre 1 y 10 fotos de un estante. Después de procesarlas vas a poder revisarlas y publicarlas.</p>
   </div>

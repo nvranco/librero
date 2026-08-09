@@ -4,14 +4,15 @@
 <div class="min-h-screen flex flex-col">
 
   <header class="bg-tinta px-5 pt-8 pb-6">
-    <a href="/{{ libreria.slug }}/inv/{{ libreria.token_panel }}" class="text-naranja-claro text-sm font-medium">← Volver al panel</a>
+    <a href="/{{ libreria.slug }}/inv/{{ libreria.token_panel }}" class="text-celeste-claro text-sm font-medium">← Volver al panel</a>
     <h1 class="text-2xl font-bold text-white leading-tight mt-1">Inventario ({{ cant_libros }})</h1>
   </header>
 
   <main class="flex-1 px-5 -mt-3 pb-10">
-    <div class="bg-papel border border-borde rounded-xl2 shadow-sm p-2">
+    <div class="bg-papel border-2 border-tinta rounded-xl2 p-2 flex items-center gap-2">
+      <span class="pl-2 text-xl" aria-hidden="true">🔍</span>
       <input id="buscador" type="search" placeholder="Buscar en tu inventario…"
-        class="tap w-full rounded-xl2 px-4 py-3 text-lg outline-none placeholder:text-gris">
+        class="tap flex-1 min-w-0 rounded-xl2 px-2 py-3 text-lg outline-none placeholder:text-gris">
     </div>
 
     <div id="lista" class="mt-4 space-y-2"></div>
@@ -75,14 +76,14 @@
         </button>
         <div data-rol="detalle" class="hidden mt-3 pt-3 border-t border-borde space-y-2">
           <div data-rol="vista" class="flex gap-2">
-            ${libro.estado !== 'vendido' ? '<button type="button" data-accion="vendido" class="tap flex-1 rounded-lg border border-borde text-sm font-medium">Marcar vendido</button>' : ''}
-            <button type="button" data-accion="editar" class="tap flex-1 rounded-lg border border-borde text-sm font-medium">Editar</button>
-            <button type="button" data-accion="eliminar" class="tap flex-1 rounded-lg border border-ambar text-ambar text-sm font-medium">Eliminar</button>
+            ${libro.estado !== 'vendido' ? '<button type="button" data-accion="vendido" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">Marcar vendido</button>' : ''}
+            <button type="button" data-accion="editar" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">✏️ Editar</button>
+            <button type="button" data-accion="eliminar" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">🗑️ Eliminar</button>
           </div>
           <div data-rol="edicion" class="hidden space-y-2">
-            <input data-campo="titulo" value="${escaparHtml(libro.titulo)}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
-            <input data-campo="autor" value="${escaparHtml(libro.autor)}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
-            <button type="button" data-accion="guardar" class="tap w-full rounded-lg bg-naranja text-tinta text-sm font-bold">Guardar</button>
+            <input data-campo="titulo" value="${escaparHtml(libro.titulo)}" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm">
+            <input data-campo="autor" value="${escaparHtml(libro.autor)}" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm">
+            <button type="button" data-accion="guardar" class="tap btn-primario w-full rounded-lg text-sm font-bold">Guardar</button>
           </div>
         </div>
       </div>

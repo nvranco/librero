@@ -4,7 +4,7 @@
 <div class="min-h-screen flex flex-col">
 
   <header class="bg-tinta px-5 pt-8 pb-6">
-    <a href="/{{ libreria.slug }}/inv/{{ libreria.token_panel }}" class="text-naranja-claro text-sm font-medium">← Volver al panel</a>
+    <a href="/{{ libreria.slug }}/inv/{{ libreria.token_panel }}" class="text-celeste-claro text-sm font-medium">← Volver al panel</a>
     <h1 class="text-2xl font-bold text-white leading-tight mt-1">Revisar estante</h1>
   </header>
 
@@ -30,11 +30,11 @@
 
   <div class="fixed bottom-0 left-0 right-0 bg-crema/95 border-t border-borde px-5 py-3 safe-b space-y-2">
     <button id="btn-publicar" type="button"
-      class="tap w-full rounded-xl2 bg-naranja text-tinta font-bold text-lg">
+      class="tap btn-primario w-full rounded-xl2 font-bold text-lg">
       Publicar
     </button>
     <button id="btn-descartar" type="button"
-      class="tap w-full rounded-xl2 border border-borde bg-papel text-sm font-medium text-gris">
+      class="tap btn-secundario w-full rounded-xl2 text-sm font-medium">
       Descartar todo el lote
     </button>
   </div>
@@ -89,13 +89,13 @@
           <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
         </div>
         ${corregido ? `
-          <button type="button" data-rol="ver-original" class="text-xs text-naranja font-medium mt-1">
+          <button type="button" data-rol="ver-original" class="text-xs text-terracota font-medium mt-1">
             Corregido — vio "${escaparHtml(libro.titulo_raw)}${libro.autor_raw ? ' / ' + escaparHtml(libro.autor_raw) : ''}" en la foto ↩
           </button>
         ` : ''}
       </div>
       <button type="button" data-rol="toggle"
-        class="tap shrink-0 rounded-lg font-bold text-lg ${libro.aprobado ? 'bg-verde/15 text-verde' : 'bg-tinta/10 text-gris'} px-3">
+        class="tap shrink-0 rounded-lg font-bold text-lg px-3 ${libro.aprobado ? 'bg-tinta text-crema' : 'bg-papel border-2 border-tinta text-tinta'}">
         ${libro.aprobado ? '✓' : '✕'}
       </button>
     `;
