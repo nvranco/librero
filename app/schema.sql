@@ -58,7 +58,23 @@ CREATE TABLE IF NOT EXISTS eventos (
     creado_en       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Migraciones incrementales. Se corren enteras en cada arranque, por eso todo
+-- lo de aca abajo tiene que ser idempotente (IF NOT EXISTS).
+
+-- Dedupe entre lotes: fotografiar el mismo estante dos veces es lo esperable,
+-- no un error del librero. El libro repetido se guarda igual (trazabilidad de
+-- que la foto lo vio) pero apunta al original y nace descartado, asi nunca
+-- llega duplicado al catalogo publico.
+ALTER TABLE libros ADD COLUMN IF NOT EXISTS duplicado_de INTEGER REFERENCES libros(id) ON DELETE SET NULL;
+
+-- Reinicio de inventario: borrado logico, nunca fisico. Para el librero es un
+-- ciclo nuevo con el catalogo en cero; para nosotros el historial completo
+-- sigue ahi, que es el dato con el que se mide HV-5 (¿vuelve a cargar?).
+ALTER TABLE libros ADD COLUMN IF NOT EXISTS archivado_en TIMESTAMPTZ;
+ALTER TABLE lotes  ADD COLUMN IF NOT EXISTS archivado_en TIMESTAMPTZ;
+
 CREATE INDEX IF NOT EXISTS idx_librerias_slug ON librerias(slug);
+CREATE INDEX IF NOT EXISTS idx_libros_activos ON libros(libreria_id, estado) WHERE archivado_en IS NULL;
 CREATE INDEX IF NOT EXISTS idx_libros_libreria_estado ON libros(libreria_id, estado);
 CREATE INDEX IF NOT EXISTS idx_libros_lote ON libros(lote_id);
 CREATE INDEX IF NOT EXISTS idx_eventos_libreria_fecha ON eventos(libreria_id, creado_en);

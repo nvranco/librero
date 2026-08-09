@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 from app import db, vision
 from app.config import DATA_DIR
-from app.tokens import normalizar
+from app.tokens import clave_libro
 
 router = APIRouter()
 logger = logging.getLogger("librero.lotes")
@@ -91,7 +91,7 @@ async def estado_lote(slug: str, token: str, lote_id: int):
     libros = await db.pool().fetch(
         """
         SELECT id, foto_id, titulo, autor, titulo_raw, autor_raw, confianza, estado
-        FROM libros WHERE lote_id = $1
+        FROM libros WHERE lote_id = $1 AND duplicado_de IS NULL
         ORDER BY confianza ASC
         """,
         lote_id,
@@ -101,12 +101,16 @@ async def estado_lote(slug: str, token: str, lote_id: int):
     fotos_listas = await db.pool().fetchval(
         "SELECT COUNT(DISTINCT foto_id) FROM libros WHERE lote_id = $1", lote_id
     )
+    cant_duplicados = await db.pool().fetchval(
+        "SELECT COUNT(*) FROM libros WHERE lote_id = $1 AND duplicado_de IS NOT NULL", lote_id
+    )
     return JSONResponse(
         {
             "lote_id": lote_id,
             "estado": lote["estado"],
             "cant_fotos": lote["cant_fotos"],
             "fotos_listas": fotos_listas,
+            "duplicados": cant_duplicados,
             "libros": [dict(l) for l in libros],
         }
     )
@@ -122,6 +126,48 @@ async def _analizar_una(foto_id: int, path: Path, lote_id: int):
         return foto_id, []
 
 
+async def _indice_catalogo(libreria_id: int) -> dict[str, list[tuple[str, int]]]:
+    """Indice {titulo_normalizado: [(autor_normalizado, libro_id), ...]} de lo
+    que la libreria ya tiene cargado, para no volver a subir el mismo libro.
+
+    Deliberadamente NO incluye los 'descartado': si el librero descarto un
+    libro fue porque la lectura estaba mal, asi que una lectura nueva del mismo
+    lomo merece otra oportunidad en vez de desaparecer para siempre. Tampoco
+    incluye lo archivado — reiniciar el inventario arranca un ciclo limpio.
+    """
+    filas = await db.pool().fetch(
+        """
+        SELECT id, titulo, autor FROM libros
+        WHERE libreria_id = $1 AND archivado_en IS NULL
+          AND estado IN ('pendiente', 'publicado', 'vendido')
+        """,
+        libreria_id,
+    )
+    indice: dict[str, list[tuple[str, int]]] = {}
+    for fila in filas:
+        titulo, autor = clave_libro(fila["titulo"], fila["autor"])
+        if titulo:
+            indice.setdefault(titulo, []).append((autor, fila["id"]))
+    return indice
+
+
+def _buscar_duplicado(indice, titulo: str, autor: str) -> int | None:
+    """Id del libro ya cargado que es este mismo, o None.
+
+    Coincide por titulo + autor, pero si alguno de los dos autores esta vacio
+    alcanza con el titulo: el guardrail deja el autor vacio cuando no esta
+    impreso en el lomo, y no queremos que el librero completandolo a mano en un
+    ciclo haga que el mismo libro entre de nuevo como nuevo en el siguiente.
+    """
+    clave_titulo, clave_autor = clave_libro(titulo, autor)
+    if not clave_titulo:
+        return None
+    for autor_existente, libro_id in indice.get(clave_titulo, []):
+        if clave_autor == autor_existente or not clave_autor or not autor_existente:
+            return libro_id
+    return None
+
+
 async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, Path]]):
     """Corre en background: resize -> OpenRouter -> parse -> dedupe -> insert.
 
@@ -129,8 +175,22 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
     pasan de ~40s secuenciales a ~7s. Los libros se insertan apenas termina
     cada foto, asi el panel puede mostrar el conteo creciendo en vivo mientras
     el resto sigue procesando.
+
+    Dedupe en dos niveles, con tratamiento distinto a proposito:
+      - Repetido DENTRO de este mismo lote (dos fotos que solapan el mismo
+        estante): se descarta en silencio. Es una sola accion del librero, no
+        hay nada util que contarle.
+      - Repetido contra un lote ANTERIOR: se inserta igual, marcado con
+        duplicado_de y ya descartado, para que la revision pueda decirle
+        "esto ya lo tenias" en vez de que los libros desaparezcan sin
+        explicacion.
     """
-    vistos: set[tuple[str, str]] = set()
+    indice = await _indice_catalogo(libreria_id)
+    # Ids ya contabilizados en esta tanda: sea porque los acabamos de insertar,
+    # sea porque ya reportamos un duplicado que apunta a ellos. Si un libro
+    # vuelve a aparecer en otra foto del mismo lote, se descarta en silencio.
+    ya_vistos: set[int] = set()
+    cant_nuevos = cant_duplicados = 0
 
     tareas = [_analizar_una(foto_id, path, lote_id) for foto_id, path in fotos]
 
@@ -149,25 +209,41 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
             if not titulo_detectado:
                 continue
 
-            clave = (normalizar(titulo_corregido), normalizar(autor_corregido))
-            if clave in vistos:
+            duplicado_de = _buscar_duplicado(indice, titulo_corregido, autor_corregido)
+            if duplicado_de is not None and duplicado_de in ya_vistos:
                 continue
-            vistos.add(clave)
 
-            await db.pool().execute(
+            nuevo_id = await db.pool().fetchval(
                 """
                 INSERT INTO libros
-                    (libreria_id, lote_id, foto_id, titulo_raw, autor_raw, titulo, autor, confianza, estado)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pendiente')
+                    (libreria_id, lote_id, foto_id, titulo_raw, autor_raw, titulo, autor,
+                     confianza, estado, duplicado_de)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                RETURNING id
                 """,
                 libreria_id, lote_id, foto_id,
                 titulo_detectado, autor_detectado, titulo_corregido, autor_corregido, confianza,
+                "descartado" if duplicado_de is not None else "pendiente",
+                duplicado_de,
             )
+
+            if duplicado_de is not None:
+                cant_duplicados += 1
+                ya_vistos.add(duplicado_de)
+                continue
+
+            cant_nuevos += 1
+            ya_vistos.add(nuevo_id)
+            clave_titulo, clave_autor = clave_libro(titulo_corregido, autor_corregido)
+            indice.setdefault(clave_titulo, []).append((clave_autor, nuevo_id))
 
     await db.pool().execute(
         "UPDATE lotes SET estado = 'revision' WHERE id = $1", lote_id
     )
-    logger.info("lote_publicado lote_id=%s libreria_id=%s libros=%s", lote_id, libreria_id, len(vistos))
+    logger.info(
+        "lote_procesado lote_id=%s libreria_id=%s nuevos=%s duplicados=%s",
+        lote_id, libreria_id, cant_nuevos, cant_duplicados,
+    )
 
 
 @router.get("/api/{slug}/{token}/fotos/{foto_id}")
@@ -273,6 +349,38 @@ async def eliminar_libro(slug: str, token: str, libro_id: int):
     if resultado == "DELETE 0":
         raise HTTPException(status_code=404)
     return {"ok": True}
+
+
+@router.post("/api/{slug}/{token}/reiniciar")
+async def reiniciar_inventario(slug: str, token: str):
+    """Vacia el catalogo del librero para arrancar un ciclo nuevo.
+
+    Borrado LOGICO: se marca archivado_en y nada se borra de verdad. Para el
+    librero el contador vuelve a cero y el catalogo publico queda vacio; del
+    lado nuestro se conserva todo (libros, lotes, fotos en disco), que es lo
+    que permite comparar un ciclo contra el siguiente y no perder el dataset
+    con el que se evalua el OCR.
+    """
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    cant = await db.pool().fetchval(
+        "SELECT COUNT(*) FROM libros WHERE libreria_id = $1 AND archivado_en IS NULL",
+        libreria["id"],
+    )
+    await db.pool().execute(
+        "UPDATE libros SET archivado_en = now() WHERE libreria_id = $1 AND archivado_en IS NULL",
+        libreria["id"],
+    )
+    await db.pool().execute(
+        "UPDATE lotes SET archivado_en = now() WHERE libreria_id = $1 AND archivado_en IS NULL",
+        libreria["id"],
+    )
+    await db.pool().execute(
+        "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'inventario_reiniciado', $2::jsonb)",
+        libreria["id"], json.dumps({"libros_archivados": cant}),
+    )
+    logger.info("inventario_reiniciado libreria_id=%s libros=%s", libreria["id"], cant)
+    return {"ok": True, "archivados": cant}
 
 
 @router.get("/api/{slug}/{token}/qr.png")

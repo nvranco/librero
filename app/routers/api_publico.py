@@ -31,7 +31,8 @@ async def catalogo_json(slug: str):
     libros = await db.pool().fetch(
         """
         SELECT id, titulo, autor, creado_en
-        FROM libros WHERE libreria_id = $1 AND estado = 'publicado'
+        FROM libros
+        WHERE libreria_id = $1 AND estado = 'publicado' AND archivado_en IS NULL
         ORDER BY titulo
         """,
         libreria["id"],

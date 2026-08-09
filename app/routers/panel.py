@@ -27,15 +27,19 @@ async def _libreria_por_slug_y_token(slug: str, token: str):
 async def panel_home(request: Request, slug: str, token: str):
     libreria = await _libreria_por_slug_y_token(slug, token)
     cant_libros = await db.pool().fetchval(
-        "SELECT COUNT(*) FROM libros WHERE libreria_id = $1 AND estado = 'publicado'",
+        """
+        SELECT COUNT(*) FROM libros
+        WHERE libreria_id = $1 AND estado = 'publicado' AND archivado_en IS NULL
+        """,
         libreria["id"],
     )
     lotes_pendientes = await db.pool().fetch(
         """
-        SELECT l.id, l.cant_fotos, l.creado_en, COUNT(li.id) AS cant_libros
+        SELECT l.id, l.cant_fotos, l.creado_en,
+               COUNT(li.id) FILTER (WHERE li.duplicado_de IS NULL) AS cant_libros
         FROM lotes l
         LEFT JOIN libros li ON li.lote_id = l.id
-        WHERE l.libreria_id = $1 AND l.estado = 'revision'
+        WHERE l.libreria_id = $1 AND l.estado = 'revision' AND l.archivado_en IS NULL
         GROUP BY l.id
         ORDER BY l.creado_en DESC
         """,
@@ -61,7 +65,8 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
     libreria = await _libreria_por_slug_y_token(slug, token)
 
     lote = await db.pool().fetchrow(
-        "SELECT * FROM lotes WHERE id = $1 AND libreria_id = $2", lote_id, libreria["id"]
+        "SELECT * FROM lotes WHERE id = $1 AND libreria_id = $2 AND archivado_en IS NULL",
+        lote_id, libreria["id"],
     )
     if lote is None:
         raise HTTPException(status_code=404)
@@ -69,16 +74,28 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
     fotos = await db.pool().fetch(
         "SELECT id, orden FROM fotos WHERE lote_id = $1 ORDER BY orden", lote_id
     )
+    # Los duplicados van por separado: no son editables ni aprobables, solo se
+    # muestran para que el librero entienda por que ese estante rindio menos
+    # libros de los que ve en la foto.
     libros = await db.pool().fetch(
         """
         SELECT id, foto_id, titulo, autor, titulo_raw, autor_raw, confianza
-        FROM libros WHERE lote_id = $1
+        FROM libros WHERE lote_id = $1 AND duplicado_de IS NULL
         ORDER BY foto_id, confianza ASC
         """,
         lote_id,
     )
+    duplicados = await db.pool().fetch(
+        """
+        SELECT id, foto_id, titulo, autor
+        FROM libros WHERE lote_id = $1 AND duplicado_de IS NOT NULL
+        ORDER BY foto_id, titulo
+        """,
+        lote_id,
+    )
 
-    libros_json = json.dumps([dict(l) for l in libros], default=str).replace("</", "<\\/")
+    def a_json(filas):
+        return json.dumps([dict(f) for f in filas], default=str).replace("</", "<\\/")
 
     return templates.TemplateResponse(
         request,
@@ -87,8 +104,10 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
             "libreria": libreria,
             "lote": lote,
             "fotos": fotos,
-            "libros_json": libros_json,
+            "libros_json": a_json(libros),
+            "duplicados_json": a_json(duplicados),
             "tiene_libros": len(libros) > 0,
+            "cant_duplicados": len(duplicados),
         },
     )
 
@@ -100,7 +119,8 @@ async def panel_inventario(request: Request, slug: str, token: str):
     libros = await db.pool().fetch(
         """
         SELECT id, titulo, autor, estado
-        FROM libros WHERE libreria_id = $1 AND estado IN ('publicado', 'vendido')
+        FROM libros
+        WHERE libreria_id = $1 AND estado IN ('publicado', 'vendido') AND archivado_en IS NULL
         ORDER BY titulo
         """,
         libreria["id"],

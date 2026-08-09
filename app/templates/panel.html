@@ -77,6 +77,38 @@
         Ver inventario completo 📚
       </a>
     </div>
+
+    <!-- Acción destructiva para el librero (para nosotros es solo un archivado):
+         va separada, chica y con confirmación en dos pasos, para que no se
+         toque de casualidad al buscar el botón de cargar estante. -->
+    {% if cant_libros or lotes_pendientes %}
+    <div class="mt-10 pt-5 border-t border-borde">
+      <button id="btn-reiniciar" type="button"
+        class="w-full text-center text-sm text-terracota font-medium py-2">
+        Reiniciar inventario 🧹
+      </button>
+
+      <div id="confirmar-reinicio" class="hidden mt-2 bg-papel border-2 border-terracota rounded-xl2 p-4">
+        <p class="font-bold">¿Vaciar todo el catálogo?</p>
+        <p class="text-sm text-gris mt-1">
+          Se van a sacar
+          <strong>{{ cant_libros }} libro{{ 's' if cant_libros != 1 else '' }}</strong>
+          de tu catálogo público y vas a arrancar de cero. Las fotos y los lotes que
+          cargaste quedan guardados, pero no vuelven a aparecer acá.
+        </p>
+        <div class="mt-3 space-y-2">
+          <button id="btn-reiniciar-confirmar" type="button"
+            class="tap btn-primario w-full rounded-xl2 font-bold">
+            Sí, vaciar y empezar de nuevo
+          </button>
+          <button id="btn-reiniciar-cancelar" type="button"
+            class="tap btn-secundario w-full rounded-xl2 font-medium">
+            Mejor no
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </main>
 
   <input id="input-fotos" type="file" accept="image/*" multiple class="hidden">
@@ -116,8 +148,8 @@
   const MENSAJES_PROCESO = [
     'Mirando los lomos…',
     'Leyendo títulos y autores…',
-    'Buscando las ediciones en internet…',
     'Corrigiendo mayúsculas y acentos…',
+    'Comparando con tu catálogo…',
     'Descartando repetidos…',
     'Armando la lista para que revises…',
   ];
@@ -222,9 +254,12 @@
         ponerBarra(12 + (listas / total) * 80);
         cargaMensaje.textContent = `Procesando ${listas} de ${total} foto${total > 1 ? 's' : ''}…`;
       }
-      if (cantLibros > 0) {
+      const dups = datos.duplicados || 0;
+      if (cantLibros > 0 || dups > 0) {
         cargaContador.classList.remove('hidden');
-        cargaContador.textContent = `📚 ${cantLibros} libro${cantLibros === 1 ? '' : 's'} encontrado${cantLibros === 1 ? '' : 's'} hasta ahora`;
+        let texto = `📚 ${cantLibros} libro${cantLibros === 1 ? '' : 's'} nuevo${cantLibros === 1 ? '' : 's'} hasta ahora`;
+        if (dups > 0) texto += ` · 🔁 ${dups} que ya tenías`;
+        cargaContador.textContent = texto;
       }
 
       if (datos.estado === 'procesando') {
@@ -234,10 +269,18 @@
 
       frenarProgreso();
 
-      if (cantLibros === 0) {
+      if (cantLibros === 0 && dups === 0) {
         cargaBarra.style.width = '100%';
         cargaMensaje.textContent = 'No se detectó ningún libro legible en esas fotos.';
         cargaDetalle.textContent = 'Probá con más luz o acercándote un poco a los lomos.';
+        reactivarBoton();
+        return;
+      }
+
+      if (cantLibros === 0) {
+        cargaBarra.style.width = '100%';
+        cargaMensaje.textContent = 'Ese estante ya lo tenías cargado entero';
+        cargaDetalle.textContent = `Los ${dups} libros de estas fotos ya están en tu catálogo.`;
         reactivarBoton();
         return;
       }
@@ -257,6 +300,41 @@
   function reactivarBoton() {
     btnCargar.disabled = false;
     btnCargar.classList.remove('opacity-60');
+  }
+
+  // El bloque de reinicio solo se renderiza si hay algo que reiniciar.
+  const btnReiniciar = document.getElementById('btn-reiniciar');
+  if (btnReiniciar) {
+  const cajaConfirmar = document.getElementById('confirmar-reinicio');
+  const btnConfirmar = document.getElementById('btn-reiniciar-confirmar');
+  const btnCancelar = document.getElementById('btn-reiniciar-cancelar');
+
+  btnReiniciar.addEventListener('click', () => {
+    cajaConfirmar.classList.remove('hidden');
+    btnReiniciar.classList.add('hidden');
+    cajaConfirmar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  btnCancelar.addEventListener('click', () => {
+    cajaConfirmar.classList.add('hidden');
+    btnReiniciar.classList.remove('hidden');
+  });
+
+  btnConfirmar.addEventListener('click', async () => {
+    btnConfirmar.disabled = true;
+    btnCancelar.disabled = true;
+    btnConfirmar.textContent = 'Vaciando…';
+    try {
+      const resp = await fetch(`/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}/reiniciar`, { method: 'POST' });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      window.location.reload();
+    } catch (err) {
+      alert('No se pudo reiniciar. Probá de nuevo.');
+      btnConfirmar.disabled = false;
+      btnCancelar.disabled = false;
+      btnConfirmar.textContent = 'Sí, vaciar y empezar de nuevo';
+    }
+  });
   }
 </script>
 {% endblock %}

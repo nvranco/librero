@@ -27,7 +27,9 @@ async def _listar_librerias():
     filas = await db.pool().fetch(
         """
         SELECT l.id, l.slug, l.nombre, l.token_panel,
-               COUNT(li.id) FILTER (WHERE li.estado = 'publicado') AS cant_libros
+               COUNT(li.id) FILTER (
+                   WHERE li.estado = 'publicado' AND li.archivado_en IS NULL
+               ) AS cant_libros
         FROM librerias l
         LEFT JOIN libros li ON li.libreria_id = l.id
         WHERE l.activa

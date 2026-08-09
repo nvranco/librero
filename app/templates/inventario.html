@@ -9,11 +9,13 @@
   </header>
 
   <main class="flex-1 px-5 -mt-3 pb-10">
-    <div class="bg-papel border-2 border-tinta rounded-xl2 p-2 flex items-center gap-2">
-      <span class="pl-2 text-xl" aria-hidden="true">🔍</span>
-      <input id="buscador" type="search" placeholder="Buscar en tu inventario…"
-        class="tap flex-1 min-w-0 rounded-xl2 px-2 py-3 text-lg outline-none placeholder:text-gris">
-    </div>
+    <input
+      id="buscador"
+      type="search"
+      inputmode="search"
+      placeholder="Buscar en tu inventario…"
+      class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris"
+    >
 
     <div id="lista" class="mt-4 space-y-2"></div>
 

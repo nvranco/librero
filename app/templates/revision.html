@@ -9,10 +9,20 @@
   </header>
 
   <main id="contenido-fotos" class="flex-1 px-5 py-5 space-y-6 pb-32">
-    {% if not tiene_libros %}
+    {% if not tiene_libros and not cant_duplicados %}
     <div class="text-center text-gris px-4 py-10">
       <p class="text-4xl mb-3">🤷</p>
       <p>No se detectó ningún libro legible en este lote. Podés descartarlo desde el botón de abajo.</p>
+    </div>
+    {% endif %}
+
+    {% if cant_duplicados %}
+    <div class="bg-celeste-claro/40 border border-celeste rounded-xl2 p-3 text-sm">
+      <p class="font-medium">
+        {{ cant_duplicados }} libro{{ 's' if cant_duplicados != 1 else '' }}
+        de estas fotos ya {{ 'estaban' if cant_duplicados != 1 else 'estaba' }} en tu catálogo 🔁
+      </p>
+      <p class="text-gris mt-0.5">No se van a repetir. Los marcamos abajo para que sepas por qué no aparecen.</p>
     </div>
     {% endif %}
 
@@ -52,6 +62,9 @@
     aprobado: libro.confianza >= UMBRAL_CONFIANZA,
   }));
 
+  // Solo lectura: ya están en el catálogo, no se editan ni se aprueban acá.
+  const DUPLICADOS = {{ duplicados_json | safe }};
+
   const btnPublicar = document.getElementById('btn-publicar');
   const btnDescartar = document.getElementById('btn-descartar');
 
@@ -62,10 +75,35 @@
   }
 
   function actualizarContador() {
+    // Si el lote entero resultó ser repetido no hay nada que publicar, pero
+    // igual hay que poder cerrarlo: el botón deja de pedir libros y solo
+    // confirma que se revisó.
+    if (estado.length === 0 && DUPLICADOS.length > 0) {
+      btnPublicar.textContent = 'Listo, volver al panel';
+      btnPublicar.disabled = false;
+      btnPublicar.classList.remove('opacity-60');
+      return;
+    }
     const aprobados = estado.filter((l) => l.aprobado).length;
     btnPublicar.textContent = `Publicar ${aprobados} libro${aprobados === 1 ? '' : 's'}`;
     btnPublicar.disabled = aprobados === 0;
     btnPublicar.classList.toggle('opacity-60', aprobados === 0);
+  }
+
+  function renderDuplicado(libro) {
+    const contenedor = document.getElementById(`libros-foto-${libro.foto_id}`);
+    if (!contenedor) return;
+
+    const fila = document.createElement('div');
+    fila.className = 'bg-crema border border-borde rounded-xl2 px-3 py-2 flex items-center gap-3 opacity-70';
+    fila.innerHTML = `
+      <div class="flex-1 min-w-0">
+        <p class="font-medium truncate line-through decoration-1">${escaparHtml(libro.titulo)}</p>
+        <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+      </div>
+      <span class="shrink-0 text-xs font-medium text-celeste whitespace-nowrap">Ya lo tenías 🔁</span>
+    `;
+    contenedor.appendChild(fila);
   }
 
   function fueCorregido(libro) {
@@ -146,6 +184,7 @@
   function renderTodo() {
     document.querySelectorAll('[id^="libros-foto-"]').forEach((el) => { el.innerHTML = ''; });
     estado.forEach(renderFila);
+    DUPLICADOS.forEach(renderDuplicado);   // siempre al final de cada foto
     actualizarContador();
   }
 

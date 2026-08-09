@@ -28,7 +28,10 @@ async def catalogo_publico(request: Request, slug: str):
         raise HTTPException(status_code=404)
 
     cant_publicados = await db.pool().fetchval(
-        "SELECT COUNT(*) FROM libros WHERE libreria_id = $1 AND estado = 'publicado'",
+        """
+        SELECT COUNT(*) FROM libros
+        WHERE libreria_id = $1 AND estado = 'publicado' AND archivado_en IS NULL
+        """,
         libreria["id"],
     )
     fecha_hoy = datetime.now(timezone.utc).astimezone().strftime("%d/%m")
