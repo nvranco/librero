@@ -5,14 +5,13 @@ la ruta existe (decisión D2, aplicada también acá).
 """
 
 import secrets
-import shutil
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app import db
-from app.config import ADMIN_TOKEN, DATA_DIR, MENSAJE_WA_DEFAULT
+from app.config import ADMIN_TOKEN, MENSAJE_WA_DEFAULT
 from app.tokens import nuevo_token_panel, slugify
 
 router = APIRouter()
@@ -106,24 +105,3 @@ async def admin_crear(
             "error": error,
         },
     )
-
-
-@router.post("/admin/{token}/reset-total")
-async def reset_total(token: str):
-    """Endpoint temporal de mantenimiento: vacía las 5 tablas y borra las
-    fotos del volumen para poder arrancar un test desde cero. Se saca del
-    código apenas se usa — no es parte del producto."""
-    _validar_token(token)
-
-    await db.pool().execute(
-        "TRUNCATE eventos, libros, fotos, lotes, librerias RESTART IDENTITY CASCADE"
-    )
-
-    borrados = 0
-    if DATA_DIR.exists():
-        for item in DATA_DIR.iterdir():
-            if item.is_dir():
-                shutil.rmtree(item, ignore_errors=True)
-                borrados += 1
-
-    return {"ok": True, "carpetas_de_fotos_borradas": borrados}
