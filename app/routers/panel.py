@@ -1,5 +1,7 @@
-"""P2 — panel del librero, acceso por link secreto (D2: sin login)."""
+"""P2 — panel del librero, y P3 — pantalla de revisión. Acceso por link
+secreto (D2: sin login)."""
 
+import json
 import secrets
 
 from fastapi import APIRouter, HTTPException, Request
@@ -28,6 +30,17 @@ async def panel_home(request: Request, slug: str, token: str):
         "SELECT COUNT(*) FROM libros WHERE libreria_id = $1 AND estado = 'publicado'",
         libreria["id"],
     )
+    lotes_pendientes = await db.pool().fetch(
+        """
+        SELECT l.id, l.cant_fotos, l.creado_en, COUNT(li.id) AS cant_libros
+        FROM lotes l
+        LEFT JOIN libros li ON li.lote_id = l.id
+        WHERE l.libreria_id = $1 AND l.estado = 'revision'
+        GROUP BY l.id
+        ORDER BY l.creado_en DESC
+        """,
+        libreria["id"],
+    )
     base = str(request.base_url).rstrip("/")
     return templates.TemplateResponse(
         request,
@@ -35,7 +48,45 @@ async def panel_home(request: Request, slug: str, token: str):
         {
             "libreria": libreria,
             "cant_libros": cant_libros,
+            "lotes_pendientes": lotes_pendientes,
             "url_publica": f"{base}/{slug}",
             "url_inventario": f"{base}/{slug}/inv/{token}/libros",
+        },
+    )
+
+
+@router.get("/{slug}/inv/{token}/lote/{lote_id}", response_class=HTMLResponse)
+async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    lote = await db.pool().fetchrow(
+        "SELECT * FROM lotes WHERE id = $1 AND libreria_id = $2", lote_id, libreria["id"]
+    )
+    if lote is None:
+        raise HTTPException(status_code=404)
+
+    fotos = await db.pool().fetch(
+        "SELECT id, orden FROM fotos WHERE lote_id = $1 ORDER BY orden", lote_id
+    )
+    libros = await db.pool().fetch(
+        """
+        SELECT id, foto_id, titulo, autor, confianza
+        FROM libros WHERE lote_id = $1
+        ORDER BY foto_id, confianza ASC
+        """,
+        lote_id,
+    )
+
+    libros_json = json.dumps([dict(l) for l in libros], default=str).replace("</", "<\\/")
+
+    return templates.TemplateResponse(
+        request,
+        "revision.html",
+        {
+            "libreria": libreria,
+            "lote": lote,
+            "fotos": fotos,
+            "libros_json": libros_json,
+            "tiene_libros": len(libros) > 0,
         },
     )

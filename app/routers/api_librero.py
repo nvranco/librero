@@ -9,7 +9,8 @@ import secrets
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
 
 from app import db, vision
 from app.config import DATA_DIR
@@ -19,6 +20,13 @@ router = APIRouter()
 logger = logging.getLogger("librero.lotes")
 
 MAX_FOTOS_POR_LOTE = 10
+ESTADOS_VALIDOS = {"pendiente", "publicado", "descartado", "vendido"}
+
+
+class ActualizarLibro(BaseModel):
+    titulo: str
+    autor: str = ""
+    estado: str
 
 
 async def _libreria_por_slug_y_token(slug: str, token: str):
@@ -133,3 +141,93 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
         "UPDATE lotes SET estado = 'revision' WHERE id = $1", lote_id
     )
     logger.info("lote_publicado lote_id=%s libreria_id=%s libros=%s", lote_id, libreria_id, len(vistos))
+
+
+@router.get("/api/{slug}/{token}/fotos/{foto_id}")
+async def servir_foto(slug: str, token: str, foto_id: int):
+    """Sirve la foto original para que el librero la vea al lado de la lista
+    durante la revision (requisitos §3.2: 'foto arriba, tocable para ampliar')."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    fila = await db.pool().fetchrow(
+        """
+        SELECT f.path FROM fotos f
+        JOIN lotes l ON l.id = f.lote_id
+        WHERE f.id = $1 AND l.libreria_id = $2
+        """,
+        foto_id, libreria["id"],
+    )
+    if fila is None:
+        raise HTTPException(status_code=404)
+
+    path = Path(fila["path"])
+    if not path.exists():
+        raise HTTPException(status_code=404)
+    return FileResponse(path, media_type="image/jpeg")
+
+
+@router.patch("/api/{slug}/{token}/libros/{libro_id}")
+async def actualizar_libro(slug: str, token: str, libro_id: int, cambios: ActualizarLibro):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    if cambios.estado not in ESTADOS_VALIDOS:
+        raise HTTPException(status_code=400, detail=f"Estado invalido: {cambios.estado}")
+
+    resultado = await db.pool().execute(
+        """
+        UPDATE libros
+        SET titulo = $1, autor = $2, estado = $3,
+            publicado_en = CASE WHEN $3 = 'publicado' THEN now() ELSE publicado_en END,
+            vendido_en = CASE WHEN $3 = 'vendido' THEN now() ELSE vendido_en END
+        WHERE id = $4 AND libreria_id = $5
+        """,
+        cambios.titulo.strip(), cambios.autor.strip(), cambios.estado, libro_id, libreria["id"],
+    )
+    if resultado == "UPDATE 0":
+        raise HTTPException(status_code=404)
+    return {"ok": True}
+
+
+@router.post("/api/{slug}/{token}/lotes/{lote_id}/publicar")
+async def publicar_lote(slug: str, token: str, lote_id: int):
+    """Los libros que el front ya marco explicitamente (publicado/descartado)
+    quedan como estan; cualquier 'pendiente' que haya quedado sin tocar se
+    publica igual — nunca se pierde silenciosamente un libro por un fallo de red."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    lote = await db.pool().fetchrow(
+        "SELECT id FROM lotes WHERE id = $1 AND libreria_id = $2", lote_id, libreria["id"]
+    )
+    if lote is None:
+        raise HTTPException(status_code=404)
+
+    await db.pool().execute(
+        "UPDATE libros SET estado = 'publicado', publicado_en = now() WHERE lote_id = $1 AND estado = 'pendiente'",
+        lote_id,
+    )
+    await db.pool().execute(
+        "UPDATE lotes SET estado = 'publicado', publicado_en = now() WHERE id = $1", lote_id
+    )
+    cant_publicados = await db.pool().fetchval(
+        "SELECT COUNT(*) FROM libros WHERE lote_id = $1 AND estado = 'publicado'", lote_id
+    )
+    logger.info("lote_finalizado lote_id=%s accion=publicar publicados=%s", lote_id, cant_publicados)
+    return {"ok": True, "publicados": cant_publicados}
+
+
+@router.post("/api/{slug}/{token}/lotes/{lote_id}/descartar")
+async def descartar_lote(slug: str, token: str, lote_id: int):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    lote = await db.pool().fetchrow(
+        "SELECT id FROM lotes WHERE id = $1 AND libreria_id = $2", lote_id, libreria["id"]
+    )
+    if lote is None:
+        raise HTTPException(status_code=404)
+
+    await db.pool().execute(
+        "UPDATE libros SET estado = 'descartado' WHERE lote_id = $1 AND estado = 'pendiente'", lote_id
+    )
+    await db.pool().execute("UPDATE lotes SET estado = 'descartado' WHERE id = $1", lote_id)
+    logger.info("lote_finalizado lote_id=%s accion=descartar", lote_id)
+    return {"ok": True}
