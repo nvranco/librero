@@ -28,19 +28,20 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 templates = Jinja2Templates(directory="app/templates")
 
-# Orden: admin y panel tienen prefijos/estructura mas especifica que /{slug},
-# pero como los segmentos de path no colisionan (2 y 3 segmentos respectivamente
-# contra 1 de publico) el orden no es estrictamente necesario. Se deja explicito
-# igual, mas especifico primero, por claridad.
-app.include_router(admin.router)
-app.include_router(panel.router)
-app.include_router(publico.router)
-
 
 @app.get("/health")
 async def health():
     await db.pool().fetchval("SELECT 1")
     return {"ok": True}
+
+
+# Orden importante: publico.router define GET /{slug}, un catch-all de UN solo
+# segmento. Starlette matchea rutas en el orden en que se agregan, asi que
+# cualquier ruta literal de un segmento (como /health) tiene que registrarse
+# ANTES de incluir este router, o el catch-all se la come primero.
+app.include_router(admin.router)
+app.include_router(panel.router)
+app.include_router(publico.router)
 
 
 @app.exception_handler(404)
