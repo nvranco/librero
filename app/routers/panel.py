@@ -51,6 +51,7 @@ async def panel_home(request: Request, slug: str, token: str):
             "lotes_pendientes": lotes_pendientes,
             "url_publica": f"{base}/{slug}",
             "url_inventario": f"{base}/{slug}/inv/{token}/libros",
+            "url_qr": f"/api/{slug}/{token}/qr.png",
         },
     )
 
@@ -88,5 +89,30 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
             "fotos": fotos,
             "libros_json": libros_json,
             "tiene_libros": len(libros) > 0,
+        },
+    )
+
+
+@router.get("/{slug}/inv/{token}/libros", response_class=HTMLResponse)
+async def panel_inventario(request: Request, slug: str, token: str):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    libros = await db.pool().fetch(
+        """
+        SELECT id, titulo, autor, estado
+        FROM libros WHERE libreria_id = $1 AND estado IN ('publicado', 'vendido')
+        ORDER BY titulo
+        """,
+        libreria["id"],
+    )
+    libros_json = json.dumps([dict(l) for l in libros]).replace("</", "<\\/")
+
+    return templates.TemplateResponse(
+        request,
+        "inventario.html",
+        {
+            "libreria": libreria,
+            "libros_json": libros_json,
+            "cant_libros": len(libros),
         },
     )

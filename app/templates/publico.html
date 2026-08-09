@@ -11,7 +11,7 @@
     </p>
   </header>
 
-  <main class="flex-1 px-5 -mt-3">
+  <main class="flex-1 px-5 -mt-3 pb-10">
     <div class="bg-papel border border-borde rounded-xl2 shadow-sm p-2">
       <input
         id="buscador"
@@ -27,7 +27,7 @@
 
     <div id="estado-vacio" class="mt-14 text-center text-gris px-4">
       <p class="text-4xl mb-3">🔎</p>
-      <p class="text-base">
+      <p id="mensaje-vacio" class="text-base">
         {% if hay_libros %}
           Escribí un título o autor para empezar a buscar.
         {% else %}
@@ -43,10 +43,145 @@
 </div>
 
 <script>
-  // El fetch a /api/{{ libreria.slug }}/catalogo.json y el registro de eventos
-  // (vista, busqueda, clic_whatsapp) se agregan el Día 4.
-  document.getElementById('buscador').addEventListener('input', function () {
-    // placeholder: la búsqueda real llega con el catálogo (Día 4)
+  const SLUG = "{{ libreria.slug }}";
+  const WHATSAPP = {{ whatsapp_js | safe }};
+  const MENSAJE_TEMPLATE = {{ mensaje_wa_template_js | safe }};
+  const ORIGEN = {{ origen_js | safe }};
+
+  function sessionId() {
+    let id = sessionStorage.getItem('librero_sid');
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+      sessionStorage.setItem('librero_sid', id);
+    }
+    return id;
+  }
+
+  function registrarEvento(tipo, payload) {
+    fetch(`/api/${SLUG}/evento`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, payload: payload || {}, session_id: sessionId() }),
+      keepalive: true,
+    }).catch(() => {});
+  }
+
+  const RANGO_DIACRITICOS = new RegExp('[' + String.fromCharCode(0x0300) + '-' + String.fromCharCode(0x036f) + ']', 'g');
+
+  function normalizar(texto) {
+    return (texto || '')
+      .toString()
+      .normalize('NFD')
+      .replace(RANGO_DIACRITICOS, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  function escaparHtml(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto || '';
+    return div.innerHTML;
+  }
+
+  function formatearFecha(iso) {
+    const [anio, mes, dia] = iso.split('-');
+    return `${dia}/${mes}`;
+  }
+
+  registrarEvento('vista', { src: ORIGEN });
+
+  const buscador = document.getElementById('buscador');
+  const resultados = document.getElementById('resultados');
+  const estadoVacio = document.getElementById('estado-vacio');
+  const mensajeVacio = document.getElementById('mensaje-vacio');
+
+  let catalogo = [];
+  let catalogoListo = false;
+
+  fetch(`/api/${SLUG}/catalogo.json`)
+    .then((r) => r.json())
+    .then((datos) => {
+      catalogo = datos;
+      catalogoListo = true;
+      if (buscador.value.trim()) buscar(buscador.value);
+    })
+    .catch(() => {
+      mensajeVacio.textContent = 'No se pudo cargar el catálogo. Refrescá la página.';
+    });
+
+  let timerBusqueda = null;
+  buscador.addEventListener('input', () => {
+    clearTimeout(timerBusqueda);
+    const q = buscador.value;
+    if (!q.trim()) {
+      resultados.innerHTML = '';
+      estadoVacio.classList.remove('hidden');
+      mensajeVacio.textContent = catalogo.length > 0
+        ? 'Escribí un título o autor para empezar a buscar.'
+        : 'Esta librería todavía está cargando su catálogo. Volvé a pasar más tarde.';
+      return;
+    }
+    timerBusqueda = setTimeout(() => buscar(q), 800);
+    renderResultados(filtrar(q)); // feedback inmediato mientras tipea, sin esperar el debounce del evento
   });
+
+  function filtrar(q) {
+    const qNorm = normalizar(q);
+    if (!qNorm) return [];
+    return catalogo.filter((libro) =>
+      normalizar(libro.titulo).includes(qNorm) || normalizar(libro.autor).includes(qNorm)
+    );
+  }
+
+  function buscar(q) {
+    const encontrados = filtrar(q);
+    renderResultados(encontrados);
+    registrarEvento('busqueda', { q: q.trim(), resultados: encontrados.length });
+  }
+
+  function renderResultados(lista) {
+    if (!catalogoListo) return;
+    if (lista.length === 0) {
+      resultados.innerHTML = '';
+      estadoVacio.classList.remove('hidden');
+      mensajeVacio.textContent = buscador.value.trim()
+        ? 'No encontramos ningún libro con ese título o autor.'
+        : 'Escribí un título o autor para empezar a buscar.';
+      return;
+    }
+    estadoVacio.classList.add('hidden');
+    resultados.innerHTML = lista.map((libro, i) => `
+      <div class="bg-papel border border-borde rounded-xl2 p-4" data-idx="${i}">
+        <button type="button" data-rol="expandir" class="tap w-full text-left">
+          <p class="font-medium">${escaparHtml(libro.titulo)}</p>
+          <p class="text-sm text-gris">${escaparHtml(libro.autor || 'Autor no disponible')}</p>
+        </button>
+        <div data-rol="detalle" class="hidden mt-3 pt-3 border-t border-borde">
+          <p class="text-xs text-gris mb-3">Visto el ${formatearFecha(libro.visto)}</p>
+          <a data-rol="whatsapp" target="_blank" rel="noopener"
+            class="tap w-full flex items-center justify-center gap-2 rounded-xl2 text-white font-medium"
+            style="background-color: var(--verde)">
+            Consultar por WhatsApp
+          </a>
+        </div>
+      </div>
+    `).join('');
+
+    resultados.querySelectorAll('[data-idx]').forEach((el) => {
+      const libro = lista[Number(el.dataset.idx)];
+      const detalle = el.querySelector('[data-rol="detalle"]');
+      el.querySelector('[data-rol="expandir"]').addEventListener('click', () => {
+        detalle.classList.toggle('hidden');
+      });
+      const mensaje = MENSAJE_TEMPLATE
+        .replace('{titulo}', libro.titulo)
+        .replace('{autor}', libro.autor || '');
+      const enlace = el.querySelector('[data-rol="whatsapp"]');
+      enlace.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+      enlace.addEventListener('click', () => {
+        registrarEvento('clic_whatsapp', { libro_id: libro.id, titulo: libro.titulo });
+      });
+    });
+  }
 </script>
 {% endblock %}

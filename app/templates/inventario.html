@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block titulo %}Inventario — {{ libreria.nombre }}{% endblock %}
+{% block contenido %}
+<div class="min-h-screen flex flex-col">
+
+  <header class="bg-tinta px-5 pt-8 pb-6">
+    <a href="/{{ libreria.slug }}/inv/{{ libreria.token_panel }}" class="text-naranja-claro text-sm font-medium">← Volver al panel</a>
+    <h1 class="text-2xl font-bold text-white leading-tight mt-1">Inventario ({{ cant_libros }})</h1>
+  </header>
+
+  <main class="flex-1 px-5 -mt-3 pb-10">
+    <div class="bg-papel border border-borde rounded-xl2 shadow-sm p-2">
+      <input id="buscador" type="search" placeholder="Buscar en tu inventario…"
+        class="tap w-full rounded-xl2 px-4 py-3 text-lg outline-none placeholder:text-gris">
+    </div>
+
+    <div id="lista" class="mt-4 space-y-2"></div>
+
+    <div id="estado-vacio" class="mt-14 text-center text-gris px-4">
+      <p class="text-4xl mb-3">📚</p>
+      <p>Todavía no tenés libros publicados. Cargá y publicá un estante primero.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+  const LIBRERO_SLUG = "{{ libreria.slug }}";
+  const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
+
+  const libros = {{ libros_json | safe }};
+
+  const buscador = document.getElementById('buscador');
+  const lista = document.getElementById('lista');
+  const estadoVacio = document.getElementById('estado-vacio');
+
+  function normalizar(texto) {
+    return (texto || '').toString().toLowerCase().trim();
+  }
+
+  function escaparHtml(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto || '';
+    return div.innerHTML;
+  }
+
+  function render() {
+    const q = normalizar(buscador.value);
+    const filtrados = libros.filter((l) =>
+      !q || normalizar(l.titulo).includes(q) || normalizar(l.autor).includes(q)
+    );
+
+    if (libros.length === 0) {
+      lista.innerHTML = '';
+      estadoVacio.classList.remove('hidden');
+      return;
+    }
+    estadoVacio.classList.add('hidden');
+
+    if (filtrados.length === 0) {
+      lista.innerHTML = '<p class="text-center text-gris py-8">Nada coincide con esa búsqueda.</p>';
+      return;
+    }
+
+    lista.innerHTML = filtrados.map((libro) => `
+      <div class="bg-papel border border-borde rounded-xl2 p-3" data-id="${libro.id}">
+        <button type="button" data-rol="expandir" class="tap w-full text-left flex items-center justify-between gap-2">
+          <span class="min-w-0">
+            <p class="font-medium truncate">${escaparHtml(libro.titulo)}</p>
+            <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+          </span>
+          ${libro.estado === 'vendido'
+            ? '<span class="shrink-0 text-xs font-medium text-gris bg-borde rounded-full px-2 py-1">Vendido</span>'
+            : ''}
+        </button>
+        <div data-rol="detalle" class="hidden mt-3 pt-3 border-t border-borde space-y-2">
+          <div data-rol="vista" class="flex gap-2">
+            ${libro.estado !== 'vendido' ? '<button type="button" data-accion="vendido" class="tap flex-1 rounded-lg border border-borde text-sm font-medium">Marcar vendido</button>' : ''}
+            <button type="button" data-accion="editar" class="tap flex-1 rounded-lg border border-borde text-sm font-medium">Editar</button>
+            <button type="button" data-accion="eliminar" class="tap flex-1 rounded-lg border border-ambar text-ambar text-sm font-medium">Eliminar</button>
+          </div>
+          <div data-rol="edicion" class="hidden space-y-2">
+            <input data-campo="titulo" value="${escaparHtml(libro.titulo)}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
+            <input data-campo="autor" value="${escaparHtml(libro.autor)}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
+            <button type="button" data-accion="guardar" class="tap w-full rounded-lg bg-naranja text-tinta text-sm font-bold">Guardar</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    lista.querySelectorAll('[data-id]').forEach((fila) => {
+      const id = Number(fila.dataset.id);
+      const libro = libros.find((l) => l.id === id);
+      const detalle = fila.querySelector('[data-rol="detalle"]');
+      const vista = fila.querySelector('[data-rol="vista"]');
+      const edicion = fila.querySelector('[data-rol="edicion"]');
+
+      fila.querySelector('[data-rol="expandir"]').addEventListener('click', () => {
+        detalle.classList.toggle('hidden');
+      });
+
+      const btnVendido = fila.querySelector('[data-accion="vendido"]');
+      if (btnVendido) {
+        btnVendido.addEventListener('click', async () => {
+          await patchLibro(libro, { estado: 'vendido' });
+          libro.estado = 'vendido';
+          render();
+        });
+      }
+
+      fila.querySelector('[data-accion="editar"]').addEventListener('click', () => {
+        vista.classList.add('hidden');
+        edicion.classList.remove('hidden');
+      });
+
+      fila.querySelector('[data-accion="eliminar"]').addEventListener('click', async () => {
+        if (!confirm(`¿Eliminar "${libro.titulo}" del inventario?`)) return;
+        await fetch(`${API_BASE}/libros/${libro.id}`, { method: 'DELETE' });
+        const idx = libros.findIndex((l) => l.id === id);
+        libros.splice(idx, 1);
+        render();
+      });
+
+      fila.querySelector('[data-accion="guardar"]').addEventListener('click', async () => {
+        const nuevoTitulo = fila.querySelector('[data-campo="titulo"]').value.trim();
+        const nuevoAutor = fila.querySelector('[data-campo="autor"]').value.trim();
+        await patchLibro(libro, { titulo: nuevoTitulo, autor: nuevoAutor });
+        libro.titulo = nuevoTitulo;
+        libro.autor = nuevoAutor;
+        render();
+      });
+    });
+  }
+
+  async function patchLibro(libro, cambios) {
+    await fetch(`${API_BASE}/libros/${libro.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titulo: cambios.titulo ?? libro.titulo,
+        autor: cambios.autor ?? libro.autor,
+        estado: cambios.estado ?? libro.estado,
+      }),
+    });
+  }
+
+  buscador.addEventListener('input', render);
+  render();
+</script>
+{% endblock %}

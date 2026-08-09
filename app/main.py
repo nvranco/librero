@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app import db
-from app.routers import admin, api_librero, panel, publico
+from app.routers import admin, api_librero, api_publico, panel, publico
 
 # Los logs de app.vision (latencia/tokens/respuesta cruda del modelo) son el
 # baseline de calidad y de unit economics del pipeline (requisitos §7 y §9).
@@ -49,6 +49,7 @@ async def health():
 # ANTES de incluir este router, o el catch-all se la come primero.
 app.include_router(admin.router)
 app.include_router(api_librero.router)
+app.include_router(api_publico.router)
 app.include_router(panel.router)
 app.include_router(publico.router)
 

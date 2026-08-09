@@ -4,12 +4,15 @@ POST /api/{slug}/{token}/lotes             multipart, 1-10 imagenes -> {lote_id}
 GET  /api/{slug}/{token}/lotes/{id}        estado + libros detectados
 """
 
+import io
+import json
 import logging
 import secrets
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+import qrcode
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel
 
 from app import db, vision
@@ -211,6 +214,10 @@ async def publicar_lote(slug: str, token: str, lote_id: int):
     cant_publicados = await db.pool().fetchval(
         "SELECT COUNT(*) FROM libros WHERE lote_id = $1 AND estado = 'publicado'", lote_id
     )
+    await db.pool().execute(
+        "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'lote_publicado', $2::jsonb)",
+        libreria["id"], json.dumps({"lote_id": lote_id, "publicados": cant_publicados}),
+    )
     logger.info("lote_finalizado lote_id=%s accion=publicar publicados=%s", lote_id, cant_publicados)
     return {"ok": True, "publicados": cant_publicados}
 
@@ -231,3 +238,28 @@ async def descartar_lote(slug: str, token: str, lote_id: int):
     await db.pool().execute("UPDATE lotes SET estado = 'descartado' WHERE id = $1", lote_id)
     logger.info("lote_finalizado lote_id=%s accion=descartar", lote_id)
     return {"ok": True}
+
+
+@router.delete("/api/{slug}/{token}/libros/{libro_id}")
+async def eliminar_libro(slug: str, token: str, libro_id: int):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    resultado = await db.pool().execute(
+        "DELETE FROM libros WHERE id = $1 AND libreria_id = $2", libro_id, libreria["id"]
+    )
+    if resultado == "DELETE 0":
+        raise HTTPException(status_code=404)
+    return {"ok": True}
+
+
+@router.get("/api/{slug}/{token}/qr.png")
+async def qr_png(slug: str, token: str, request: Request):
+    """QR con /{slug}?src=qr — separa trafico local (mostrador) de redes (§5 requisitos)."""
+    await _libreria_por_slug_y_token(slug, token)
+
+    base = str(request.base_url).rstrip("/")
+    url_destino = f"{base}/{slug}?src=qr"
+
+    imagen = qrcode.make(url_destino)
+    buffer = io.BytesIO()
+    imagen.save(buffer, format="PNG")
+    return Response(content=buffer.getvalue(), media_type="image/png")

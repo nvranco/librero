@@ -5,8 +5,9 @@ para el librero. Contexto completo del producto en
 [`librero-documento-de-contexto.md`](librero-documento-de-contexto.md) y
 [`librero-mvp0-requisitos.md`](librero-mvp0-requisitos.md).
 
-Este repo es el **Día 1** del plan de construcción: esqueleto FastAPI +
-Postgres + design system, deployado en Railway.
+MVP-0 completo (Días 1-5 del plan de construcción): esqueleto FastAPI +
+Postgres, pipeline de visión, revisión/publicación, catálogo público
+buscable con WhatsApp y QR, e inventario — todo deployado en Railway.
 
 ## Correr local
 
@@ -26,34 +27,72 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 ## Pantallas
 
-| Ruta | Quién | Estado |
-|---|---|---|
-| `/{slug}` | Lector | Estructura final, sin buscador funcional (llega Día 4) |
-| `/{slug}/inv/{token}` | Librero | Home del panel; la carga de fotos desde la UI llega Día 3 (P3, revisión) |
-| `/admin/{token_admin}` | Vos | Alta de librerías — funcional |
-| `/health` | — | Chequeo de vida + conexión a DB |
+| # | Ruta | Quién | Contenido |
+|---|---|---|---|
+| P1 | `/{slug}` | Lector | Buscador (client-side sobre `catalogo.json`), resultados con "visto el DD/MM", botón WhatsApp |
+| P2 | `/{slug}/inv/{token}` | Librero | Home del panel: contador, `+ Cargar estante`, lotes pendientes de revisión, link/QR |
+| P3 | `/{slug}/inv/{token}/lote/{id}` | Librero | Revisión: aprobar/descartar/editar, publicar el lote |
+| P4 | `/{slug}/inv/{token}/libros` | Librero | Inventario completo, buscable, marcar vendido / editar / eliminar |
+| P5 | `/admin/{token_admin}` | Vos | Alta de librerías |
+| — | `/health` | — | Chequeo de vida + conexión a DB |
 
-## API (Día 2 — pipeline de visión)
+## API
 
+**Pública**
 ```
-POST /api/{slug}/{token}/lotes         multipart, 1-10 fotos -> 202 {lote_id}
-GET  /api/{slug}/{token}/lotes/{id}    -> {estado, cant_fotos, libros[]}
+GET  /{slug}                     HTML del catálogo
+GET  /api/{slug}/catalogo.json   [{id, titulo, autor, visto}] — solo estado=publicado, cacheado 60s
+POST /api/{slug}/evento          {tipo, payload, session_id} — vista|busqueda|clic_whatsapp|scan_qr
 ```
+
+**Librero** (token en el path, validado en cada request)
+```
+POST   /api/{slug}/{token}/lotes                 multipart, 1-10 fotos -> 202 {lote_id}
+GET    /api/{slug}/{token}/lotes/{id}            -> {estado, cant_fotos, libros[]}
+POST   /api/{slug}/{token}/lotes/{id}/publicar   pendientes -> publicado
+POST   /api/{slug}/{token}/lotes/{id}/descartar  pendientes -> descartado
+GET    /api/{slug}/{token}/fotos/{id}            sirve la foto original (revisión)
+PATCH  /api/{slug}/{token}/libros/{id}           {titulo, autor, estado}
+DELETE /api/{slug}/{token}/libros/{id}
+GET    /api/{slug}/{token}/qr.png                QR -> /{slug}?src=qr
+```
+
+## Pipeline de visión (Día 2)
 
 Sube las fotos, las guarda en `DATA_DIR/{libreria_id}/{lote_id}/`, y procesa
 cada una en background: resize a 2048px/JPEG q85 → 1 llamada a OpenRouter →
-parseo de JSON estricto → dedupe por (título, autor) normalizados dentro del
-lote → insert en `libros` con `estado=pendiente`. Una foto que falla se
-loguea y no tira el lote entero. El lote pasa a `estado=revision` cuando
-termina — la pantalla de revisión (P3, aprobar/corregir/publicar) es Día 3.
+parseo de JSON estricto (`response_format=json_object`) → dedupe por
+(título, autor) normalizados dentro del lote → insert en `libros` con
+`estado=pendiente`. Una foto que falla se loguea y no tira el lote entero.
 
-**Requiere `OPENROUTER_API_KEY` seteada** (variable de entorno). Sin ella,
-cada foto falla de forma controlada (se loguea el motivo) y el lote queda en
-`revision` con cero libros — no rompe nada, pero no hay nada que revisar.
+**Requiere `OPENROUTER_API_KEY` seteada.** Sin ella, cada foto falla de forma
+controlada y el lote queda en `revision` con cero libros.
 
 Los logs de cada llamada al modelo (latencia, tokens, respuesta cruda) van a
-stdout con el logger `librero.vision` — es el baseline de calidad y de unit
-economics del requisito §7/§9.
+stdout con el logger `librero.vision` — baseline de calidad y unit economics
+(requisito §7/§9).
+
+## Revisión y publicación (Día 3)
+
+En `/lote/{id}` cada libro arranca aprobado si `confianza >= 0.7` (si no,
+borde ámbar y desaprobado por defecto). Publicar sin tocar nada es un solo
+tap: los aprobados pasan a `publicado`, el resto a `descartado`.
+
+## Catálogo público, WhatsApp, QR, eventos (Día 4)
+
+El catálogo se descarga entero al navegador (`catalogo.json`, solo libros
+`publicado`) y la búsqueda es 100% client-side, sin roundtrip. Cada
+resultado abre WhatsApp con el mensaje precargado de la librería
+(`mensaje_wa_template`, placeholders `{titulo}`/`{autor}`). El QR (`qr.png`)
+apunta a `/{slug}?src=qr` para diferenciar tráfico de mostrador vs. redes.
+Eventos (`vista`, `busqueda`, `clic_whatsapp`, `lote_publicado`) quedan en la
+tabla `eventos` — es la fuente de la contabilidad de la innovación (§9).
+
+## Inventario (Día 5)
+
+`/libros` lista todo lo `publicado`/`vendido`, buscable. Marcar vendido saca
+el libro del catálogo público al instante (`catalogo.json` solo trae
+`publicado`).
 
 ## Deploy
 

@@ -1,6 +1,8 @@
-"""P1 — catálogo público. El fetch de catalogo.json y los eventos llegan el Día 4;
-hoy la pantalla ya tiene la estructura final con estado vacío."""
+"""P1 — catálogo público. Busca client-side sobre catalogo.json (E5) y
+registra eventos (vista/busqueda/clic_whatsapp) para la contabilidad de la
+innovación (requisitos §9)."""
 
+import json
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Request
@@ -11,6 +13,10 @@ from app import db
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+
+def _js_string(valor: str) -> str:
+    return json.dumps(valor or "").replace("</", "<\\/")
 
 
 @router.get("/{slug}", response_class=HTMLResponse)
@@ -26,6 +32,7 @@ async def catalogo_publico(request: Request, slug: str):
         libreria["id"],
     )
     fecha_hoy = datetime.now(timezone.utc).astimezone().strftime("%d/%m")
+    origen = request.query_params.get("src", "link")
 
     return templates.TemplateResponse(
         request,
@@ -34,5 +41,8 @@ async def catalogo_publico(request: Request, slug: str):
             "libreria": libreria,
             "hay_libros": cant_publicados > 0,
             "fecha_hoy": fecha_hoy,
+            "origen_js": _js_string(origen),
+            "whatsapp_js": _js_string(libreria["whatsapp"]),
+            "mensaje_wa_template_js": _js_string(libreria["mensaje_wa_template"]),
         },
     )
