@@ -89,7 +89,7 @@ async def admin_crear(
             base = str(request.base_url).rstrip("/")
             nueva = {
                 "nombre": nombre.strip(),
-                "url_panel": f"{base}/{slug_final}/inv/{token_panel}",
+                "url_panel": f"{base}/{slug_final}/panel/{token_panel}",
             }
         except Exception as exc:  # noqa: BLE001 — mostrar el motivo al admin alcanza acá
             error = f"No se pudo crear (¿el slug ya existe?): {exc}"

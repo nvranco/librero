@@ -30,9 +30,9 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 | # | Ruta | Quién | Contenido |
 |---|---|---|---|
 | P1 | `/{slug}` | Lector | Buscador (client-side sobre `catalogo.json`), resultados con "visto el DD/MM", botón WhatsApp |
-| P2 | `/{slug}/inv/{token}` | Librero | Home del panel: contador, `+ Cargar estante`, lotes pendientes de revisión, link/QR |
-| P3 | `/{slug}/inv/{token}/lote/{id}` | Librero | Revisión: aprobar/descartar/editar, publicar el lote |
-| P4 | `/{slug}/inv/{token}/libros` | Librero | Inventario completo, buscable, marcar vendido / editar / eliminar |
+| P2 | `/{slug}/panel/{token}` | Librero | Home del panel: contador, `+ Cargar estante`, lotes pendientes de revisión, link/QR |
+| P3 | `/{slug}/panel/{token}/lote/{id}` | Librero | Revisión: aprobar/descartar/editar, publicar el lote |
+| P4 | `/{slug}/panel/{token}/libros` | Librero | Inventario completo, buscable, marcar vendido / editar / eliminar |
 | P5 | `/admin/{token_admin}` | Vos | Alta de librerías |
 | — | `/health` | — | Chequeo de vida + conexión a DB |
 

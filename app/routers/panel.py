@@ -23,7 +23,7 @@ async def _libreria_por_slug_y_token(slug: str, token: str):
     return fila
 
 
-@router.get("/{slug}/inv/{token}", response_class=HTMLResponse)
+@router.get("/{slug}/panel/{token}", response_class=HTMLResponse)
 async def panel_home(request: Request, slug: str, token: str):
     libreria = await _libreria_por_slug_y_token(slug, token)
     cant_libros = await db.pool().fetchval(
@@ -50,13 +50,13 @@ async def panel_home(request: Request, slug: str, token: str):
             "cant_libros": cant_libros,
             "lotes_pendientes": lotes_pendientes,
             "url_publica": f"{base}/{slug}",
-            "url_inventario": f"{base}/{slug}/inv/{token}/libros",
+            "url_inventario": f"{base}/{slug}/panel/{token}/libros",
             "url_qr": f"/api/{slug}/{token}/qr.png",
         },
     )
 
 
-@router.get("/{slug}/inv/{token}/lote/{lote_id}", response_class=HTMLResponse)
+@router.get("/{slug}/panel/{token}/lote/{lote_id}", response_class=HTMLResponse)
 async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
     libreria = await _libreria_por_slug_y_token(slug, token)
 
@@ -93,7 +93,7 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
     )
 
 
-@router.get("/{slug}/inv/{token}/libros", response_class=HTMLResponse)
+@router.get("/{slug}/panel/{token}/libros", response_class=HTMLResponse)
 async def panel_inventario(request: Request, slug: str, token: str):
     libreria = await _libreria_por_slug_y_token(slug, token)
 

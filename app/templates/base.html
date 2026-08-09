@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block titulo %}Librero{% endblock %}</title>
 <meta name="theme-color" content="#4E9FBF">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%9A</text></svg>">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -63,6 +64,10 @@
   /* Safari agrega su propio cromado redondeado a type=search, que se ve
      como un doble borde encima del nuestro. Lo desactivamos. */
   input[type="search"] { -webkit-appearance: none; appearance: none; }
+
+  /* Los buscadores ya tienen su propio borde negro de 2px: el anillo de
+     foco de arriba se sumaba como un segundo borde. Solo el borde. */
+  input[type="search"]:focus { outline: none; }
 </style>
 {% block head %}{% endblock %}
 </head>

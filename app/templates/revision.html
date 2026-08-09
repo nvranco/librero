@@ -4,7 +4,7 @@
 <div class="min-h-screen flex flex-col">
 
   <header class="bg-tinta px-5 pt-8 pb-6">
-    <a href="/{{ libreria.slug }}/inv/{{ libreria.token_panel }}" class="text-celeste-claro text-sm font-medium">← Volver al panel</a>
+    <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}" class="text-celeste-claro text-sm font-medium">← Volver al panel</a>
     <h1 class="text-2xl font-bold text-white leading-tight mt-1">Revisar estante</h1>
   </header>
 
@@ -171,7 +171,7 @@
     try {
       await guardarTodo('publicado');
       await fetch(`${API_BASE}/lotes/${LOTE_ID}/publicar`, { method: 'POST' });
-      window.location.href = `/${LIBRERO_SLUG}/inv/${LIBRERO_TOKEN}`;
+      window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}`;
     } catch (err) {
       alert('No se pudo publicar. Probá de nuevo.');
       btnPublicar.disabled = false;
@@ -188,7 +188,7 @@
     try {
       await guardarTodo('descartado');
       await fetch(`${API_BASE}/lotes/${LOTE_ID}/descartar`, { method: 'POST' });
-      window.location.href = `/${LIBRERO_SLUG}/inv/${LIBRERO_TOKEN}`;
+      window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}`;
     } catch (err) {
       alert('No se pudo descartar. Probá de nuevo.');
       btnPublicar.disabled = false;

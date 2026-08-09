@@ -37,7 +37,7 @@
       <p class="text-sm font-medium text-gris mb-2">Lotes pendientes de revisión</p>
       <div class="space-y-2">
         {% for lote in lotes_pendientes %}
-        <a href="/{{ libreria.slug }}/inv/{{ libreria.token_panel }}/lote/{{ lote.id }}"
+        <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}/lote/{{ lote.id }}"
           class="tap flex items-center justify-between bg-papel border border-ambar rounded-xl2 p-3">
           <span class="font-medium">Lote de {{ lote.cant_fotos }} foto{{ 's' if lote.cant_fotos != 1 else '' }}</span>
           <span class="text-sm text-ambar font-medium">{{ lote.cant_libros }} libros por revisar →</span>
@@ -168,7 +168,7 @@
       }
 
       cargaMensaje.textContent = `Se detectaron ${datos.libros.length} libro${datos.libros.length > 1 ? 's' : ''} — abriendo revisión…`;
-      window.location.href = `/${LIBRERO_SLUG}/inv/${LIBRERO_TOKEN}/lote/${loteId}`;
+      window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/lote/${loteId}`;
     } catch (err) {
       cargaMensaje.textContent = 'Se perdió la conexión revisando el lote. Refrescá la página.';
       cargaBarra.classList.add('hidden');
