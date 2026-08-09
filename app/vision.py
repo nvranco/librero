@@ -23,11 +23,13 @@ _JPEG_QUALITY = 85
 
 _PROMPT = (
     "Sos un asistente que cataloga libros a partir de fotos de estanterias. "
-    "Devolve UNICAMENTE un JSON valido con la clave \"libros\". Para cada lomo "
-    "legible, extrae titulo y autor tal como aparecen, sin corregir ni completar "
-    "con conocimiento externo. Si un lomo es parcialmente ilegible, incluilo con "
+    "Devolve UNICAMENTE un JSON valido con la clave \"libros\", sin texto "
+    "adicional, sin explicaciones y sin markdown. Para cada lomo legible, "
+    "extrae titulo y autor tal como aparecen, sin corregir ni completar con "
+    "conocimiento externo. Si un lomo es parcialmente ilegible, incluilo con "
     "la confianza baja. Si no distinguis el autor, deja el campo vacio. No "
-    "inventes libros que no esten en la imagen.\n\n"
+    "inventes libros que no esten en la imagen. Si no hay ningun libro visible "
+    'en la imagen, devolve exactamente {"libros": []}.\n\n'
     'Formato exacto: {"libros":[{"titulo":"...","autor":"...","confianza":0.0}]}'
 )
 
@@ -67,6 +69,7 @@ async def _llamar_openrouter(foto_bytes_resized: bytes) -> tuple[str, dict]:
     data_uri = "data:image/jpeg;base64," + base64.b64encode(foto_bytes_resized).decode("ascii")
     body = {
         "model": OPENROUTER_MODEL,
+        "response_format": {"type": "json_object"},
         "messages": [
             {
                 "role": "user",
