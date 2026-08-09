@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 from app import db, vision
 from app.config import DATA_DIR
-from app.tokens import clave_libro
+from app.tokens import clave_libro, titulo_sin_subtitulo
 
 router = APIRouter()
 logger = logging.getLogger("librero.lotes")
@@ -126,9 +126,22 @@ async def _analizar_una(foto_id: int, path: Path, lote_id: int):
         return foto_id, []
 
 
-async def _indice_catalogo(libreria_id: int) -> dict[str, list[tuple[str, int]]]:
-    """Indice {titulo_normalizado: [(autor_normalizado, libro_id), ...]} de lo
-    que la libreria ya tiene cargado, para no volver a subir el mismo libro.
+def _indexar(indice: dict, titulo: str, autor: str, libro_id: int) -> None:
+    """Registra un libro bajo su titulo completo y, si tiene subtitulo, tambien
+    bajo el titulo principal. La entrada guarda cual de las dos formas es, para
+    que _buscar_duplicado no cruce dos titulos principales entre si."""
+    clave_titulo, clave_autor = clave_libro(titulo, autor)
+    if not clave_titulo:
+        return
+    indice.setdefault(clave_titulo, []).append((clave_autor, libro_id, True))
+    principal = titulo_sin_subtitulo(titulo)
+    if principal:
+        indice.setdefault(principal, []).append((clave_autor, libro_id, False))
+
+
+async def _indice_catalogo(libreria_id: int) -> dict[str, list[tuple[str, int, bool]]]:
+    """Indice {clave_de_titulo: [(autor, libro_id, es_titulo_completo), ...]} de
+    lo que la libreria ya tiene cargado, para no volver a subir el mismo libro.
 
     Deliberadamente NO incluye los 'descartado': si el librero descarto un
     libro fue porque la lectura estaba mal, asi que una lectura nueva del mismo
@@ -143,11 +156,9 @@ async def _indice_catalogo(libreria_id: int) -> dict[str, list[tuple[str, int]]]
         """,
         libreria_id,
     )
-    indice: dict[str, list[tuple[str, int]]] = {}
+    indice: dict[str, list[tuple[str, int, bool]]] = {}
     for fila in filas:
-        titulo, autor = clave_libro(fila["titulo"], fila["autor"])
-        if titulo:
-            indice.setdefault(titulo, []).append((autor, fila["id"]))
+        _indexar(indice, fila["titulo"], fila["autor"], fila["id"])
     return indice
 
 
@@ -158,11 +169,27 @@ def _buscar_duplicado(indice, titulo: str, autor: str) -> int | None:
     alcanza con el titulo: el guardrail deja el autor vacio cuando no esta
     impreso en el lomo, y no queremos que el librero completandolo a mano en un
     ciclo haga que el mismo libro entre de nuevo como nuevo en el siguiente.
+
+    El titulo matchea completo-contra-completo o completo-contra-principal,
+    pero NUNCA principal-contra-principal: "Harry Potter: la piedra filosofal"
+    y "Harry Potter: la camara secreta" comparten el titulo principal y el
+    autor, y son dos libros distintos. En cambio "Four Thousand Weeks" contra
+    "Four Thousand Weeks: Time Management for Mortals" es el mismo lomo leido
+    con mas o menos detalle, y ahi si tiene que deduplicar.
     """
     clave_titulo, clave_autor = clave_libro(titulo, autor)
     if not clave_titulo:
         return None
-    for autor_existente, libro_id in indice.get(clave_titulo, []):
+
+    candidatos = [(c, True) for c in indice.get(clave_titulo, [])]
+    principal = titulo_sin_subtitulo(titulo)
+    if principal:
+        # Este titulo es el "largo": solo puede matchear titulos completos.
+        candidatos += [(c, c[2]) for c in indice.get(principal, [])]
+
+    for (autor_existente, libro_id, _), admisible in candidatos:
+        if not admisible:
+            continue
         if clave_autor == autor_existente or not clave_autor or not autor_existente:
             return libro_id
     return None
@@ -234,8 +261,7 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
 
             cant_nuevos += 1
             ya_vistos.add(nuevo_id)
-            clave_titulo, clave_autor = clave_libro(titulo_corregido, autor_corregido)
-            indice.setdefault(clave_titulo, []).append((clave_autor, nuevo_id))
+            _indexar(indice, titulo_corregido, autor_corregido, nuevo_id)
 
     await db.pool().execute(
         "UPDATE lotes SET estado = 'revision' WHERE id = $1", lote_id

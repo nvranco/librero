@@ -24,6 +24,14 @@ def normalizar(texto: str) -> str:
     return re.sub(r"\s+", " ", texto)
 
 
+_SEPARADOR_SUBTITULO = re.compile(r"[:;]| - | — | – ")
+
+
+def _limpiar(texto: str) -> str:
+    texto = re.sub(r"[^a-z0-9 ]+", " ", normalizar(texto))
+    return re.sub(r"\s+", " ", texto).strip()
+
+
 def clave_libro(titulo: str, autor: str) -> tuple[str, str]:
     """Clave de deduplicacion (titulo, autor).
 
@@ -32,8 +40,16 @@ def clave_libro(titulo: str, autor: str) -> tuple[str, str]:
     acentos distintos ("La Ilíada" / "LA ILIADA."). No hace matching difuso:
     dos titulos parecidos pero distintos tienen que seguir siendo dos libros.
     """
-    def limpiar(texto: str) -> str:
-        texto = re.sub(r"[^a-z0-9 ]+", " ", normalizar(texto))
-        return re.sub(r"\s+", " ", texto).strip()
+    return _limpiar(titulo), _limpiar(autor)
 
-    return limpiar(titulo), limpiar(autor)
+
+def titulo_sin_subtitulo(titulo: str) -> str:
+    """Titulo cortado en el primer separador de subtitulo, o "" si no tiene.
+
+    Segun el angulo y la luz, el modelo lee "Four Thousand Weeks" o
+    "Four Thousand Weeks: Time Management for Mortals" del mismo lomo. Se
+    corta unicamente en separadores explicitos (":", " - "), nunca por prefijo
+    suelto: "Rayuela" y "Rayuela y otros cuentos" son dos libros distintos.
+    """
+    principal = _limpiar(_SEPARADOR_SUBTITULO.split(titulo, 1)[0])
+    return principal if principal != _limpiar(titulo) else ""

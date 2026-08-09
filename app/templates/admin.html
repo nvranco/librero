@@ -63,9 +63,9 @@
         <p class="font-medium truncate">{{ lib.nombre }}</p>
         <p class="text-xs text-gris">/{{ lib.slug }} · {{ lib.cant_libros }} libros</p>
       </div>
-      <a href="/{{ lib.slug }}/panel/{{ lib.token_panel }}"
+      <a href="/{{ lib.slug }}/panel/{{ lib.token_panel }}" target="_blank" rel="noopener"
         class="tap btn-secundario shrink-0 rounded-lg px-3 flex items-center text-sm font-medium">
-        Panel
+        Panel ↗
       </a>
     </div>
     {% else %}
