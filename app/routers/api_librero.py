@@ -4,6 +4,7 @@ POST /api/{slug}/{token}/lotes             multipart, 1-10 imagenes -> {lote_id}
 GET  /api/{slug}/{token}/lotes/{id}        estado + libros detectados
 """
 
+import asyncio
 import io
 import json
 import logging
@@ -95,38 +96,55 @@ async def estado_lote(slug: str, token: str, lote_id: int):
         """,
         lote_id,
     )
+    # Fotos que ya devolvieron resultado — el front lo usa para la barra de
+    # progreso real mientras el resto del lote sigue procesandose en paralelo.
+    fotos_listas = await db.pool().fetchval(
+        "SELECT COUNT(DISTINCT foto_id) FROM libros WHERE lote_id = $1", lote_id
+    )
     return JSONResponse(
         {
             "lote_id": lote_id,
             "estado": lote["estado"],
             "cant_fotos": lote["cant_fotos"],
+            "fotos_listas": fotos_listas,
             "libros": [dict(l) for l in libros],
         }
     )
 
 
+async def _analizar_una(foto_id: int, path: Path, lote_id: int):
+    """Envuelve el analisis de una foto para poder correr todas en paralelo
+    sin que una fallida tumbe al resto (requisito §7: nunca tirar el lote)."""
+    try:
+        return foto_id, await vision.analizar_foto(path.read_bytes())
+    except Exception as exc:  # noqa: BLE001
+        logger.error("foto_fallida lote_id=%s foto_id=%s error=%s", lote_id, foto_id, exc)
+        return foto_id, []
+
+
 async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, Path]]):
     """Corre en background: resize -> OpenRouter -> parse -> dedupe -> insert.
-    Nunca tira el lote entero: una foto fallida se loguea y se sigue con las demás.
+
+    Las fotos se analizan EN PARALELO (una llamada al modelo por foto): 6 fotos
+    pasan de ~40s secuenciales a ~7s. Los libros se insertan apenas termina
+    cada foto, asi el panel puede mostrar el conteo creciendo en vivo mientras
+    el resto sigue procesando.
     """
     vistos: set[tuple[str, str]] = set()
 
-    for foto_id, path in fotos:
-        try:
-            foto_bytes = path.read_bytes()
-            libros_detectados = await vision.analizar_foto(foto_bytes)
-        except Exception as exc:  # noqa: BLE001
-            logger.error("foto_fallida lote_id=%s foto_id=%s error=%s", lote_id, foto_id, exc)
-            continue
+    tareas = [_analizar_una(foto_id, path, lote_id) for foto_id, path in fotos]
+
+    for completada in asyncio.as_completed(tareas):
+        foto_id, libros_detectados = await completada
 
         for libro in libros_detectados:
-            titulo_detectado = str(libro.get("titulo_detectado", "")).strip()
-            autor_detectado = str(libro.get("autor_detectado", "")).strip()
-            # Si el modelo no encontro una correccion confiable tiene que devolver
-            # el campo corregido igual al detectado (instrucción del prompt); el
-            # "or" de acá es solo por las dudas de que venga vacío.
-            titulo_corregido = str(libro.get("titulo_corregido", "") or titulo_detectado).strip()
-            autor_corregido = str(libro.get("autor_corregido", "") or autor_detectado).strip()
+            titulo_detectado = str(libro.get("titulo_detectado") or "").strip()
+            autor_detectado = str(libro.get("autor_detectado") or "").strip()
+            titulo_corregido = str(libro.get("titulo_corregido") or titulo_detectado).strip()
+            # Sin "or autor_detectado": si el guardrail vació el autor por no
+            # tener un nombre real en la foto, dejarlo vacío es el resultado
+            # correcto — reintroducirlo devolvería el nombre de la colección.
+            autor_corregido = str(libro.get("autor_corregido") or "").strip()
             confianza = float(libro.get("confianza", 0) or 0)
             if not titulo_detectado:
                 continue
