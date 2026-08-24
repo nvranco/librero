@@ -55,6 +55,7 @@ async def panel_home(request: Request, slug: str, token: str):
             "lotes_pendientes": lotes_pendientes,
             "url_publica": f"{base}/{slug}",
             "url_inventario": f"{base}/{slug}/panel/{token}/libros",
+            "url_vender": f"{base}/{slug}/panel/{token}/vender",
             "url_qr": f"/api/{slug}/{token}/qr.png",
         },
     )
@@ -110,6 +111,15 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
             "cant_duplicados": len(duplicados),
         },
     )
+
+
+@router.get("/{slug}/panel/{token}/vender", response_class=HTMLResponse)
+async def panel_vender(request: Request, slug: str, token: str):
+    """P6 — flujo inverso a la carga: fotografiar libros para marcarlos
+    vendidos en lote. Pantalla simple, sin datos previos — todo lo arma el
+    JS contra /api/.../detectar-vendidos y /api/.../vendidos/confirmar."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    return templates.TemplateResponse(request, "vender.html", {"libreria": libreria})
 
 
 @router.get("/{slug}/panel/{token}/libros", response_class=HTMLResponse)

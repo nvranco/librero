@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS libros (
 CREATE TABLE IF NOT EXISTS eventos (
     id              BIGSERIAL PRIMARY KEY,
     libreria_id     INTEGER NOT NULL REFERENCES librerias(id) ON DELETE CASCADE,
-    tipo            TEXT NOT NULL,              -- vista|busqueda|clic_whatsapp|scan_qr|lote_publicado|libro_editado
+    tipo            TEXT NOT NULL,              -- vista|busqueda|clic_whatsapp|scan_qr|lote_publicado|libro_editado|inventario_reiniciado|ventas_confirmadas
     payload         JSONB NOT NULL DEFAULT '{}'::jsonb,
     session_id      TEXT,
     creado_en       TIMESTAMPTZ NOT NULL DEFAULT now()

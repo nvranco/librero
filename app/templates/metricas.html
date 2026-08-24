@@ -107,6 +107,7 @@
           {% elif e.tipo == 'clic_whatsapp' %}💬 WhatsApp{% if e.payload.generico %} (genérico){% elif e.payload.titulo %}: {{ e.payload.titulo }}{% endif %}
           {% elif e.tipo == 'inventario_reiniciado' %}🧹 Inventario reiniciado ({{ e.payload.libros_archivados }} libros)
           {% elif e.tipo == 'lote_publicado' %}📚 Lote publicado ({{ e.payload.publicados }} libro{{ 's' if e.payload.publicados != 1 else '' }})
+          {% elif e.tipo == 'ventas_confirmadas' %}💰 Venta confirmada ({{ e.payload.cantidad }} libro{{ 's' if e.payload.cantidad != 1 else '' }})
           {% else %}{{ e.tipo }}
           {% endif %}
         </p>

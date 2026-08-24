@@ -33,6 +33,10 @@ class ActualizarLibro(BaseModel):
     estado: str
 
 
+class ConfirmarVentas(BaseModel):
+    libro_ids: list[int]
+
+
 async def _libreria_por_slug_y_token(slug: str, token: str):
     fila = await db.pool().fetchrow(
         "SELECT * FROM librerias WHERE slug = $1 AND activa", slug
@@ -407,6 +411,97 @@ async def reiniciar_inventario(slug: str, token: str):
     )
     logger.info("inventario_reiniciado libreria_id=%s libros=%s", libreria["id"], cant)
     return {"ok": True, "archivados": cant}
+
+
+async def _catalogo_publicado(libreria_id: int):
+    """Filas hoy visibles en el catalogo publico — el universo contra el que
+    tiene sentido matchear una venta (no lo pendiente de revision, no lo ya
+    vendido, no lo descartado)."""
+    return await db.pool().fetch(
+        """
+        SELECT id, titulo, autor FROM libros
+        WHERE libreria_id = $1 AND archivado_en IS NULL AND estado = 'publicado'
+        """,
+        libreria_id,
+    )
+
+
+@router.post("/api/{slug}/{token}/detectar-vendidos")
+async def detectar_vendidos(slug: str, token: str, fotos: list[UploadFile]):
+    """Flujo inverso a la carga: fotografiar los libros que se estan por
+    entregar y matchearlos contra el catalogo YA publicado, para proponerle
+    al librero una lista de "esto es lo que parece que vendiste".
+
+    No persiste nada (ni fotos ni filas nuevas) — es una consulta de solo
+    lectura sobre el catalogo existente. El unico efecto real pasa despues,
+    cuando el librero confirma via /vendidos/confirmar. Reusa el mismo
+    matcheo de titulo/autor que el dedupe de carga (_indexar/_buscar_duplicado),
+    asi una venta con una lectura de lomo un poco distinta a la original
+    (mas o menos subtitulo, autor completado a mano) igual encuentra su
+    libro."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    if not fotos:
+        raise HTTPException(status_code=400, detail="Mandá entre 1 y 10 fotos.")
+    if len(fotos) > MAX_FOTOS_POR_LOTE:
+        raise HTTPException(status_code=400, detail=f"Máximo {MAX_FOTOS_POR_LOTE} fotos por lote.")
+
+    contenidos = [await f.read() for f in fotos]
+
+    filas_catalogo = await _catalogo_publicado(libreria["id"])
+    por_id = {f["id"]: {"titulo": f["titulo"], "autor": f["autor"]} for f in filas_catalogo}
+    indice: dict[str, list[tuple[str, int, bool]]] = {}
+    for f in filas_catalogo:
+        _indexar(indice, f["titulo"], f["autor"], f["id"])
+
+    async def _analizar(contenido: bytes):
+        try:
+            return await vision.analizar_foto(contenido)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("foto_venta_fallida libreria_id=%s error=%s", libreria["id"], exc)
+            return []
+
+    resultados_por_foto = await asyncio.gather(*[_analizar(c) for c in contenidos])
+
+    encontrados: dict[int, dict] = {}
+    no_encontrados = []
+    for libros_detectados in resultados_por_foto:
+        for libro in libros_detectados:
+            titulo_corregido = str(libro.get("titulo_corregido") or libro.get("titulo_detectado") or "").strip()
+            autor_corregido = str(libro.get("autor_corregido") or "").strip()
+            if not titulo_corregido:
+                continue
+            libro_id = _buscar_duplicado(indice, titulo_corregido, autor_corregido)
+            if libro_id is None:
+                no_encontrados.append({"titulo": titulo_corregido, "autor": autor_corregido})
+                continue
+            if libro_id not in encontrados:
+                datos = por_id[libro_id]
+                encontrados[libro_id] = {"libro_id": libro_id, "titulo": datos["titulo"], "autor": datos["autor"]}
+
+    return {"encontrados": list(encontrados.values()), "no_encontrados": no_encontrados}
+
+
+@router.post("/api/{slug}/{token}/vendidos/confirmar")
+async def confirmar_vendidos(slug: str, token: str, datos: ConfirmarVentas):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    if not datos.libro_ids:
+        raise HTTPException(status_code=400, detail="No hay libros para confirmar.")
+
+    resultado = await db.pool().execute(
+        """
+        UPDATE libros SET estado = 'vendido', vendido_en = now()
+        WHERE id = ANY($1::int[]) AND libreria_id = $2 AND estado = 'publicado'
+        """,
+        datos.libro_ids, libreria["id"],
+    )
+    cant = int(resultado.split()[-1])
+    await db.pool().execute(
+        "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'ventas_confirmadas', $2::jsonb)",
+        libreria["id"], json.dumps({"cantidad": cant}),
+    )
+    logger.info("ventas_confirmadas libreria_id=%s cantidad=%s", libreria["id"], cant)
+    return {"ok": True, "vendidos": cant}
 
 
 @router.get("/api/{slug}/{token}/qr.png")
