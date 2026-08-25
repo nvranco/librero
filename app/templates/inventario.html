@@ -9,67 +9,28 @@
   </header>
 
   <main class="flex-1 px-5 -mt-3 pb-10">
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="font-medium">Catálogo general</p>
+      <p class="text-xs text-gris mt-1">Todos tus libros publicados</p>
+      <div class="flex gap-2 mt-2">
+        <button type="button" id="btn-copiar-general" data-link="{{ url_publica }}"
+          class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
+        <a href="{{ url_publica }}" target="_blank" rel="noopener"
+          class="tap btn-secundario shrink-0 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
+        <a href="{{ url_qr }}" download="qr-{{ libreria.slug }}.png"
+          class="tap btn-secundario shrink-0 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">QR 🏷️</a>
+      </div>
+    </div>
+
     <input
       id="buscador"
       type="search"
       inputmode="search"
       placeholder="Buscar un libro puntual…"
-      class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris"
+      class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris mt-4"
     >
 
-    <div id="resultados-busqueda" class="hidden mt-4 space-y-2"></div>
-
-    <div id="contenedores" class="mt-6 space-y-2">
-      <div id="catalogo-general" class="bg-papel border border-borde rounded-xl2 p-3">
-        <p class="font-medium">Catálogo general</p>
-        <p class="text-xs text-gris mt-1">Todos tus libros publicados</p>
-        <div class="flex gap-2 mt-2">
-          <button type="button" data-rol="copiar" data-link="{{ url_publica }}"
-            class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
-          <a href="{{ url_publica }}" target="_blank" rel="noopener"
-            class="tap btn-secundario shrink-0 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
-          <a href="{{ url_qr }}" download="qr-{{ libreria.slug }}.png"
-            class="tap btn-secundario shrink-0 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">QR 🏷️</a>
-        </div>
-      </div>
-
-      {% for c in catalogos %}
-      <div id="catalogo-{{ c.id }}" class="{{ c.color.bg }} border {{ c.color.borde }} rounded-xl2 p-3">
-        <div data-rol="vista">
-          <p class="font-medium">{{ c.nombre }}</p>
-          {% if c.descripcion %}<p class="text-sm text-gris">{{ c.descripcion }}</p>{% endif %}
-          <p class="text-xs text-gris mt-1">
-            {{ c.cant_libros }} libro{{ 's' if c.cant_libros != 1 else '' }}
-            {% if c.ultima_actualizacion %} · actualizado {{ c.ultima_actualizacion.strftime('%d/%m') }}{% endif %}
-          </p>
-          <div class="flex gap-2 mt-2">
-            <button type="button" data-rol="copiar" data-link="{{ c.url }}"
-              class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
-            <a href="{{ c.url }}" target="_blank" rel="noopener"
-              class="tap btn-secundario flex-1 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
-          </div>
-          <div class="flex gap-2 mt-2">
-            <button type="button" data-rol="editar"
-              class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Editar ✏️</button>
-            <button type="button" data-rol="borrar"
-              class="tap flex-1 rounded-lg px-3 py-2 text-sm font-medium border-2 border-terracota text-terracota">Borrar 🗑️</button>
-          </div>
-        </div>
-        <div data-rol="edicion" class="hidden space-y-2">
-          <input data-campo="nombre" value="{{ c.nombre }}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
-          <input data-campo="descripcion" value="{{ c.descripcion }}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
-          <div class="flex gap-2">
-            <button type="button" data-rol="guardar" class="tap btn-primario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Guardar</button>
-            <button type="button" data-rol="cancelar" class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Cancelar</button>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-
-      {% if not catalogos %}
-      <p class="text-center text-gris text-xs px-2">Los catálogos se crean al publicar un lote nuevo.</p>
-      {% endif %}
-    </div>
+    <div id="lista" class="mt-4 space-y-2"></div>
 
     <div id="estado-vacio" class="hidden mt-14 text-center text-gris px-4">
       <p class="text-4xl mb-3">📚</p>
@@ -115,13 +76,12 @@
   const libros = {{ libros_json | safe }};
   const catalogosPorId = {};
   ({{ catalogos_json | safe }}).forEach((c) => { catalogosPorId[c.id] = c; });
+  const catalogosLista = Object.values(catalogosPorId);
 
   const buscador = document.getElementById('buscador');
-  const resultadosBusqueda = document.getElementById('resultados-busqueda');
-  const contenedores = document.getElementById('contenedores');
+  const lista = document.getElementById('lista');
   const estadoVacio = document.getElementById('estado-vacio');
   const bloqueVaciar = document.getElementById('bloque-vaciar');
-  const catalogosLista = Object.values(catalogosPorId);
 
   function normalizar(texto) {
     return (texto || '').toString().toLowerCase().trim();
@@ -141,68 +101,42 @@
     });
   }
 
-  function irAlCatalogo(anchorId, esCatalogoReal) {
-    buscador.value = '';
-    render(); // limpia la busqueda para que los contenedores vuelvan a mostrarse
-    const destino = document.getElementById(anchorId);
-    if (!destino) return;
-    destino.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    destino.classList.add('ring-2', 'ring-tinta');
-    setTimeout(() => destino.classList.remove('ring-2', 'ring-tinta'), 1200);
-    if (esCatalogoReal) {
-      const btnEditar = destino.querySelector('[data-rol="editar"]');
-      if (btnEditar) btnEditar.click();
-    }
-  }
+  document.getElementById('btn-copiar-general').addEventListener('click', (e) => {
+    copiar(e.currentTarget.dataset.link, e.currentTarget);
+  });
 
   function badgeCatalogo(libro) {
     if (libro.catalogo_id === null || libro.catalogo_id === undefined) {
-      return `<button type="button" data-rol="ir-catalogo" data-anchor="catalogo-general" data-real="0"
-        class="tap text-xs bg-crema border border-borde rounded-full px-2 py-1 font-medium">📁 Catálogo general</button>`;
+      return `<span class="tap text-xs bg-crema border border-borde rounded-full px-2 py-1 font-medium">📁 Catálogo general</span>`;
     }
     const c = catalogosPorId[libro.catalogo_id];
     if (!c) {
-      return `<button type="button" data-rol="ir-catalogo" data-anchor="catalogo-general" data-real="0"
-        class="tap text-xs bg-crema border border-borde rounded-full px-2 py-1 font-medium">📁 Catálogo general</button>`;
+      return `<span class="tap text-xs bg-crema border border-borde rounded-full px-2 py-1 font-medium">📁 Catálogo general</span>`;
     }
-    return `<button type="button" data-rol="ir-catalogo" data-anchor="catalogo-${c.id}" data-real="1"
-      class="tap text-xs ${c.color.bg} border ${c.color.borde} rounded-full px-2 py-1 font-medium">📁 ${escaparHtml(c.nombre)}</button>`;
+    return `<span class="tap text-xs ${c.color.bg} border ${c.color.borde} rounded-full px-2 py-1 font-medium">📁 ${escaparHtml(c.nombre)}</span>`;
   }
 
   function render() {
     const q = normalizar(buscador.value);
+    const filtrados = libros.filter((l) =>
+      !q || normalizar(l.titulo).includes(q) || normalizar(l.autor).includes(q)
+    );
 
     if (libros.length === 0) {
-      resultadosBusqueda.classList.add('hidden');
-      contenedores.classList.add('hidden');
-      if (bloqueVaciar) bloqueVaciar.classList.add('hidden');
+      lista.innerHTML = '';
       estadoVacio.classList.remove('hidden');
+      if (bloqueVaciar) bloqueVaciar.classList.add('hidden');
       return;
     }
     estadoVacio.classList.add('hidden');
-
-    if (!q) {
-      resultadosBusqueda.classList.add('hidden');
-      resultadosBusqueda.innerHTML = '';
-      contenedores.classList.remove('hidden');
-      if (bloqueVaciar) bloqueVaciar.classList.remove('hidden');
-      return;
-    }
-
-    contenedores.classList.add('hidden');
-    if (bloqueVaciar) bloqueVaciar.classList.add('hidden');
-    resultadosBusqueda.classList.remove('hidden');
-
-    const filtrados = libros.filter((l) =>
-      normalizar(l.titulo).includes(q) || normalizar(l.autor).includes(q)
-    );
+    if (bloqueVaciar) bloqueVaciar.classList.toggle('hidden', q.length > 0);
 
     if (filtrados.length === 0) {
-      resultadosBusqueda.innerHTML = '<p class="text-center text-gris py-8">Nada coincide con esa búsqueda.</p>';
+      lista.innerHTML = '<p class="text-center text-gris py-8">Nada coincide con esa búsqueda.</p>';
       return;
     }
 
-    resultadosBusqueda.innerHTML = filtrados.map((libro) => `
+    lista.innerHTML = filtrados.map((libro) => `
       <div class="bg-papel border border-borde rounded-xl2 p-3" data-id="${libro.id}">
         <button type="button" data-rol="expandir" class="tap w-full text-left flex items-center justify-between gap-2">
           <span class="min-w-0">
@@ -233,7 +167,7 @@
       </div>
     `).join('');
 
-    resultadosBusqueda.querySelectorAll('[data-id]').forEach((fila) => {
+    lista.querySelectorAll('[data-id]').forEach((fila) => {
       const id = Number(fila.dataset.id);
       const libro = libros.find((l) => l.id === id);
       const detalle = fila.querySelector('[data-rol="detalle"]');
@@ -242,11 +176,6 @@
 
       fila.querySelector('[data-rol="expandir"]').addEventListener('click', () => {
         detalle.classList.toggle('hidden');
-      });
-
-      fila.querySelector('[data-rol="ir-catalogo"]').addEventListener('click', (e) => {
-        e.stopPropagation();
-        irAlCatalogo(e.currentTarget.dataset.anchor, e.currentTarget.dataset.real === '1');
       });
 
       const btnVendido = fila.querySelector('[data-accion="vendido"]');
@@ -308,47 +237,6 @@
 
   buscador.addEventListener('input', render);
   render();
-
-  // Contenedores de catalogos: copiar link, editar y borrar (mismo patron
-  // que antes vivia en catalogos.html, ahora fusionado en esta pantalla).
-  document.querySelectorAll('[data-rol="copiar"]').forEach((btn) => {
-    btn.addEventListener('click', () => copiar(btn.dataset.link, btn));
-  });
-
-  document.querySelectorAll('[id^="catalogo-"]').forEach((tarjeta) => {
-    if (tarjeta.id === 'catalogo-general') return;
-    const catalogoId = tarjeta.id.replace('catalogo-', '');
-    const vista = tarjeta.querySelector('[data-rol="vista"]');
-    const edicion = tarjeta.querySelector('[data-rol="edicion"]');
-
-    tarjeta.querySelector('[data-rol="editar"]').addEventListener('click', () => {
-      vista.classList.add('hidden');
-      edicion.classList.remove('hidden');
-    });
-
-    tarjeta.querySelector('[data-rol="cancelar"]').addEventListener('click', () => {
-      edicion.classList.add('hidden');
-      vista.classList.remove('hidden');
-    });
-
-    tarjeta.querySelector('[data-rol="guardar"]').addEventListener('click', async () => {
-      const nombre = edicion.querySelector('[data-campo="nombre"]').value.trim();
-      const descripcion = edicion.querySelector('[data-campo="descripcion"]').value.trim();
-      if (!nombre) { alert('El catálogo necesita un nombre.'); return; }
-      await fetch(`${API_BASE}/catalogos/${catalogoId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, descripcion }),
-      });
-      window.location.reload();
-    });
-
-    tarjeta.querySelector('[data-rol="borrar"]').addEventListener('click', async () => {
-      if (!confirm('¿Borrar este catálogo? Los libros no se borran, solo dejan de estar agrupados.')) return;
-      await fetch(`${API_BASE}/catalogos/${catalogoId}`, { method: 'DELETE' });
-      tarjeta.remove();
-    });
-  });
 
   // Vaciar inventario. Solo se renderiza si hay algo que vaciar.
   const btnReiniciar = document.getElementById('btn-reiniciar');
