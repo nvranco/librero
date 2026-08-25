@@ -8,6 +8,23 @@
   </header>
 
   <main class="flex-1 px-5 -mt-4 pb-28">
+    <div class="bg-papel border border-borde rounded-xl2 p-3 mb-2">
+      <p class="text-xs text-gris mb-2">Visitas al catálogo · últimos 7 días</p>
+      <div class="flex items-end justify-between gap-1" style="height: 56px;">
+        {% for d in visitas_semana %}
+        <div class="flex-1 flex flex-col items-center justify-end h-full gap-1">
+          <span class="text-[10px] text-gris">{{ d.cant }}</span>
+          <div class="w-full bg-celeste rounded-t" style="height: {{ d.pct }}%; min-height: 3px;"></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="flex justify-between gap-1 mt-1">
+        {% for d in visitas_semana %}
+        <span class="flex-1 text-center text-[10px] text-gris">{{ d.dia_corto }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
     <div class="grid grid-cols-3 gap-2">
       <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
         <p class="text-2xl font-bold flex items-center justify-center gap-1">
@@ -65,7 +82,7 @@
     <div class="mt-8 space-y-3">
       <a href="{{ url_inventario }}"
         class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
-        Ver inventario completo 📚
+        Ver catálogos 📚
       </a>
 
       <a href="{{ url_metricas }}"
@@ -80,18 +97,18 @@
   <div class="fixed bottom-0 left-0 right-0 bg-crema/95 backdrop-blur-0 border-t border-borde px-5 py-3 safe-b">
     <div class="grid grid-cols-2 gap-2">
       <button id="btn-cargar" type="button"
-        class="tap btn-primario rounded-xl2 font-bold text-sm sm:text-base whitespace-nowrap px-2 py-3 flex items-center justify-center gap-1">
+        class="tap btn-primario rounded-xl2 font-bold text-sm sm:text-base whitespace-nowrap px-2 py-3 flex items-center justify-center gap-1 border-b-4 border-celeste">
         Cargar estante 📷
       </button>
       <a href="{{ url_vender }}"
-        class="tap btn-primario rounded-xl2 font-bold text-sm sm:text-base whitespace-nowrap px-2 py-3 flex items-center justify-center gap-1 text-center">
+        class="tap btn-primario rounded-xl2 font-bold text-sm sm:text-base whitespace-nowrap px-2 py-3 flex items-center justify-center gap-1 text-center border-b-4 border-ambar">
         Marcar vendidos 💰
       </a>
     </div>
-    <p class="text-center text-xs text-gris mt-2">Sacá entre 1 y 10 fotos de un estante. Después de procesarlas vas a poder revisarlas y publicarlas.</p>
-    <button id="btn-ver-guia" type="button" class="w-full text-center text-xs text-celeste font-medium mt-1 underline underline-offset-2">
-      Cómo sacar una buena foto
-    </button>
+    <p class="text-center text-xs text-gris mt-2">
+      Entran libros nuevos, salen los que ya vendiste ·
+      <button id="btn-ver-guia" type="button" class="text-celeste font-medium underline underline-offset-2">Cómo sacar una buena foto</button>
+    </p>
   </div>
 
   <div id="modal-guia" class="hidden fixed inset-0 z-50 bg-tinta/60 flex items-end sm:items-center sm:justify-center">

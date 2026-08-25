@@ -3,6 +3,7 @@ secreto (D2: sin login)."""
 
 import json
 import secrets
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -14,6 +15,8 @@ from app.metricas import calcular_metricas
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+DIAS_CORTOS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
 
 
 async def _libreria_por_slug_y_token(slug: str, token: str):
@@ -51,6 +54,31 @@ async def panel_home(request: Request, slug: str, token: str):
         "SELECT COUNT(*) FROM eventos WHERE libreria_id = $1 AND tipo = 'clic_whatsapp' AND creado_en > $2",
         libreria["id"], desde_ciclo,
     )
+    # Visitas por dia de la ultima semana, para el mini-grafico del panel.
+    # Se completan los dias sin ninguna vista en 0 (no se saltean), asi el
+    # grafico siempre tiene 7 barras seguidas.
+    filas_visitas_semana = await db.pool().fetch(
+        """
+        SELECT date_trunc('day', creado_en) AS dia, COUNT(*) AS cant
+        FROM eventos
+        WHERE libreria_id = $1 AND tipo = 'vista' AND creado_en > now() - interval '7 days'
+        GROUP BY dia
+        """,
+        libreria["id"],
+    )
+    conteo_por_dia = {f["dia"].date(): f["cant"] for f in filas_visitas_semana}
+    hoy = datetime.now(timezone.utc).date()
+    dias = [hoy - timedelta(days=i) for i in range(6, -1, -1)]
+    cant_maxima = max([conteo_por_dia.get(d, 0) for d in dias] + [0])
+    visitas_semana = [
+        {
+            "dia_corto": DIAS_CORTOS[d.weekday()],
+            "cant": conteo_por_dia.get(d, 0),
+            "pct": round(conteo_por_dia.get(d, 0) / cant_maxima * 100, 1) if cant_maxima else 0,
+        }
+        for d in dias
+    ]
+
     lotes_pendientes = await db.pool().fetch(
         """
         SELECT l.id, l.cant_fotos, l.creado_en,
@@ -72,6 +100,7 @@ async def panel_home(request: Request, slug: str, token: str):
             "cant_libros": cant_libros,
             "vistas_ciclo": vistas_ciclo,
             "clics_ciclo": clics_ciclo,
+            "visitas_semana": visitas_semana,
             "lotes_pendientes": lotes_pendientes,
             "url_publica": f"{base}/{slug}",
             "url_inventario": f"{base}/{slug}/panel/{token}/libros",
