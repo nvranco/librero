@@ -77,7 +77,7 @@
     </div>
 
     {% if cant_libros %}
-    <div class="mt-10">
+    <div id="bloque-vaciar" class="mt-10">
       <button id="btn-reiniciar" type="button"
         class="tap w-full rounded-xl2 border-2 border-terracota text-terracota font-bold">
         Vaciar inventario 🧹
@@ -120,6 +120,8 @@
   const resultadosBusqueda = document.getElementById('resultados-busqueda');
   const contenedores = document.getElementById('contenedores');
   const estadoVacio = document.getElementById('estado-vacio');
+  const bloqueVaciar = document.getElementById('bloque-vaciar');
+  const catalogosLista = Object.values(catalogosPorId);
 
   function normalizar(texto) {
     return (texto || '').toString().toLowerCase().trim();
@@ -173,6 +175,7 @@
     if (libros.length === 0) {
       resultadosBusqueda.classList.add('hidden');
       contenedores.classList.add('hidden');
+      if (bloqueVaciar) bloqueVaciar.classList.add('hidden');
       estadoVacio.classList.remove('hidden');
       return;
     }
@@ -182,10 +185,12 @@
       resultadosBusqueda.classList.add('hidden');
       resultadosBusqueda.innerHTML = '';
       contenedores.classList.remove('hidden');
+      if (bloqueVaciar) bloqueVaciar.classList.remove('hidden');
       return;
     }
 
     contenedores.classList.add('hidden');
+    if (bloqueVaciar) bloqueVaciar.classList.add('hidden');
     resultadosBusqueda.classList.remove('hidden');
 
     const filtrados = libros.filter((l) =>
@@ -218,6 +223,10 @@
           <div data-rol="edicion" class="hidden space-y-2">
             <input data-campo="titulo" value="${escaparHtml(libro.titulo)}" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm">
             <input data-campo="autor" value="${escaparHtml(libro.autor)}" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm">
+            <select data-campo="catalogo" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm bg-papel">
+              <option value="" ${(libro.catalogo_id === null || libro.catalogo_id === undefined) ? 'selected' : ''}>📁 Catálogo general</option>
+              ${catalogosLista.map((c) => `<option value="${c.id}" ${libro.catalogo_id === c.id ? 'selected' : ''}>📁 ${escaparHtml(c.nombre)}</option>`).join('')}
+            </select>
             <button type="button" data-accion="guardar" class="tap btn-primario w-full rounded-lg text-sm font-bold">Guardar</button>
           </div>
         </div>
@@ -265,9 +274,21 @@
       fila.querySelector('[data-accion="guardar"]').addEventListener('click', async () => {
         const nuevoTitulo = fila.querySelector('[data-campo="titulo"]').value.trim();
         const nuevoAutor = fila.querySelector('[data-campo="autor"]').value.trim();
+        const selectCatalogo = fila.querySelector('[data-campo="catalogo"]');
+        const nuevoCatalogoId = selectCatalogo.value ? Number(selectCatalogo.value) : null;
+
         await patchLibro(libro, { titulo: nuevoTitulo, autor: nuevoAutor });
         libro.titulo = nuevoTitulo;
         libro.autor = nuevoAutor;
+
+        if (nuevoCatalogoId !== libro.catalogo_id) {
+          await fetch(`${API_BASE}/libros/${libro.id}/catalogo`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ catalogo_id: nuevoCatalogoId }),
+          });
+          libro.catalogo_id = nuevoCatalogoId;
+        }
         render();
       });
     });
