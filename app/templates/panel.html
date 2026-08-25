@@ -8,23 +8,6 @@
   </header>
 
   <main class="flex-1 px-5 -mt-4 pb-28">
-    <div class="bg-papel border border-borde rounded-xl2 p-3 mb-2">
-      <p class="text-xs text-gris mb-2">Visitas al catálogo · últimos 7 días</p>
-      <div class="flex items-end justify-between gap-1" style="height: 56px;">
-        {% for d in visitas_semana %}
-        <div class="flex-1 flex flex-col items-center justify-end h-full gap-1">
-          <span class="text-[10px] text-gris">{{ d.cant }}</span>
-          <div class="w-full bg-celeste rounded-t" style="height: {{ d.pct }}%; min-height: 3px;"></div>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="flex justify-between gap-1 mt-1">
-        {% for d in visitas_semana %}
-        <span class="flex-1 text-center text-[10px] text-gris">{{ d.dia_corto }}</span>
-        {% endfor %}
-      </div>
-    </div>
-
     <div class="grid grid-cols-3 gap-2">
       <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
         <p class="text-2xl font-bold flex items-center justify-center gap-1">
@@ -43,6 +26,23 @@
           <span data-contador="{{ clics_ciclo }}">0</span><span class="text-sm">💬</span>
         </p>
         <p class="text-xs text-gris mt-1">Consulta{{ 's' if clics_ciclo != 1 else '' }} por WhatsApp</p>
+      </div>
+    </div>
+
+    <div class="bg-papel border border-borde rounded-xl2 p-3 mt-2">
+      <p class="text-xs text-gris mb-2">Visitas al catálogo · últimos 7 días</p>
+      <div class="flex items-end justify-between gap-1" style="height: 56px;">
+        {% for d in visitas_semana %}
+        <div class="flex-1 flex flex-col items-center justify-end h-full gap-1">
+          <span class="text-[10px] text-gris">{{ d.cant }}</span>
+          <div class="w-full bg-celeste rounded-t" style="height: {{ d.pct }}%; min-height: 3px;"></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="flex justify-between gap-1 mt-1">
+        {% for d in visitas_semana %}
+        <span class="flex-1 text-center text-[10px] text-gris">{{ d.dia_corto }}</span>
+        {% endfor %}
       </div>
     </div>
 
