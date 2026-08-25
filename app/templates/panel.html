@@ -9,11 +9,19 @@
   </header>
 
   <main class="flex-1 px-5 -mt-4 pb-28">
-    <div class="bg-papel border border-borde rounded-xl2 shadow-sm p-5 text-center">
-      <p class="text-5xl font-bold">{{ cant_libros }}</p>
-      <p class="text-gris mt-1">
-        {% if cant_libros == 1 %}Libro publicado{% else %}Libros publicados{% endif %}
-      </p>
+    <div class="grid grid-cols-3 gap-2">
+      <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
+        <p class="text-2xl font-bold" data-contador="{{ cant_libros }}">0</p>
+        <p class="text-xs text-gris mt-1">Libro{{ 's' if cant_libros != 1 else '' }} publicado{{ 's' if cant_libros != 1 else '' }}</p>
+      </div>
+      <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
+        <p class="text-2xl font-bold" data-contador="{{ vistas_ciclo }}">0</p>
+        <p class="text-xs text-gris mt-1">Visita{{ 's' if vistas_ciclo != 1 else '' }} al catálogo</p>
+      </div>
+      <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
+        <p class="text-2xl font-bold" data-contador="{{ clics_ciclo }}">0</p>
+        <p class="text-xs text-gris mt-1">Consulta{{ 's' if clics_ciclo != 1 else '' }} por WhatsApp</p>
+      </div>
     </div>
 
     {% if cant_libros == 0 %}
@@ -50,28 +58,6 @@
     {% endif %}
 
     <div class="mt-8 space-y-3">
-      <div class="bg-papel border border-borde rounded-xl2 p-4">
-        <p class="text-sm text-gris mb-1">Link público de tu catálogo</p>
-        <div class="flex items-center gap-2">
-          <input readonly value="{{ url_publica }}"
-            class="tap flex-1 min-w-0 truncate rounded-lg border border-borde px-3 py-2 text-sm bg-crema">
-          <button type="button" onclick="copiar('{{ url_publica }}', this)"
-            class="tap btn-primario shrink-0 rounded-lg px-4 text-sm font-medium">
-            Copiar 📋
-          </button>
-        </div>
-      </div>
-
-      <a href="{{ url_publica }}" target="_blank" rel="noopener"
-        class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
-        Ver mi catálogo público 👀
-      </a>
-
-      <a href="{{ url_qr }}" download="qr-{{ libreria.slug }}.png"
-        class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
-        Descargar QR para el mostrador 🏷️
-      </a>
-
       <a href="{{ url_inventario }}"
         class="tap btn-secundario w-full flex items-center justify-center rounded-xl2 font-medium">
         Ver inventario completo 📚
@@ -151,13 +137,22 @@
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
   const API_LOTES = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}/lotes`;
 
-  function copiar(texto, btn) {
-    navigator.clipboard.writeText(texto).then(function () {
-      var original = btn.textContent;
-      btn.textContent = '¡Listo!';
-      setTimeout(function () { btn.textContent = original; }, 1500);
+  function animarContadores() {
+    document.querySelectorAll('[data-contador]').forEach((el) => {
+      const destino = Number(el.dataset.contador);
+      if (!destino) { el.textContent = '0'; return; }
+      const inicio = performance.now();
+      const duracion = 700;
+      function paso(ahora) {
+        const t = Math.min((ahora - inicio) / duracion, 1);
+        const valor = Math.round(destino * (1 - Math.pow(1 - t, 3))); // ease-out cubico
+        el.textContent = valor;
+        if (t < 1) requestAnimationFrame(paso);
+      }
+      requestAnimationFrame(paso);
     });
   }
+  animarContadores();
 
   const btnCargar = document.getElementById('btn-cargar');
   const inputFotos = document.getElementById('input-fotos');

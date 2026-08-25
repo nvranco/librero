@@ -35,6 +35,22 @@ async def panel_home(request: Request, slug: str, token: str):
         """,
         libreria["id"],
     )
+    # Los 3 indicadores del panel son del ciclo actual, no del historico
+    # completo (eso ya se ve en "Ver estadisticas"): arrancan en el ultimo
+    # reinicio de inventario, o desde que existe la libreria si nunca se reinicio.
+    desde_ciclo = await db.pool().fetchval(
+        "SELECT creado_en FROM eventos WHERE libreria_id = $1 AND tipo = 'inventario_reiniciado' "
+        "ORDER BY creado_en DESC LIMIT 1",
+        libreria["id"],
+    ) or libreria["creado_en"]
+    vistas_ciclo = await db.pool().fetchval(
+        "SELECT COUNT(*) FROM eventos WHERE libreria_id = $1 AND tipo = 'vista' AND creado_en > $2",
+        libreria["id"], desde_ciclo,
+    )
+    clics_ciclo = await db.pool().fetchval(
+        "SELECT COUNT(*) FROM eventos WHERE libreria_id = $1 AND tipo = 'clic_whatsapp' AND creado_en > $2",
+        libreria["id"], desde_ciclo,
+    )
     lotes_pendientes = await db.pool().fetch(
         """
         SELECT l.id, l.cant_fotos, l.creado_en,
@@ -54,6 +70,8 @@ async def panel_home(request: Request, slug: str, token: str):
         {
             "libreria": libreria,
             "cant_libros": cant_libros,
+            "vistas_ciclo": vistas_ciclo,
+            "clics_ciclo": clics_ciclo,
             "lotes_pendientes": lotes_pendientes,
             "url_publica": f"{base}/{slug}",
             "url_inventario": f"{base}/{slug}/panel/{token}/libros",
@@ -191,6 +209,7 @@ async def panel_catalogos(request: Request, slug: str, token: str):
             "libreria": libreria,
             "catalogos": catalogos,
             "url_publica": f"{base}/{slug}",
+            "url_qr": f"/api/{slug}/{token}/qr.png",
         },
     )
 
