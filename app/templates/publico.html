@@ -16,8 +16,20 @@
   </header>
 
   <main class="flex-1 px-5 -mt-3 pb-10">
+    <div class="relative">
+      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg pointer-events-none">🔎</span>
+      <input
+        id="buscador"
+        type="search"
+        autofocus
+        inputmode="search"
+        placeholder="Buscar por título o autor…"
+        class="tap w-full rounded-xl2 border-2 border-tinta bg-papel pl-11 pr-4 py-2 text-lg outline-none placeholder:text-gris"
+      >
+    </div>
+
     {% if catalogos %}
-    <div id="catalogos-cards" class="mb-4 space-y-2">
+    <div id="catalogos-cards" class="mt-4 space-y-2">
       {% for c in catalogos %}
       <a href="/{{ libreria.slug }}/c/{{ c.slug }}?origen=card"
         class="tap block rounded-xl2 border p-3 {{ c.color.bg }} {{ c.color.borde }}">
@@ -32,19 +44,9 @@
     </div>
     {% endif %}
 
-    <input
-      id="buscador"
-      type="search"
-      autofocus
-      inputmode="search"
-      placeholder="Buscar por título o autor…"
-      class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris"
-    >
-
     <div id="resultados" class="mt-4 space-y-3"></div>
 
     <div id="estado-vacio" class="mt-14 text-center text-gris px-4">
-      <p class="text-4xl mb-3">🔎</p>
       <p id="mensaje-vacio" class="text-base">
         {% if hay_libros %}
           Escribí un título o autor para empezar a buscar.
