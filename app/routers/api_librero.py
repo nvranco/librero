@@ -635,6 +635,28 @@ async def asignar_catalogo_lote(slug: str, token: str, lote_id: int, datos: Asig
     return {"ok": True}
 
 
+@router.patch("/api/{slug}/{token}/libros/{libro_id}/catalogo")
+async def asignar_catalogo_libro(slug: str, token: str, libro_id: int, datos: AsignarCatalogo):
+    """Reasigna el catalogo de un libro puntual (independiente del lote), para
+    mover libros entre catalogos despues de publicados."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    if datos.catalogo_id is not None:
+        existe = await db.pool().fetchval(
+            "SELECT 1 FROM catalogos WHERE id = $1 AND libreria_id = $2", datos.catalogo_id, libreria["id"]
+        )
+        if not existe:
+            raise HTTPException(status_code=404, detail="Ese catálogo no existe.")
+
+    resultado = await db.pool().execute(
+        "UPDATE libros SET catalogo_id = $1 WHERE id = $2 AND libreria_id = $3",
+        datos.catalogo_id, libro_id, libreria["id"],
+    )
+    if resultado == "UPDATE 0":
+        raise HTTPException(status_code=404)
+    return {"ok": True}
+
+
 @router.get("/api/{slug}/{token}/qr.png")
 async def qr_png(slug: str, token: str, request: Request):
     """QR con /{slug}?src=qr — separa trafico local (mostrador) de redes (§5 requisitos)."""

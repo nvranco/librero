@@ -76,7 +76,6 @@ async def panel_home(request: Request, slug: str, token: str):
             "url_publica": f"{base}/{slug}",
             "url_inventario": f"{base}/{slug}/panel/{token}/libros",
             "url_vender": f"{base}/{slug}/panel/{token}/vender",
-            "url_catalogos": f"{base}/{slug}/panel/{token}/catalogos",
             "url_metricas": f"{base}/{slug}/panel/{token}/metricas",
             "url_qr": f"/api/{slug}/{token}/qr.png",
         },
@@ -178,42 +177,6 @@ async def panel_lote_catalogo(request: Request, slug: str, token: str, lote_id: 
     )
 
 
-@router.get("/{slug}/panel/{token}/catalogos", response_class=HTMLResponse)
-async def panel_catalogos(request: Request, slug: str, token: str):
-    """P7 — "Ver mis catálogos": listar, compartir, editar y borrar."""
-    libreria = await _libreria_por_slug_y_token(slug, token)
-
-    filas = await db.pool().fetch(
-        """
-        SELECT c.id, c.slug, c.nombre, c.descripcion,
-               COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) AS cant_libros,
-               GREATEST(MAX(li.publicado_en), MAX(li.vendido_en), MAX(li.archivado_en)) AS ultima_actualizacion
-        FROM catalogos c
-        LEFT JOIN libros li ON li.catalogo_id = c.id
-        WHERE c.libreria_id = $1
-        GROUP BY c.id
-        ORDER BY c.creado_en DESC
-        """,
-        libreria["id"],
-    )
-    base = str(request.base_url).rstrip("/")
-    catalogos = [
-        {**dict(f), "color": color_catalogo(f["id"]), "url": f"{base}/{slug}/c/{f['slug']}"}
-        for f in filas
-    ]
-
-    return templates.TemplateResponse(
-        request,
-        "catalogos.html",
-        {
-            "libreria": libreria,
-            "catalogos": catalogos,
-            "url_publica": f"{base}/{slug}",
-            "url_qr": f"/api/{slug}/{token}/qr.png",
-        },
-    )
-
-
 @router.get("/{slug}/panel/{token}/metricas", response_class=HTMLResponse)
 async def panel_metricas(request: Request, slug: str, token: str):
     """Metricas propias del librero — mismo template que usa el admin, con
@@ -271,7 +234,7 @@ async def panel_inventario(request: Request, slug: str, token: str):
 
     libros = await db.pool().fetch(
         """
-        SELECT id, titulo, autor, estado
+        SELECT id, titulo, autor, estado, catalogo_id
         FROM libros
         WHERE libreria_id = $1 AND estado IN ('publicado', 'vendido') AND archivado_en IS NULL
         ORDER BY titulo
@@ -280,6 +243,28 @@ async def panel_inventario(request: Request, slug: str, token: str):
     )
     libros_json = json.dumps([dict(l) for l in libros]).replace("</", "<\\/")
 
+    filas_catalogos = await db.pool().fetch(
+        """
+        SELECT c.id, c.slug, c.nombre, c.descripcion,
+               COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) AS cant_libros,
+               GREATEST(MAX(li.publicado_en), MAX(li.vendido_en), MAX(li.archivado_en)) AS ultima_actualizacion
+        FROM catalogos c
+        LEFT JOIN libros li ON li.catalogo_id = c.id
+        WHERE c.libreria_id = $1
+        GROUP BY c.id
+        ORDER BY c.creado_en DESC
+        """,
+        libreria["id"],
+    )
+    base = str(request.base_url).rstrip("/")
+    catalogos = [
+        {**dict(f), "color": color_catalogo(f["id"]), "url": f"{base}/{slug}/c/{f['slug']}"}
+        for f in filas_catalogos
+    ]
+    catalogos_json = json.dumps(
+        [{"id": c["id"], "nombre": c["nombre"], "color": c["color"]} for c in catalogos]
+    ).replace("</", "<\\/")
+
     return templates.TemplateResponse(
         request,
         "inventario.html",
@@ -287,5 +272,9 @@ async def panel_inventario(request: Request, slug: str, token: str):
             "libreria": libreria,
             "libros_json": libros_json,
             "cant_libros": len(libros),
+            "catalogos": catalogos,
+            "catalogos_json": catalogos_json,
+            "url_publica": f"{base}/{slug}",
+            "url_qr": f"/api/{slug}/{token}/qr.png",
         },
     )
