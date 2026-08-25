@@ -17,35 +17,6 @@
       class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris"
     >
 
-    {% if cant_libros %}
-    <div class="mt-2">
-      <button id="btn-reiniciar" type="button"
-        class="w-full text-center text-sm text-terracota font-medium py-2">
-        Vaciar inventario 🧹
-      </button>
-
-      <div id="confirmar-reinicio" class="hidden mt-1 bg-papel border-2 border-terracota rounded-xl2 p-4">
-        <p class="font-bold">¿Vaciar todo el catálogo?</p>
-        <p class="text-sm text-gris mt-1">
-          Se van a sacar
-          <strong>{{ cant_libros }} libro{{ 's' if cant_libros != 1 else '' }}</strong>
-          de tu catálogo público y vas a arrancar de cero. Las fotos y los lotes que
-          cargaste quedan guardados, pero no vuelven a aparecer acá.
-        </p>
-        <div class="mt-3 space-y-2">
-          <button id="btn-reiniciar-confirmar" type="button"
-            class="tap btn-primario w-full rounded-xl2 font-bold">
-            Sí, vaciar y empezar de nuevo
-          </button>
-          <button id="btn-reiniciar-cancelar" type="button"
-            class="tap btn-secundario w-full rounded-xl2 font-medium">
-            Mejor no
-          </button>
-        </div>
-      </div>
-    </div>
-    {% endif %}
-
     <div id="resultados-busqueda" class="hidden mt-4 space-y-2"></div>
 
     <div id="contenedores" class="mt-6 space-y-2">
@@ -56,9 +27,9 @@
           <button type="button" data-rol="copiar" data-link="{{ url_publica }}"
             class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
           <a href="{{ url_publica }}" target="_blank" rel="noopener"
-            class="tap btn-secundario flex-1 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
+            class="tap btn-secundario shrink-0 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
           <a href="{{ url_qr }}" download="qr-{{ libreria.slug }}.png"
-            class="tap btn-secundario flex-1 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">QR 🏷️</a>
+            class="tap btn-secundario shrink-0 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">QR 🏷️</a>
         </div>
       </div>
 
@@ -78,8 +49,10 @@
               class="tap btn-secundario flex-1 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
           </div>
           <div class="flex gap-2 mt-2">
-            <button type="button" data-rol="editar" class="tap flex-1 text-sm font-medium text-celeste underline">Editar</button>
-            <button type="button" data-rol="borrar" class="tap flex-1 text-sm font-medium text-terracota underline">Borrar</button>
+            <button type="button" data-rol="editar"
+              class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Editar ✏️</button>
+            <button type="button" data-rol="borrar"
+              class="tap flex-1 rounded-lg px-3 py-2 text-sm font-medium border-2 border-terracota text-terracota">Borrar 🗑️</button>
           </div>
         </div>
         <div data-rol="edicion" class="hidden space-y-2">
@@ -102,6 +75,35 @@
       <p class="text-4xl mb-3">📚</p>
       <p>Todavía no tenés libros publicados. Cargá y publicá un estante primero.</p>
     </div>
+
+    {% if cant_libros %}
+    <div class="mt-10">
+      <button id="btn-reiniciar" type="button"
+        class="tap w-full rounded-xl2 border-2 border-terracota text-terracota font-bold">
+        Vaciar inventario 🧹
+      </button>
+
+      <div id="confirmar-reinicio" class="hidden mt-2 bg-papel border-2 border-terracota rounded-xl2 p-4">
+        <p class="font-bold">¿Vaciar todo el catálogo?</p>
+        <p class="text-sm text-gris mt-1">
+          Se van a sacar
+          <strong>{{ cant_libros }} libro{{ 's' if cant_libros != 1 else '' }}</strong>
+          de tu catálogo público y vas a arrancar de cero. Las fotos y los lotes que
+          cargaste quedan guardados, pero no vuelven a aparecer acá.
+        </p>
+        <div class="mt-3 space-y-2">
+          <button id="btn-reiniciar-confirmar" type="button"
+            class="tap btn-primario w-full rounded-xl2 font-bold">
+            Sí, vaciar y empezar de nuevo
+          </button>
+          <button id="btn-reiniciar-cancelar" type="button"
+            class="tap btn-secundario w-full rounded-xl2 font-medium">
+            Mejor no
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </main>
 </div>
 
