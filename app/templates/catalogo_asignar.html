@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block titulo %}Elegir catálogo — {{ libreria.nombre }}{% endblock %}
+{% block contenido %}
+<div class="min-h-screen flex flex-col">
+
+  <header class="bg-tinta px-5 pt-8 pb-6">
+    <p class="text-celeste-claro text-sm font-medium">Últimos {{ cant_libros }} libro{{ 's' if cant_libros != 1 else '' }} publicado{{ 's' if cant_libros != 1 else '' }}</p>
+    <h1 class="text-2xl font-bold text-white leading-tight mt-1">¿A qué catálogo pertenecen?</h1>
+  </header>
+
+  <main class="flex-1 px-5 py-5 space-y-3 pb-32">
+    <p class="text-sm text-gris">Elegí uno para agrupar estos libros, o dejalos en el catálogo general.</p>
+
+    <div id="lista-catalogos" class="space-y-2"></div>
+
+    <div id="form-nuevo" class="hidden bg-papel border border-borde rounded-xl2 p-3 space-y-2">
+      <input id="input-nombre" type="text" placeholder="Nombre del catálogo (ej: Psicología)"
+        class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
+      <input id="input-descripcion" type="text" placeholder="Descripción breve (opcional)"
+        class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
+    </div>
+
+    <button id="btn-nuevo" type="button"
+      class="tap w-full text-left rounded-xl2 border-2 border-dashed border-borde p-3 text-gris font-medium">
+      + Crear nuevo catálogo
+    </button>
+  </main>
+
+  <div class="fixed bottom-0 left-0 right-0 bg-crema/95 border-t border-borde px-5 py-3 safe-b">
+    <button id="btn-confirmar" type="button" class="tap btn-primario w-full rounded-xl2 font-bold text-lg">
+      Confirmar
+    </button>
+  </div>
+</div>
+
+<script>
+  const LIBRERO_SLUG = "{{ libreria.slug }}";
+  const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const LOTE_ID = {{ lote_id }};
+  const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
+
+  const catalogos = {{ catalogos_json | safe }};
+  let seleccionado = null; // null = catálogo general (sin catálogo)
+  let creandoNuevo = false;
+
+  const listaCatalogos = document.getElementById('lista-catalogos');
+  const formNuevo = document.getElementById('form-nuevo');
+  const btnNuevo = document.getElementById('btn-nuevo');
+  const inputNombre = document.getElementById('input-nombre');
+  const inputDescripcion = document.getElementById('input-descripcion');
+  const btnConfirmar = document.getElementById('btn-confirmar');
+
+  function chipClases(activo) {
+    return activo ? 'bg-tinta text-crema' : 'bg-papel border-2 border-tinta text-tinta';
+  }
+
+  function render() {
+    const opciones = [{ id: null, nombre: 'Catálogo general (sin catálogo)' }, ...catalogos];
+    listaCatalogos.innerHTML = opciones.map((c) => `
+      <button type="button" data-id="${c.id === null ? '' : c.id}"
+        class="tap w-full text-left rounded-xl2 p-3 font-medium ${chipClases(!creandoNuevo && seleccionado === c.id)}">
+        ${c.nombre}
+      </button>
+    `).join('');
+
+    listaCatalogos.querySelectorAll('[data-id]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const idAttr = el.dataset.id;
+        seleccionado = idAttr === '' ? null : Number(idAttr);
+        creandoNuevo = false;
+        formNuevo.classList.add('hidden');
+        render();
+      });
+    });
+  }
+
+  btnNuevo.addEventListener('click', () => {
+    creandoNuevo = true;
+    formNuevo.classList.remove('hidden');
+    inputNombre.focus();
+    render();
+  });
+
+  btnConfirmar.addEventListener('click', async () => {
+    btnConfirmar.disabled = true;
+    btnConfirmar.textContent = 'Guardando…';
+    try {
+      let catalogoId = seleccionado;
+      if (creandoNuevo) {
+        const nombre = inputNombre.value.trim();
+        if (!nombre) {
+          alert('Ponele un nombre al catálogo nuevo.');
+          btnConfirmar.disabled = false;
+          btnConfirmar.textContent = 'Confirmar';
+          return;
+        }
+        const resp = await fetch(`${API_BASE}/catalogos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, descripcion: inputDescripcion.value.trim() }),
+        });
+        if (!resp.ok) throw new Error('No se pudo crear el catálogo');
+        const nuevo = await resp.json();
+        catalogoId = nuevo.id;
+      }
+
+      await fetch(`${API_BASE}/lotes/${LOTE_ID}/catalogo`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ catalogo_id: catalogoId }),
+      });
+      window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}`;
+    } catch (err) {
+      alert('No se pudo guardar. Probá de nuevo.');
+      btnConfirmar.disabled = false;
+      btnConfirmar.textContent = 'Confirmar';
+    }
+  });
+
+  render();
+</script>
+{% endblock %}

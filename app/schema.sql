@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS libros (
 CREATE TABLE IF NOT EXISTS eventos (
     id              BIGSERIAL PRIMARY KEY,
     libreria_id     INTEGER NOT NULL REFERENCES librerias(id) ON DELETE CASCADE,
-    tipo            TEXT NOT NULL,              -- vista|busqueda|clic_whatsapp|scan_qr|lote_publicado|libro_editado|inventario_reiniciado|ventas_confirmadas
+    tipo            TEXT NOT NULL,              -- vista|busqueda|clic_whatsapp|scan_qr|lote_publicado|libro_editado|inventario_reiniciado|ventas_confirmadas|catalogo_creado|catalogo_editado|catalogo_borrado|lote_catalogo_asignado
     payload         JSONB NOT NULL DEFAULT '{}'::jsonb,
     session_id      TEXT,
     creado_en       TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -73,9 +73,27 @@ ALTER TABLE libros ADD COLUMN IF NOT EXISTS duplicado_de INTEGER REFERENCES libr
 ALTER TABLE libros ADD COLUMN IF NOT EXISTS archivado_en TIMESTAMPTZ;
 ALTER TABLE lotes  ADD COLUMN IF NOT EXISTS archivado_en TIMESTAMPTZ;
 
+-- Catalogos segmentados: recortes curados del catalogo general (psicologia,
+-- juveniles, liquidacion puntual, etc). Un libro pertenece a lo sumo a un
+-- catalogo (FK simple, no hace falta tabla intermedia). Borrar un catalogo
+-- no borra sus libros: quedan sin catalogo (ON DELETE SET NULL), visibles
+-- de nuevo solo en el catalogo general.
+CREATE TABLE IF NOT EXISTS catalogos (
+    id              SERIAL PRIMARY KEY,
+    libreria_id     INTEGER NOT NULL REFERENCES librerias(id) ON DELETE CASCADE,
+    slug            TEXT NOT NULL,
+    nombre          TEXT NOT NULL,
+    descripcion     TEXT NOT NULL DEFAULT '',
+    creado_en       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (libreria_id, slug)
+);
+ALTER TABLE libros ADD COLUMN IF NOT EXISTS catalogo_id INTEGER REFERENCES catalogos(id) ON DELETE SET NULL;
+
 CREATE INDEX IF NOT EXISTS idx_librerias_slug ON librerias(slug);
 CREATE INDEX IF NOT EXISTS idx_libros_activos ON libros(libreria_id, estado) WHERE archivado_en IS NULL;
 CREATE INDEX IF NOT EXISTS idx_libros_libreria_estado ON libros(libreria_id, estado);
 CREATE INDEX IF NOT EXISTS idx_libros_lote ON libros(lote_id);
 CREATE INDEX IF NOT EXISTS idx_eventos_libreria_fecha ON eventos(libreria_id, creado_en);
 CREATE INDEX IF NOT EXISTS idx_lotes_libreria ON lotes(libreria_id);
+CREATE INDEX IF NOT EXISTS idx_catalogos_libreria ON catalogos(libreria_id);
+CREATE INDEX IF NOT EXISTS idx_libros_catalogo ON libros(catalogo_id);

@@ -232,8 +232,15 @@
     btnPublicar.textContent = 'Publicando…';
     try {
       await guardarTodo('publicado');
-      await fetch(`${API_BASE}/lotes/${LOTE_ID}/publicar`, { method: 'POST' });
-      window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}`;
+      const resp = await fetch(`${API_BASE}/lotes/${LOTE_ID}/publicar`, { method: 'POST' });
+      const datos = await resp.json();
+      // Si no quedó ningún libro publicado (lote entero de duplicados) no hay
+      // nada para asignar a un catálogo — se vuelve directo al panel.
+      if (datos.publicados > 0) {
+        window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/lote/${LOTE_ID}/catalogo`;
+      } else {
+        window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}`;
+      }
     } catch (err) {
       alert('No se pudo publicar. Probá de nuevo.');
       btnPublicar.disabled = false;

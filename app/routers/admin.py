@@ -4,9 +4,7 @@ Un token incorrecto devuelve 404, no 401: no queremos confirmarle a nadie que
 la ruta existe (decisión D2, aplicada también acá).
 """
 
-import json
 import secrets
-from collections import Counter
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -14,6 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from app import db
 from app.config import ADMIN_TOKEN, MENSAJE_WA_DEFAULT
+from app.metricas import calcular_metricas
 from app.tokens import nuevo_token_panel, slugify
 
 router = APIRouter()
@@ -116,8 +115,7 @@ async def admin_crear(
 @router.get("/admin/{token}/librerias/{libreria_id}/metricas", response_class=HTMLResponse)
 async def admin_metricas(request: Request, token: str, libreria_id: int):
     """Panel de lectura de la tabla eventos + estado del catalogo para una
-    libreria puntual. Todo se agrega en Python (no en SQL) porque el volumen
-    de eventos de un MVP es chico y así queda mas facil de leer/ajustar."""
+    libreria puntual."""
     _validar_token(token)
 
     libreria = await db.pool().fetchrow(
@@ -131,35 +129,6 @@ async def admin_metricas(request: Request, token: str, libreria_id: int):
         "WHERE libreria_id = $1 ORDER BY creado_en DESC",
         libreria_id,
     )
-    eventos = []
-    for f in filas_eventos:
-        try:
-            payload = json.loads(f["payload"]) if f["payload"] else {}
-        except (TypeError, ValueError):
-            payload = {}
-        eventos.append({
-            "tipo": f["tipo"], "payload": payload,
-            "session_id": f["session_id"], "creado_en": f["creado_en"],
-        })
-
-    vistas = [e for e in eventos if e["tipo"] == "vista"]
-    vistas_qr = sum(1 for e in vistas if e["payload"].get("src") == "qr")
-    busquedas = [e for e in eventos if e["tipo"] == "busqueda"]
-    busquedas_sin_resultado = [e for e in busquedas if (e["payload"].get("resultados") or 0) == 0]
-    clics = [e for e in eventos if e["tipo"] == "clic_whatsapp"]
-    clics_genericos = [e for e in clics if e["payload"].get("generico")]
-    clics_por_libro = [e for e in clics if not e["payload"].get("generico")]
-    sesiones_unicas = len({e["session_id"] for e in eventos if e["session_id"]})
-
-    top_busquedas_sin_resultado = Counter(
-        (e["payload"].get("q") or "").strip().lower()
-        for e in busquedas_sin_resultado if (e["payload"].get("q") or "").strip()
-    ).most_common(15)
-
-    top_libros_consultados = Counter(
-        e["payload"].get("titulo") or "(sin título)" for e in clics_por_libro
-    ).most_common(15)
-
     filas_libros = await db.pool().fetchrow(
         """
         SELECT
@@ -182,6 +151,11 @@ async def admin_metricas(request: Request, token: str, libreria_id: int):
         """,
         libreria_id,
     )
+    filas_catalogos = await db.pool().fetch(
+        "SELECT id, nombre FROM catalogos WHERE libreria_id = $1", libreria_id
+    )
+
+    metricas = calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
 
     return templates.TemplateResponse(
         request,
@@ -189,22 +163,8 @@ async def admin_metricas(request: Request, token: str, libreria_id: int):
         {
             "libreria": libreria,
             "token": token,
-            "resumen": {
-                "vistas_total": len(vistas),
-                "vistas_qr": vistas_qr,
-                "vistas_link": len(vistas) - vistas_qr,
-                "busquedas_total": len(busquedas),
-                "busquedas_sin_resultado": len(busquedas_sin_resultado),
-                "clics_total": len(clics),
-                "clics_genericos": len(clics_genericos),
-                "clics_por_libro": len(clics_por_libro),
-                "sesiones_unicas": sesiones_unicas,
-            },
-            "libros": filas_libros,
-            "lotes": filas_lotes,
-            "top_busquedas_sin_resultado": top_busquedas_sin_resultado,
-            "top_libros_consultados": top_libros_consultados,
-            "eventos_recientes": eventos[:40],
+            "es_admin": True,
+            **metricas,
         },
     )
 

@@ -3,8 +3,12 @@
 {% block contenido %}
 <div class="min-h-screen flex flex-col">
 
-  <header class="bg-celeste px-5 pt-8 pb-6 border-b-2 border-tinta">
+  <header class="{{ catalogo.color.bg if catalogo else 'bg-celeste' }} px-5 pt-8 pb-6 border-b-2 border-tinta">
     <h1 class="text-2xl font-bold text-tinta leading-tight">{{ libreria.nombre }}</h1>
+    {% if catalogo %}
+    <p class="text-base font-medium text-tinta mt-1">{{ catalogo.nombre }}</p>
+    <a href="/{{ libreria.slug }}" class="text-xs text-tinta/70 underline">← Ver catálogo general</a>
+    {% endif %}
     <p class="mt-2 text-sm text-tinta/80 leading-snug">
       Este catálogo es una foto del estante al {{ fecha_hoy }}.
       Confirmá disponibilidad por WhatsApp.
@@ -12,6 +16,22 @@
   </header>
 
   <main class="flex-1 px-5 -mt-3 pb-10">
+    {% if catalogos %}
+    <div id="catalogos-cards" class="mb-4 space-y-2">
+      {% for c in catalogos %}
+      <a href="/{{ libreria.slug }}/c/{{ c.slug }}?origen=card"
+        class="tap block rounded-xl2 border p-3 {{ c.color.bg }} {{ c.color.borde }}">
+        <p class="font-medium">{{ c.nombre }}</p>
+        {% if c.descripcion %}<p class="text-sm text-gris">{{ c.descripcion }}</p>{% endif %}
+        <p class="text-xs text-gris mt-1">
+          {{ c.cant_libros }} libro{{ 's' if c.cant_libros != 1 else '' }}
+          {% if c.ultima_actualizacion %} · actualizado {{ c.ultima_actualizacion.strftime('%d/%m') }}{% endif %}
+        </p>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <input
       id="buscador"
       type="search"
@@ -32,6 +52,10 @@
           Esta librería todavía está cargando su catálogo. Volvé a pasar más tarde.
         {% endif %}
       </p>
+      <p id="pista-otro-catalogo" class="hidden text-sm mt-2">
+        No hay resultados acá, pero encontramos coincidencias en otro catálogo.
+        <a id="link-otro-catalogo" class="underline font-medium">Ver en catálogo general →</a>
+      </p>
       <a id="btn-whatsapp-generico" target="_blank" rel="noopener"
         class="hidden tap btn-whatsapp mt-4 inline-flex items-center justify-center gap-2 rounded-xl2 font-medium px-6">
         Preguntar por WhatsApp 💬
@@ -49,6 +73,10 @@
   const WHATSAPP = {{ whatsapp_js | safe }};
   const MENSAJE_TEMPLATE = {{ mensaje_wa_template_js | safe }};
   const ORIGEN = {{ origen_js | safe }};
+  const CATALOGO_ID = {{ catalogo_id_js | safe }};
+  const CATALOGO_NOMBRE = {{ catalogo_nombre_js | safe }};
+  const ORIGEN_CATALOGO = {{ origen_catalogo_js | safe }};
+  const HAY_CATALOGOS = {{ 'true' if catalogos else 'false' }};
 
   function sessionId() {
     let id = sessionStorage.getItem('librero_sid');
@@ -90,13 +118,25 @@
     return `${dia}/${mes}`;
   }
 
-  registrarEvento('vista', { src: ORIGEN });
+  function payloadCatalogo(extra) {
+    const payload = extra || {};
+    if (CATALOGO_ID !== null) {
+      payload.catalogo_id = CATALOGO_ID;
+      payload.catalogo_nombre = CATALOGO_NOMBRE;
+    }
+    return payload;
+  }
+
+  registrarEvento('vista', payloadCatalogo({ src: ORIGEN, origen: ORIGEN_CATALOGO }));
 
   const buscador = document.getElementById('buscador');
   const resultados = document.getElementById('resultados');
   const estadoVacio = document.getElementById('estado-vacio');
   const mensajeVacio = document.getElementById('mensaje-vacio');
   const btnWhatsappGenerico = document.getElementById('btn-whatsapp-generico');
+  const catalogosCards = document.getElementById('catalogos-cards');
+  const pistaOtroCatalogo = document.getElementById('pista-otro-catalogo');
+  const linkOtroCatalogo = document.getElementById('link-otro-catalogo');
 
   // Mensaje para un libro puntual: si no tiene autor cargado, sacamos "de
   // {autor}" del template en vez de mandar un mensaje con un hueco vacío.
@@ -111,7 +151,7 @@
       : 'Hola! Quería consultarte por un libro que no encontré en tu catálogo.';
     btnWhatsappGenerico.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
     btnWhatsappGenerico.onclick = () => {
-      registrarEvento('clic_whatsapp', { libro_id: null, generico: true, q: q || '' });
+      registrarEvento('clic_whatsapp', payloadCatalogo({ libro_id: null, generico: true, q: q || '' }));
     };
     btnWhatsappGenerico.classList.remove('hidden');
   }
@@ -120,15 +160,37 @@
     btnWhatsappGenerico.classList.add('hidden');
   }
 
+  function ocultarPistaOtroCatalogo() {
+    if (pistaOtroCatalogo) pistaOtroCatalogo.classList.add('hidden');
+  }
+
+  function mostrarPistaOtroCatalogo(q) {
+    if (!pistaOtroCatalogo) return;
+    linkOtroCatalogo.href = `/${SLUG}?q=${encodeURIComponent(q)}`;
+    pistaOtroCatalogo.classList.remove('hidden');
+  }
+
   let catalogo = [];
   let catalogoListo = false;
+
+  function subsetCatalogo() {
+    return CATALOGO_ID === null ? catalogo : catalogo.filter((l) => l.catalogo_id === CATALOGO_ID);
+  }
 
   fetch(`/api/${SLUG}/catalogo.json`)
     .then((r) => r.json())
     .then((datos) => {
       catalogo = datos;
       catalogoListo = true;
-      if (buscador.value.trim()) buscar(buscador.value);
+      const qParam = new URLSearchParams(location.search).get('q');
+      if (qParam) {
+        buscador.value = qParam;
+        buscar(qParam);
+      } else if (buscador.value.trim()) {
+        buscar(buscador.value);
+      } else if (CATALOGO_ID !== null) {
+        renderResultados(subsetCatalogo()); // browse: mostrar lo que hay en el catalogo sin necesitar busqueda
+      }
     })
     .catch(() => {
       mensajeVacio.textContent = 'No se pudo cargar el catálogo. Refrescá la página.';
@@ -138,19 +200,29 @@
   buscador.addEventListener('input', () => {
     clearTimeout(timerBusqueda);
     const q = buscador.value;
+    if (catalogosCards) {
+      catalogosCards.classList.toggle('hidden', q.trim().length > 0);
+    }
     if (!q.trim()) {
+      if (CATALOGO_ID !== null) {
+        renderResultados(subsetCatalogo());
+        return;
+      }
       resultados.innerHTML = '';
       estadoVacio.classList.remove('hidden');
       ocultarBotonGenerico();
+      ocultarPistaOtroCatalogo();
       mensajeVacio.textContent = catalogo.length > 0
         ? 'Escribí un título o autor para empezar a buscar.'
         : 'Esta librería todavía está cargando su catálogo. Volvé a pasar más tarde.';
       return;
     }
     timerBusqueda = setTimeout(() => buscar(q), 800);
-    renderResultados(filtrar(q)); // feedback inmediato mientras tipea, sin esperar el debounce del evento
+    renderResultados(filtrarLocal(q)); // feedback inmediato mientras tipea, sin esperar el debounce del evento
   });
 
+  // Filtra sobre TODO el catalogo (busqueda global, siempre sobre todos los
+  // libros sin importar catalogo) — usado para la pista de "otro catalogo".
   function filtrar(q) {
     const qNorm = normalizar(q);
     if (!qNorm) return [];
@@ -159,10 +231,21 @@
     );
   }
 
+  // Filtra sobre el universo de la pagina actual: todo el catalogo en la
+  // pagina general, o solo el subset del catalogo puntual en una scoped.
+  function filtrarLocal(q) {
+    const qNorm = normalizar(q);
+    const universo = subsetCatalogo();
+    if (!qNorm) return universo;
+    return universo.filter((libro) =>
+      normalizar(libro.titulo).includes(qNorm) || normalizar(libro.autor).includes(qNorm)
+    );
+  }
+
   function buscar(q) {
-    const encontrados = filtrar(q);
+    const encontrados = filtrarLocal(q);
     renderResultados(encontrados);
-    registrarEvento('busqueda', { q: q.trim(), resultados: encontrados.length });
+    registrarEvento('busqueda', payloadCatalogo({ q: q.trim(), resultados: encontrados.length }));
   }
 
   function renderResultados(lista) {
@@ -174,14 +257,23 @@
       if (q) {
         mensajeVacio.textContent = 'No encontramos ningún libro con ese título o autor.';
         mostrarBotonGenerico(q);
+        if (CATALOGO_ID !== null && filtrar(q).length > 0) {
+          mostrarPistaOtroCatalogo(q);
+        } else {
+          ocultarPistaOtroCatalogo();
+        }
       } else {
-        mensajeVacio.textContent = 'Escribí un título o autor para empezar a buscar.';
+        mensajeVacio.textContent = CATALOGO_ID !== null
+          ? 'Este catálogo todavía no tiene libros.'
+          : 'Escribí un título o autor para empezar a buscar.';
         ocultarBotonGenerico();
+        ocultarPistaOtroCatalogo();
       }
       return;
     }
     estadoVacio.classList.add('hidden');
     ocultarBotonGenerico();
+    ocultarPistaOtroCatalogo();
     resultados.innerHTML = lista.map((libro, i) => `
       <div class="bg-papel border border-borde rounded-xl2 p-4" data-idx="${i}">
         <button type="button" data-rol="expandir" class="tap w-full text-left">
@@ -208,7 +300,7 @@
       const enlace = el.querySelector('[data-rol="whatsapp"]');
       enlace.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
       enlace.addEventListener('click', () => {
-        registrarEvento('clic_whatsapp', { libro_id: libro.id, titulo: libro.titulo });
+        registrarEvento('clic_whatsapp', payloadCatalogo({ libro_id: libro.id, titulo: libro.titulo }));
       });
     });
   }

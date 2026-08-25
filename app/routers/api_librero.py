@@ -11,6 +11,7 @@ import logging
 import secrets
 from pathlib import Path
 
+import asyncpg
 import qrcode
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response
@@ -18,7 +19,7 @@ from pydantic import BaseModel
 
 from app import db, vision
 from app.config import DATA_DIR
-from app.tokens import clave_libro, titulo_sin_subtitulo
+from app.tokens import clave_libro, slugify, titulo_sin_subtitulo
 
 router = APIRouter()
 logger = logging.getLogger("librero.lotes")
@@ -35,6 +36,15 @@ class ActualizarLibro(BaseModel):
 
 class ConfirmarVentas(BaseModel):
     libro_ids: list[int]
+
+
+class DatosCatalogo(BaseModel):
+    nombre: str
+    descripcion: str = ""
+
+
+class AsignarCatalogo(BaseModel):
+    catalogo_id: int | None = None
 
 
 async def _libreria_por_slug_y_token(slug: str, token: str):
@@ -502,6 +512,127 @@ async def confirmar_vendidos(slug: str, token: str, datos: ConfirmarVentas):
     )
     logger.info("ventas_confirmadas libreria_id=%s cantidad=%s", libreria["id"], cant)
     return {"ok": True, "vendidos": cant}
+
+
+@router.get("/api/{slug}/{token}/catalogos")
+async def listar_catalogos(slug: str, token: str):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    filas = await db.pool().fetch(
+        """
+        SELECT c.id, c.slug, c.nombre, c.descripcion,
+               COUNT(li.id) FILTER (WHERE li.archivado_en IS NULL) AS cant_libros
+        FROM catalogos c
+        LEFT JOIN libros li ON li.catalogo_id = c.id
+        WHERE c.libreria_id = $1
+        GROUP BY c.id
+        ORDER BY c.creado_en DESC
+        """,
+        libreria["id"],
+    )
+    return [dict(f) for f in filas]
+
+
+@router.post("/api/{slug}/{token}/catalogos")
+async def crear_catalogo(slug: str, token: str, datos: DatosCatalogo):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    nombre = datos.nombre.strip()
+    if not nombre:
+        raise HTTPException(status_code=400, detail="El catálogo necesita un nombre.")
+
+    base_slug = slugify(nombre)
+    for intento in range(20):
+        slug_final = base_slug if intento == 0 else f"{base_slug}-{intento + 1}"
+        try:
+            catalogo_id = await db.pool().fetchval(
+                "INSERT INTO catalogos (libreria_id, slug, nombre, descripcion) "
+                "VALUES ($1, $2, $3, $4) RETURNING id",
+                libreria["id"], slug_final, nombre, datos.descripcion.strip(),
+            )
+            break
+        except asyncpg.UniqueViolationError:
+            continue
+    else:
+        raise HTTPException(status_code=500, detail="No se pudo generar un link único para el catálogo.")
+
+    await db.pool().execute(
+        "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'catalogo_creado', $2::jsonb)",
+        libreria["id"], json.dumps({"catalogo_id": catalogo_id, "nombre": nombre}),
+    )
+    logger.info("catalogo_creado libreria_id=%s catalogo_id=%s", libreria["id"], catalogo_id)
+    return {"id": catalogo_id, "slug": slug_final, "nombre": nombre, "descripcion": datos.descripcion.strip()}
+
+
+@router.patch("/api/{slug}/{token}/catalogos/{catalogo_id}")
+async def editar_catalogo(slug: str, token: str, catalogo_id: int, datos: DatosCatalogo):
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    nombre = datos.nombre.strip()
+    if not nombre:
+        raise HTTPException(status_code=400, detail="El catálogo necesita un nombre.")
+
+    resultado = await db.pool().execute(
+        "UPDATE catalogos SET nombre = $1, descripcion = $2 WHERE id = $3 AND libreria_id = $4",
+        nombre, datos.descripcion.strip(), catalogo_id, libreria["id"],
+    )
+    if resultado == "UPDATE 0":
+        raise HTTPException(status_code=404)
+
+    await db.pool().execute(
+        "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'catalogo_editado', $2::jsonb)",
+        libreria["id"], json.dumps({"catalogo_id": catalogo_id, "nombre": nombre}),
+    )
+    logger.info("catalogo_editado libreria_id=%s catalogo_id=%s", libreria["id"], catalogo_id)
+    return {"ok": True}
+
+
+@router.delete("/api/{slug}/{token}/catalogos/{catalogo_id}")
+async def borrar_catalogo(slug: str, token: str, catalogo_id: int):
+    """Borrado duro: los libros que tenia asignados no se tocan, solo pierden
+    la referencia (ON DELETE SET NULL en libros.catalogo_id), asi que vuelven
+    a verse solo en el catalogo general."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    resultado = await db.pool().execute(
+        "DELETE FROM catalogos WHERE id = $1 AND libreria_id = $2", catalogo_id, libreria["id"]
+    )
+    if resultado == "DELETE 0":
+        raise HTTPException(status_code=404)
+
+    await db.pool().execute(
+        "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'catalogo_borrado', $2::jsonb)",
+        libreria["id"], json.dumps({"catalogo_id": catalogo_id}),
+    )
+    logger.info("catalogo_borrado libreria_id=%s catalogo_id=%s", libreria["id"], catalogo_id)
+    return {"ok": True}
+
+
+@router.patch("/api/{slug}/{token}/lotes/{lote_id}/catalogo")
+async def asignar_catalogo_lote(slug: str, token: str, lote_id: int, datos: AsignarCatalogo):
+    """Aplica el catalogo elegido por el librero a los libros que quedaron
+    publicados de este lote (pantalla posterior a "Publicar" en revision.html)."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    lote = await db.pool().fetchrow(
+        "SELECT id FROM lotes WHERE id = $1 AND libreria_id = $2", lote_id, libreria["id"]
+    )
+    if lote is None:
+        raise HTTPException(status_code=404)
+
+    if datos.catalogo_id is not None:
+        existe = await db.pool().fetchval(
+            "SELECT 1 FROM catalogos WHERE id = $1 AND libreria_id = $2", datos.catalogo_id, libreria["id"]
+        )
+        if not existe:
+            raise HTTPException(status_code=404, detail="Ese catálogo no existe.")
+
+    await db.pool().execute(
+        "UPDATE libros SET catalogo_id = $1 WHERE lote_id = $2 AND libreria_id = $3 AND estado = 'publicado'",
+        datos.catalogo_id, lote_id, libreria["id"],
+    )
+    await db.pool().execute(
+        "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'lote_catalogo_asignado', $2::jsonb)",
+        libreria["id"], json.dumps({"lote_id": lote_id, "catalogo_id": datos.catalogo_id}),
+    )
+    logger.info("lote_catalogo_asignado libreria_id=%s lote_id=%s catalogo_id=%s", libreria["id"], lote_id, datos.catalogo_id)
+    return {"ok": True}
 
 
 @router.get("/api/{slug}/{token}/qr.png")

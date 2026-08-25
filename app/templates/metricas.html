@@ -4,7 +4,11 @@
 <div class="min-h-screen px-5 py-8 max-w-3xl mx-auto">
 
   <header class="mb-6">
+    {% if es_admin %}
     <a href="/admin/{{ token }}" class="text-celeste text-sm font-medium">← Volver al admin</a>
+    {% else %}
+    <a href="{{ url_atras }}" class="text-celeste text-sm font-medium">← Volver al panel</a>
+    {% endif %}
     <h1 class="text-2xl font-bold mt-1">{{ libreria.nombre }}</h1>
     <p class="text-xs text-gris">Dada de alta el {{ libreria.creado_en.strftime('%d/%m/%Y') }}</p>
   </header>
@@ -96,6 +100,23 @@
   </div>
   {% endif %}
 
+  {% if por_catalogo %}
+  <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">Por catálogo</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-8">
+    {% for c in por_catalogo %}
+    <div class="bg-papel border border-borde rounded-xl2 p-3">
+      <p class="font-medium truncate">{{ c.nombre }}</p>
+      <p class="text-xs text-gris mt-1">
+        {{ c.vistas }} vista{{ 's' if c.vistas != 1 else '' }}
+        ({{ c.vistas_directas }} link directo · {{ c.vistas_desde_card }} desde card)
+      </p>
+      <p class="text-xs text-gris">{{ c.busquedas }} búsqueda{{ 's' if c.busquedas != 1 else '' }} dentro del catálogo</p>
+      <p class="text-xs text-gris">{{ c.clics }} clic{{ 's' if c.clics != 1 else '' }} a WhatsApp</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">Actividad reciente</h2>
   <div class="bg-papel border border-borde rounded-xl2 divide-y divide-borde mb-10">
     {% for e in eventos_recientes %}
@@ -108,6 +129,10 @@
           {% elif e.tipo == 'inventario_reiniciado' %}🧹 Inventario reiniciado ({{ e.payload.libros_archivados }} libros)
           {% elif e.tipo == 'lote_publicado' %}📚 Lote publicado ({{ e.payload.publicados }} libro{{ 's' if e.payload.publicados != 1 else '' }})
           {% elif e.tipo == 'ventas_confirmadas' %}💰 Venta confirmada ({{ e.payload.cantidad }} libro{{ 's' if e.payload.cantidad != 1 else '' }})
+          {% elif e.tipo == 'catalogo_creado' %}🗂️ Catálogo creado: {{ e.payload.nombre }}
+          {% elif e.tipo == 'catalogo_editado' %}✏️ Catálogo editado: {{ e.payload.nombre }}
+          {% elif e.tipo == 'catalogo_borrado' %}🗑️ Catálogo borrado
+          {% elif e.tipo == 'lote_catalogo_asignado' %}🗂️ Lote asignado a catálogo
           {% else %}{{ e.tipo }}
           {% endif %}
         </p>
