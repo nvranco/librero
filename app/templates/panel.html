@@ -10,15 +10,21 @@
   <main class="flex-1 px-5 -mt-4 pb-28">
     <div class="grid grid-cols-3 gap-2">
       <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
-        <p class="text-2xl font-bold" data-contador="{{ cant_libros }}">0</p>
+        <p class="text-2xl font-bold flex items-center justify-center gap-1">
+          <span data-contador="{{ cant_libros }}">0</span><span class="text-sm">📚</span>
+        </p>
         <p class="text-xs text-gris mt-1">Libro{{ 's' if cant_libros != 1 else '' }} publicado{{ 's' if cant_libros != 1 else '' }}</p>
       </div>
       <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
-        <p class="text-2xl font-bold" data-contador="{{ vistas_ciclo }}">0</p>
+        <p class="text-2xl font-bold flex items-center justify-center gap-1">
+          <span data-contador="{{ vistas_ciclo }}">0</span><span class="text-sm">👀</span>
+        </p>
         <p class="text-xs text-gris mt-1">Visita{{ 's' if vistas_ciclo != 1 else '' }} al catálogo</p>
       </div>
       <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
-        <p class="text-2xl font-bold" data-contador="{{ clics_ciclo }}">0</p>
+        <p class="text-2xl font-bold flex items-center justify-center gap-1">
+          <span data-contador="{{ clics_ciclo }}">0</span><span class="text-sm">💬</span>
+        </p>
         <p class="text-xs text-gris mt-1">Consulta{{ 's' if clics_ciclo != 1 else '' }} por WhatsApp</p>
       </div>
     </div>
