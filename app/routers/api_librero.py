@@ -658,12 +658,21 @@ async def asignar_catalogo_libro(slug: str, token: str, libro_id: int, datos: As
 
 
 @router.get("/api/{slug}/{token}/qr.png")
-async def qr_png(slug: str, token: str, request: Request):
-    """QR con /{slug}?src=qr — separa trafico local (mostrador) de redes (§5 requisitos)."""
-    await _libreria_por_slug_y_token(slug, token)
+async def qr_png(slug: str, token: str, request: Request, catalogo: str | None = None):
+    """QR con /{slug}?src=qr — separa trafico local (mostrador) de redes (§5 requisitos).
+    Con ?catalogo=<slug> apunta al QR de ese catalogo puntual en vez del general."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
 
     base = str(request.base_url).rstrip("/")
-    url_destino = f"{base}/{slug}?src=qr"
+    if catalogo:
+        existe = await db.pool().fetchval(
+            "SELECT 1 FROM catalogos WHERE slug = $1 AND libreria_id = $2", catalogo, libreria["id"]
+        )
+        if not existe:
+            raise HTTPException(status_code=404)
+        url_destino = f"{base}/{slug}/c/{catalogo}?src=qr"
+    else:
+        url_destino = f"{base}/{slug}?src=qr"
 
     imagen = qrcode.make(url_destino)
     buffer = io.BytesIO()

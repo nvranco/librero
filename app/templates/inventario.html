@@ -3,9 +3,9 @@
 {% block contenido %}
 <div class="min-h-screen flex flex-col">
 
-  <header class="bg-tinta px-5 pt-8 pb-6">
-    <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}" class="text-celeste-claro text-sm font-medium">← Volver</a>
-    <h1 class="text-2xl font-bold text-white leading-tight mt-1">Inventario ({{ cant_libros }})</h1>
+  <header class="bg-celeste px-5 pt-8 pb-6">
+    <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}" class="text-tinta text-sm font-medium">← Volver</a>
+    <h1 class="text-2xl font-bold text-tinta leading-tight mt-1">Inventario ({{ cant_libros }})</h1>
   </header>
 
   <main class="flex-1 px-5 -mt-3 pb-10">
@@ -29,6 +29,11 @@
       placeholder="Buscar un libro puntual…"
       class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris mt-4"
     >
+
+    <div id="filtro-catalogo" class="hidden mt-3 flex items-center justify-between gap-2 bg-celeste-claro/50 border border-celeste rounded-lg px-3 py-2 text-sm">
+      <span>Mostrando: <strong id="filtro-catalogo-nombre"></strong></span>
+      <button type="button" id="btn-quitar-filtro" class="tap text-tinta font-medium underline underline-offset-2 shrink-0">Ver todos</button>
+    </div>
 
     <div id="lista" class="mt-4 space-y-2"></div>
 
@@ -82,6 +87,20 @@
   const lista = document.getElementById('lista');
   const estadoVacio = document.getElementById('estado-vacio');
   const bloqueVaciar = document.getElementById('bloque-vaciar');
+  const filtroCatalogo = document.getElementById('filtro-catalogo');
+  const filtroCatalogoNombre = document.getElementById('filtro-catalogo-nombre');
+  const btnQuitarFiltro = document.getElementById('btn-quitar-filtro');
+
+  // Llegar desde "Ver libros" en un catálogo puntual (Mis catálogos) precarga
+  // este filtro, para poder revisar y reasignar solo esos libros.
+  let filtroCatalogoId = new URLSearchParams(location.search).get('catalogo');
+  filtroCatalogoId = filtroCatalogoId ? Number(filtroCatalogoId) : null;
+
+  btnQuitarFiltro.addEventListener('click', () => {
+    filtroCatalogoId = null;
+    history.replaceState(null, '', location.pathname);
+    render();
+  });
 
   function normalizar(texto) {
     return (texto || '').toString().toLowerCase().trim();
@@ -119,8 +138,13 @@
   function render() {
     const q = normalizar(buscador.value);
     const filtrados = libros.filter((l) =>
-      !q || normalizar(l.titulo).includes(q) || normalizar(l.autor).includes(q)
+      (!q || normalizar(l.titulo).includes(q) || normalizar(l.autor).includes(q)) &&
+      (filtroCatalogoId === null || l.catalogo_id === filtroCatalogoId)
     );
+
+    const catalogoFiltro = filtroCatalogoId !== null ? catalogosPorId[filtroCatalogoId] : null;
+    filtroCatalogo.classList.toggle('hidden', !catalogoFiltro);
+    if (catalogoFiltro) filtroCatalogoNombre.textContent = catalogoFiltro.nombre;
 
     if (libros.length === 0) {
       lista.innerHTML = '';
@@ -129,10 +153,12 @@
       return;
     }
     estadoVacio.classList.add('hidden');
-    if (bloqueVaciar) bloqueVaciar.classList.toggle('hidden', q.length > 0);
+    if (bloqueVaciar) bloqueVaciar.classList.toggle('hidden', q.length > 0 || !!catalogoFiltro);
 
     if (filtrados.length === 0) {
-      lista.innerHTML = '<p class="text-center text-gris py-8">Nada coincide con esa búsqueda.</p>';
+      lista.innerHTML = catalogoFiltro
+        ? '<p class="text-center text-gris py-8">Este catálogo todavía no tiene libros.</p>'
+        : '<p class="text-center text-gris py-8">Nada coincide con esa búsqueda.</p>';
       return;
     }
 

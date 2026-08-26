@@ -3,9 +3,9 @@
 {% block contenido %}
 <div class="min-h-screen flex flex-col">
 
-  <header class="bg-tinta px-5 pt-8 pb-6">
-    <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}" class="text-celeste-claro text-sm font-medium">← Volver</a>
-    <h1 class="text-2xl font-bold text-white leading-tight mt-1">Mis catálogos</h1>
+  <header class="bg-celeste px-5 pt-8 pb-6">
+    <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}" class="text-tinta text-sm font-medium">← Volver</a>
+    <h1 class="text-2xl font-bold text-tinta leading-tight mt-1">Mis catálogos</h1>
   </header>
 
   <main class="flex-1 px-5 py-5 space-y-2 pb-10">
@@ -36,8 +36,12 @@
             class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
           <a href="{{ c.url }}" target="_blank" rel="noopener"
             class="tap btn-secundario flex-1 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
+          <a href="{{ c.url_qr }}" download="qr-{{ libreria.slug }}-{{ c.slug }}.png"
+            class="tap btn-secundario shrink-0 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">QR 🏷️</a>
         </div>
         <div class="flex gap-2 mt-2">
+          <a href="{{ c.url_libros }}"
+            class="tap btn-secundario flex-1 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ver libros 📖</a>
           <button type="button" data-rol="editar"
             class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Editar ✏️</button>
           <button type="button" data-rol="borrar"

@@ -327,7 +327,13 @@ async def panel_catalogos(request: Request, slug: str, token: str):
     )
     base = str(request.base_url).rstrip("/")
     catalogos = [
-        {**dict(f), "color": color_catalogo(f["id"]), "url": f"{base}/{slug}/c/{f['slug']}"}
+        {
+            **dict(f),
+            "color": color_catalogo(f["id"]),
+            "url": f"{base}/{slug}/c/{f['slug']}",
+            "url_qr": f"/api/{slug}/{token}/qr.png?catalogo={f['slug']}",
+            "url_libros": f"{base}/{slug}/panel/{token}/libros?catalogo={f['id']}",
+        }
         for f in filas
     ]
 
