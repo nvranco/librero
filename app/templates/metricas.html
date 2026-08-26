@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% block titulo %}Métricas — {{ libreria.nombre }}{% endblock %}
 {% block contenido %}
-<div class="min-h-screen px-5 py-8 max-w-3xl mx-auto">
+<div class="min-h-screen flex flex-col">
 
-  <header class="mb-6">
+  <header class="bg-celeste px-5 pt-8 pb-6">
     {% if es_admin %}
-    <a href="/admin/{{ token }}" class="text-celeste text-sm font-medium">← Volver al admin</a>
+    <a href="/admin/{{ token }}" class="text-tinta text-sm font-medium">← Volver al admin</a>
     {% else %}
-    <a href="{{ url_atras }}" class="text-celeste text-sm font-medium">← Volver</a>
+    <a href="{{ url_atras }}" class="text-tinta text-sm font-medium">← Volver</a>
     {% endif %}
-    <h1 class="text-2xl font-bold mt-1">{{ libreria.nombre }}</h1>
-    <p class="text-xs text-gris">Dada de alta el {{ libreria.creado_en.strftime('%d/%m/%Y') }}</p>
+    <h1 class="text-2xl font-bold text-tinta leading-tight mt-1">{{ libreria.nombre }}</h1>
+    <p class="text-xs text-tinta/80 mt-1">Dada de alta el {{ libreria.creado_en.strftime('%d/%m/%Y') }}</p>
   </header>
 
+  <main class="flex-1 px-5 -mt-3 pb-10 max-w-3xl mx-auto w-full">
   <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">📊 Catálogo público</h2>
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
     <div class="bg-papel border border-borde rounded-xl2 p-3">
@@ -26,8 +27,8 @@
       <p class="text-xs text-gris mt-1">{{ resumen.clics_por_libro }} por libro · {{ resumen.clics_genericos }} genéricos</p>
     </div>
     <div class="bg-papel border border-borde rounded-xl2 p-3">
-      <p class="text-2xl font-bold">🙋 {{ resumen.sesiones_unicas }}</p>
-      <p class="text-xs text-gris">Personas distintas</p>
+      <p class="text-2xl font-bold">📈 {{ resumen.tasa_conversion }}%</p>
+      <p class="text-xs text-gris">De las visitas escribió por WhatsApp</p>
     </div>
     <div class="bg-papel border border-borde rounded-xl2 p-3">
       <p class="text-2xl font-bold">🔎 {{ resumen.busquedas_total }}</p>
@@ -83,7 +84,7 @@
   <div class="space-y-2 mb-8">
     {% for c in por_catalogo[:3] %}
     <div class="{{ c.color.bg }} border {{ c.color.borde }} rounded-xl2 p-3 flex items-center gap-3">
-      <span class="text-2xl shrink-0">{{ ['🥇', '🥈', '🥉'][loop.index0] }}</span>
+      <span class="tap shrink-0 w-7 h-7 rounded-full bg-tinta text-crema font-bold text-sm flex items-center justify-center">{{ loop.index }}</span>
       <div class="min-w-0 flex-1">
         <p class="font-bold truncate">{{ c.nombre }}</p>
         <p class="text-xs text-gris mt-0.5">
@@ -155,5 +156,6 @@
     <p class="px-4 py-6 text-center text-sm text-gris">Todavía no hay actividad registrada.</p>
     {% endfor %}
   </div>
+  </main>
 </div>
 {% endblock %}

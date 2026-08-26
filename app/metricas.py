@@ -86,11 +86,21 @@ def calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
             "clics_genericos": len(clics_genericos),
             "clics_por_libro": len(clics_por_libro),
             "sesiones_unicas": sesiones_unicas,
+            # De cada 100 visitas, cuantas terminaron en un mensaje de
+            # WhatsApp — mas util que una cuenta de sesiones para saber si
+            # el catalogo esta funcionando de verdad.
+            "tasa_conversion": round(len(clics) / len(vistas) * 100) if vistas else 0,
         },
         "libros": filas_libros,
         "lotes": filas_lotes,
         "top_busquedas_sin_resultado": top_busquedas_sin_resultado,
         "top_libros_consultados": top_libros_consultados,
         "eventos_recientes": eventos[:40],
-        "por_catalogo": sorted(por_catalogo.values(), key=lambda g: -g["vistas"]),
+        # Solo catalogos con al menos una vista: esto es un ranking de "lo
+        # que funciono", no un listado completo — un catalogo borrado que
+        # solo dejo una busqueda huerfana (nombre "?") no aporta nada aca.
+        "por_catalogo": sorted(
+            (g for g in por_catalogo.values() if g["vistas"] > 0),
+            key=lambda g: -g["vistas"],
+        ),
     }
