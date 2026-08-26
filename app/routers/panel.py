@@ -268,6 +268,51 @@ async def panel_metricas(request: Request, slug: str, token: str):
     )
 
 
+@router.get("/{slug}/panel/{token}/libros/{libro_id}/catalogo", response_class=HTMLResponse)
+async def panel_libro_catalogo(
+    request: Request, slug: str, token: str, libro_id: int, volver: str | None = None
+):
+    """Pantalla para reasignar el catalogo de UN libro puntual (se abre desde
+    el badge de catalogo en Inventario) — a diferencia de catalogo_asignar.html,
+    que es para el lote recien publicado completo."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    libro = await db.pool().fetchrow(
+        "SELECT id, titulo, autor, catalogo_id FROM libros WHERE id = $1 AND libreria_id = $2",
+        libro_id, libreria["id"],
+    )
+    if libro is None:
+        raise HTTPException(status_code=404)
+
+    filas = await db.pool().fetch(
+        """
+        SELECT c.id, c.nombre, c.descripcion,
+               COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) AS cant_libros
+        FROM catalogos c
+        LEFT JOIN libros li ON li.catalogo_id = c.id
+        WHERE c.libreria_id = $1
+        GROUP BY c.id
+        ORDER BY c.creado_en DESC
+        """,
+        libreria["id"],
+    )
+
+    # Solo se acepta volver a una URL propia de este panel (evita open-redirect).
+    if not volver or not volver.startswith(f"/{slug}/panel/{token}"):
+        volver = f"/{slug}/panel/{token}/libros"
+
+    return templates.TemplateResponse(
+        request,
+        "libro_catalogo.html",
+        {
+            "libreria": libreria,
+            "libro": libro,
+            "catalogos": [dict(f) for f in filas],
+            "volver": volver,
+        },
+    )
+
+
 @router.get("/{slug}/panel/{token}/libros", response_class=HTMLResponse)
 async def panel_inventario(request: Request, slug: str, token: str):
     """P4 — inventario: lista de libros con busqueda, edicion y reasignacion

@@ -81,7 +81,6 @@
   const libros = {{ libros_json | safe }};
   const catalogosPorId = {};
   ({{ catalogos_json | safe }}).forEach((c) => { catalogosPorId[c.id] = c; });
-  const catalogosLista = Object.values(catalogosPorId);
 
   const buscador = document.getElementById('buscador');
   const lista = document.getElementById('lista');
@@ -124,15 +123,16 @@
     copiar(e.currentTarget.dataset.link, e.currentTarget);
   });
 
+  // El badge es el punto de entrada para reasignar el catalogo: lleva a una
+  // pantalla propia (con detalle y cantidad de libros de cada catalogo) y
+  // vuelve sola a esta lista, con el filtro/busqueda actual, apenas se elige uno.
   function badgeCatalogo(libro) {
-    if (libro.catalogo_id === null || libro.catalogo_id === undefined) {
-      return `<span class="tap text-xs bg-crema border border-borde rounded-full px-2 py-1 font-medium">📁 Catálogo general</span>`;
-    }
-    const c = catalogosPorId[libro.catalogo_id];
-    if (!c) {
-      return `<span class="tap text-xs bg-crema border border-borde rounded-full px-2 py-1 font-medium">📁 Catálogo general</span>`;
-    }
-    return `<span class="tap text-xs ${c.color.bg} border ${c.color.borde} rounded-full px-2 py-1 font-medium">📁 ${escaparHtml(c.nombre)}</span>`;
+    const volver = encodeURIComponent(location.pathname + location.search);
+    const href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/libros/${libro.id}/catalogo?volver=${volver}`;
+    const c = (libro.catalogo_id !== null && libro.catalogo_id !== undefined) ? catalogosPorId[libro.catalogo_id] : null;
+    const clases = c ? `${c.color.bg} border ${c.color.borde}` : 'bg-crema border border-borde';
+    const nombre = c ? escaparHtml(c.nombre) : 'Catálogo general';
+    return `<a href="${href}" class="tap inline-flex items-center text-xs ${clases} rounded-full px-2 py-1 font-medium">📁 ${nombre} ›</a>`;
   }
 
   function render() {
@@ -183,10 +183,6 @@
           <div data-rol="edicion" class="hidden space-y-2">
             <input data-campo="titulo" value="${escaparHtml(libro.titulo)}" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm">
             <input data-campo="autor" value="${escaparHtml(libro.autor)}" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm">
-            <select data-campo="catalogo" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm bg-papel">
-              <option value="" ${(libro.catalogo_id === null || libro.catalogo_id === undefined) ? 'selected' : ''}>📁 Catálogo general</option>
-              ${catalogosLista.map((c) => `<option value="${c.id}" ${libro.catalogo_id === c.id ? 'selected' : ''}>📁 ${escaparHtml(c.nombre)}</option>`).join('')}
-            </select>
             <button type="button" data-accion="guardar" class="tap btn-primario w-full rounded-lg text-sm font-bold">Guardar</button>
           </div>
         </div>
@@ -229,21 +225,10 @@
       fila.querySelector('[data-accion="guardar"]').addEventListener('click', async () => {
         const nuevoTitulo = fila.querySelector('[data-campo="titulo"]').value.trim();
         const nuevoAutor = fila.querySelector('[data-campo="autor"]').value.trim();
-        const selectCatalogo = fila.querySelector('[data-campo="catalogo"]');
-        const nuevoCatalogoId = selectCatalogo.value ? Number(selectCatalogo.value) : null;
 
         await patchLibro(libro, { titulo: nuevoTitulo, autor: nuevoAutor });
         libro.titulo = nuevoTitulo;
         libro.autor = nuevoAutor;
-
-        if (nuevoCatalogoId !== libro.catalogo_id) {
-          await fetch(`${API_BASE}/libros/${libro.id}/catalogo`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ catalogo_id: nuevoCatalogoId }),
-          });
-          libro.catalogo_id = nuevoCatalogoId;
-        }
         render();
       });
     });
