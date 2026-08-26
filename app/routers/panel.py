@@ -38,6 +38,19 @@ async def panel_home(request: Request, slug: str, token: str):
         """,
         libreria["id"],
     )
+    # Catalogos "publicados" = con al menos un libro publicado adentro (los
+    # vacios no cuentan, mismo criterio que usa el catalogo publico para
+    # decidir que catalogos mostrar).
+    cant_catalogos = await db.pool().fetchval(
+        """
+        SELECT COUNT(*) FROM catalogos c
+        WHERE c.libreria_id = $1 AND EXISTS (
+            SELECT 1 FROM libros li
+            WHERE li.catalogo_id = c.id AND li.estado = 'publicado' AND li.archivado_en IS NULL
+        )
+        """,
+        libreria["id"],
+    )
     # Los 3 indicadores del panel son del ciclo actual, no del historico
     # completo (eso ya se ve en "Ver estadisticas"): arrancan en el ultimo
     # reinicio de inventario, o desde que existe la libreria si nunca se reinicio.
@@ -99,6 +112,7 @@ async def panel_home(request: Request, slug: str, token: str):
         {
             "libreria": libreria,
             "cant_libros": cant_libros,
+            "cant_catalogos": cant_catalogos,
             "vistas_ciclo": vistas_ciclo,
             "clics_ciclo": clics_ciclo,
             "visitas_semana": visitas_semana,

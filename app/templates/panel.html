@@ -11,15 +11,15 @@
     <div class="grid grid-cols-3 gap-2">
       <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
         <p class="text-2xl font-bold flex items-center justify-center gap-1">
-          <span data-contador="{{ cant_libros }}">0</span><span class="text-sm">📚</span>
+          <span data-contador="{{ cant_catalogos }}">0</span><span class="text-sm">🗂️</span>
         </p>
-        <p class="text-xs text-gris mt-1">Libro{{ 's' if cant_libros != 1 else '' }} publicado{{ 's' if cant_libros != 1 else '' }}</p>
+        <p class="text-xs text-gris mt-1">Catálogo{{ 's' if cant_catalogos != 1 else '' }} publicado{{ 's' if cant_catalogos != 1 else '' }}</p>
       </div>
       <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
         <p class="text-2xl font-bold flex items-center justify-center gap-1">
           <span data-contador="{{ vistas_ciclo }}">0</span><span class="text-sm">👀</span>
         </p>
-        <p class="text-xs text-gris mt-1">Visita{{ 's' if vistas_ciclo != 1 else '' }} al catálogo</p>
+        <p class="text-xs text-gris mt-1">Visita{{ 's' if vistas_ciclo != 1 else '' }} registrada{{ 's' if vistas_ciclo != 1 else '' }}</p>
       </div>
       <div class="bg-papel border border-borde rounded-xl2 p-3 text-center">
         <p class="text-2xl font-bold flex items-center justify-center gap-1">
