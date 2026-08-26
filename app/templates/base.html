@@ -73,11 +73,19 @@
      superficie por default; una clase Tailwind explícita puede pisar esto. */
   input, select, textarea { background-color: rgb(var(--papel)); color: rgb(var(--texto-papel)); }
 
-  /* Botones primarios: "Cargar estante" (border-celeste en el HTML) y
-     "Marcar vendidos" (border-ambar en el HTML) son semánticamente entrada
-     y salida — cada uno con su propio tratamiento tonal. El selector
-     compuesto (mismo peso que .border-celeste/.border-ambar de Tailwind)
-     evita depender del orden de inyección del CDN. */
+  /* Botones primarios: tratamiento tonal verde por defecto (fondo pálido,
+     texto e ícono del mismo color, con recuadro) para cualquier
+     .btn-primario suelto — Cargar fotos, Guardar, Publicar, etc. */
+  .btn-primario {
+    background: var(--btn-primario-a-bg); color: var(--btn-primario-a-color);
+    border: 2px solid var(--btn-primario-a-border);
+  }
+
+  /* "Cargar estante" (border-celeste en el HTML) y "Marcar vendidos"
+     (border-ambar) son semánticamente entrada y salida — cada uno con su
+     propio tratamiento. El selector compuesto (mismo peso que
+     .border-celeste/.border-ambar de Tailwind) evita depender del orden
+     de inyección del CDN. */
   .btn-primario.border-celeste {
     background: var(--btn-primario-a-bg); color: var(--btn-primario-a-color); border-color: var(--btn-primario-a-border);
   }
