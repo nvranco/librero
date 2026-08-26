@@ -59,6 +59,12 @@
 
   html, body { background: rgb(var(--fondo)); }
   * { -webkit-tap-highlight-color: transparent; }
+
+  /* Es una app pensada para el celular: en pantallas anchas (compu) no
+     dejamos que el contenido se estire de punta a punta, se lo centra con
+     un ancho maximo tipo "columna de telefono" y buen margen a los costados.
+     Una clase mas especifica (ej. max-w-2xl del admin) sigue ganando. */
+  body > div { max-width: 480px; margin-left: auto; margin-right: auto; }
   h1 { font-family: var(--font-display); }
   input:focus, button:focus, a:focus { outline: 2px solid rgb(var(--celeste)); outline-offset: 2px; }
   .safe-b { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
