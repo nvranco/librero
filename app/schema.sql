@@ -88,6 +88,10 @@ CREATE TABLE IF NOT EXISTS catalogos (
     UNIQUE (libreria_id, slug)
 );
 ALTER TABLE libros ADD COLUMN IF NOT EXISTS catalogo_id INTEGER REFERENCES catalogos(id) ON DELETE SET NULL;
+-- Color elegido por el librero (clave de PALETA_CATALOGOS en app/colores.py).
+-- NULL en los catalogos creados antes de esta columna: color_catalogo() cae
+-- al color derivado del id, asi ninguno queda sin color.
+ALTER TABLE catalogos ADD COLUMN IF NOT EXISTS color TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_librerias_slug ON librerias(slug);
 CREATE INDEX IF NOT EXISTS idx_libros_activos ON libros(libreria_id, estado) WHERE archivado_en IS NULL;

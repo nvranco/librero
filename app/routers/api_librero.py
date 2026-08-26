@@ -18,8 +18,11 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel
 
 from app import db, vision
+from app.colores import PALETA_CATALOGOS
 from app.config import DATA_DIR
 from app.tokens import clave_libro, slugify, titulo_sin_subtitulo
+
+_CLAVES_COLOR_VALIDAS = {c["clave"] for c in PALETA_CATALOGOS}
 
 router = APIRouter()
 logger = logging.getLogger("librero.lotes")
@@ -41,6 +44,7 @@ class ConfirmarVentas(BaseModel):
 class DatosCatalogo(BaseModel):
     nombre: str
     descripcion: str = ""
+    color: str | None = None
 
 
 class AsignarCatalogo(BaseModel):
@@ -539,14 +543,16 @@ async def crear_catalogo(slug: str, token: str, datos: DatosCatalogo):
     if not nombre:
         raise HTTPException(status_code=400, detail="El catálogo necesita un nombre.")
 
+    color = datos.color if datos.color in _CLAVES_COLOR_VALIDAS else None
+
     base_slug = slugify(nombre)
     for intento in range(20):
         slug_final = base_slug if intento == 0 else f"{base_slug}-{intento + 1}"
         try:
             catalogo_id = await db.pool().fetchval(
-                "INSERT INTO catalogos (libreria_id, slug, nombre, descripcion) "
-                "VALUES ($1, $2, $3, $4) RETURNING id",
-                libreria["id"], slug_final, nombre, datos.descripcion.strip(),
+                "INSERT INTO catalogos (libreria_id, slug, nombre, descripcion, color) "
+                "VALUES ($1, $2, $3, $4, $5) RETURNING id",
+                libreria["id"], slug_final, nombre, datos.descripcion.strip(), color,
             )
             break
         except asyncpg.UniqueViolationError:
@@ -559,7 +565,10 @@ async def crear_catalogo(slug: str, token: str, datos: DatosCatalogo):
         libreria["id"], json.dumps({"catalogo_id": catalogo_id, "nombre": nombre}),
     )
     logger.info("catalogo_creado libreria_id=%s catalogo_id=%s", libreria["id"], catalogo_id)
-    return {"id": catalogo_id, "slug": slug_final, "nombre": nombre, "descripcion": datos.descripcion.strip()}
+    return {
+        "id": catalogo_id, "slug": slug_final, "nombre": nombre,
+        "descripcion": datos.descripcion.strip(), "color": color,
+    }
 
 
 @router.patch("/api/{slug}/{token}/catalogos/{catalogo_id}")
@@ -568,10 +577,13 @@ async def editar_catalogo(slug: str, token: str, catalogo_id: int, datos: DatosC
     nombre = datos.nombre.strip()
     if not nombre:
         raise HTTPException(status_code=400, detail="El catálogo necesita un nombre.")
-
+    # COALESCE: si no mandan un color valido, se preserva el que ya tenia
+    # (evita que un PATCH que solo cambia nombre/descripcion borre el color).
+    color = datos.color if datos.color in _CLAVES_COLOR_VALIDAS else None
     resultado = await db.pool().execute(
-        "UPDATE catalogos SET nombre = $1, descripcion = $2 WHERE id = $3 AND libreria_id = $4",
-        nombre, datos.descripcion.strip(), catalogo_id, libreria["id"],
+        "UPDATE catalogos SET nombre = $1, descripcion = $2, color = COALESCE($3, color) "
+        "WHERE id = $4 AND libreria_id = $5",
+        nombre, datos.descripcion.strip(), color, catalogo_id, libreria["id"],
     )
     if resultado == "UPDATE 0":
         raise HTTPException(status_code=404)

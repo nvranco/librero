@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app import db
-from app.colores import color_catalogo
+from app.colores import PALETA_CATALOGOS, color_catalogo
 from app.metricas import calcular_metricas
 
 router = APIRouter()
@@ -204,6 +204,7 @@ async def panel_lote_catalogo(request: Request, slug: str, token: str, lote_id: 
         libreria["id"],
     )
     catalogos_json = json.dumps([dict(c) for c in catalogos]).replace("</", "<\\/")
+    paleta_json = json.dumps(PALETA_CATALOGOS).replace("</", "<\\/")
 
     return templates.TemplateResponse(
         request,
@@ -213,6 +214,7 @@ async def panel_lote_catalogo(request: Request, slug: str, token: str, lote_id: 
             "lote_id": lote_id,
             "cant_libros": cant_libros,
             "catalogos_json": catalogos_json,
+            "paleta_json": paleta_json,
         },
     )
 
@@ -331,10 +333,13 @@ async def panel_inventario(request: Request, slug: str, token: str):
     libros_json = json.dumps([dict(l) for l in libros]).replace("</", "<\\/")
 
     filas_catalogos = await db.pool().fetch(
-        "SELECT id, nombre FROM catalogos WHERE libreria_id = $1", libreria["id"]
+        "SELECT id, nombre, color FROM catalogos WHERE libreria_id = $1", libreria["id"]
     )
     catalogos_json = json.dumps(
-        [{"id": c["id"], "nombre": c["nombre"], "color": color_catalogo(c["id"])} for c in filas_catalogos]
+        [
+            {"id": c["id"], "nombre": c["nombre"], "color": color_catalogo(c["id"], c["color"])}
+            for c in filas_catalogos
+        ]
     ).replace("</", "<\\/")
 
     base = str(request.base_url).rstrip("/")
@@ -359,7 +364,7 @@ async def panel_catalogos(request: Request, slug: str, token: str):
 
     filas = await db.pool().fetch(
         """
-        SELECT c.id, c.slug, c.nombre, c.descripcion,
+        SELECT c.id, c.slug, c.nombre, c.descripcion, c.color,
                COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) AS cant_libros,
                GREATEST(MAX(li.publicado_en), MAX(li.vendido_en), MAX(li.archivado_en)) AS ultima_actualizacion
         FROM catalogos c
@@ -374,7 +379,8 @@ async def panel_catalogos(request: Request, slug: str, token: str):
     catalogos = [
         {
             **dict(f),
-            "color": color_catalogo(f["id"]),
+            "color_clave": f["color"] or PALETA_CATALOGOS[f["id"] % len(PALETA_CATALOGOS)]["clave"],
+            "color": color_catalogo(f["id"], f["color"]),
             "url": f"{base}/{slug}/c/{f['slug']}",
             "url_qr": f"/api/{slug}/{token}/qr.png?catalogo={f['slug']}",
             "url_libros": f"{base}/{slug}/panel/{token}/libros?catalogo={f['id']}",
@@ -390,5 +396,6 @@ async def panel_catalogos(request: Request, slug: str, token: str):
             "catalogos": catalogos,
             "url_publica": f"{base}/{slug}",
             "url_qr": f"/api/{slug}/{token}/qr.png",
+            "paleta": PALETA_CATALOGOS,
         },
     )

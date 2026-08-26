@@ -18,6 +18,7 @@
         class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
       <input id="input-descripcion" type="text" placeholder="Descripción breve (opcional)"
         class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
+      <div id="paleta-color" class="flex flex-wrap gap-2 py-1"></div>
     </div>
 
     <button id="btn-nuevo" type="button"
@@ -40,15 +41,34 @@
   const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
 
   const catalogos = {{ catalogos_json | safe }};
+  const paleta = {{ paleta_json | safe }};
   let seleccionado = null; // null = catálogo general (sin catálogo)
   let creandoNuevo = false;
+  let colorElegido = paleta[0].clave;
 
   const listaCatalogos = document.getElementById('lista-catalogos');
   const formNuevo = document.getElementById('form-nuevo');
   const btnNuevo = document.getElementById('btn-nuevo');
   const inputNombre = document.getElementById('input-nombre');
   const inputDescripcion = document.getElementById('input-descripcion');
+  const paletaColor = document.getElementById('paleta-color');
   const btnConfirmar = document.getElementById('btn-confirmar');
+
+  paletaColor.innerHTML = paleta.map((op) => `
+    <button type="button" data-clave="${op.clave}" aria-label="${op.nombre}"
+      class="tap w-9 h-9 rounded-full shrink-0 ${op.clave === colorElegido ? 'ring-2 ring-offset-2 ring-tinta' : ''}"
+      style="background:${op.bg}; border:2px solid ${op.borde};"></button>
+  `).join('');
+  paletaColor.querySelectorAll('[data-clave]').forEach((sw) => {
+    sw.addEventListener('click', () => {
+      colorElegido = sw.dataset.clave;
+      paletaColor.querySelectorAll('[data-clave]').forEach((s) => {
+        s.classList.toggle('ring-2', s === sw);
+        s.classList.toggle('ring-offset-2', s === sw);
+        s.classList.toggle('ring-tinta', s === sw);
+      });
+    });
+  });
 
   function chipClases(activo) {
     return activo ? 'bg-tinta text-crema' : 'bg-papel border-2 border-tinta text-tinta';
@@ -97,7 +117,7 @@
         const resp = await fetch(`${API_BASE}/catalogos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nombre, descripcion: inputDescripcion.value.trim() }),
+          body: JSON.stringify({ nombre, descripcion: inputDescripcion.value.trim(), color: colorElegido }),
         });
         if (!resp.ok) throw new Error('No se pudo crear el catálogo');
         const nuevo = await resp.json();

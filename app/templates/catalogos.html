@@ -23,15 +23,15 @@
     </div>
 
     {% for c in catalogos %}
-    <div id="catalogo-{{ c.id }}" class="{{ c.color.bg }} border {{ c.color.borde }} rounded-xl2 p-3">
+    <div id="catalogo-{{ c.id }}" class="{{ c.color.bg }} border {{ c.color.borde }} rounded-lg p-2.5">
       <div data-rol="vista">
         <p class="font-medium">{{ c.nombre }}</p>
-        {% if c.descripcion %}<p class="text-sm text-gris">{{ c.descripcion }}</p>{% endif %}
+        {% if c.descripcion %}<p class="text-sm text-gris leading-snug">{{ c.descripcion }}</p>{% endif %}
         <p class="text-xs text-gris mt-1">
           {{ c.cant_libros }} libro{{ 's' if c.cant_libros != 1 else '' }}
           {% if c.ultima_actualizacion %} · actualizado {{ c.ultima_actualizacion.strftime('%d/%m') }}{% endif %}
         </p>
-        <div class="grid grid-cols-2 gap-2 mt-2">
+        <div class="grid grid-cols-2 gap-1.5 mt-2">
           <button type="button" data-rol="copiar" data-link="{{ c.url }}"
             class="tap btn-secundario rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
           <a href="{{ c.url }}" target="_blank" rel="noopener"
@@ -50,6 +50,13 @@
         <input data-campo="nombre" value="{{ c.nombre }}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
         <textarea data-campo="descripcion" rows="3"
           class="w-full rounded-lg border border-borde px-3 py-2 text-sm resize-none">{{ c.descripcion }}</textarea>
+        <div data-rol="paleta" class="flex flex-wrap gap-2 py-1">
+          {% for op in paleta %}
+          <button type="button" data-clave="{{ op.clave }}" aria-label="{{ op.nombre }}"
+            class="tap w-9 h-9 rounded-full shrink-0 {{ 'ring-2 ring-offset-2 ring-tinta' if op.clave == c.color_clave else '' }}"
+            style="background:{{ op.bg }}; border:2px solid {{ op.borde }};"></button>
+          {% endfor %}
+        </div>
         <div class="flex gap-2">
           <button type="button" data-rol="guardar" class="tap btn-primario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Guardar</button>
           <button type="button" data-rol="cancelar" class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Cancelar</button>
@@ -83,6 +90,17 @@
     const catalogoId = tarjeta.id.replace('catalogo-', '');
     const vista = tarjeta.querySelector('[data-rol="vista"]');
     const edicion = tarjeta.querySelector('[data-rol="edicion"]');
+    const paleta = tarjeta.querySelector('[data-rol="paleta"]');
+    let colorSeleccionado = paleta.querySelector('.ring-tinta')?.dataset.clave || null;
+
+    paleta.querySelectorAll('[data-clave]').forEach((sw) => {
+      sw.addEventListener('click', () => {
+        colorSeleccionado = sw.dataset.clave;
+        paleta.querySelectorAll('[data-clave]').forEach((s) => s.classList.toggle('ring-2', s === sw));
+        paleta.querySelectorAll('[data-clave]').forEach((s) => s.classList.toggle('ring-offset-2', s === sw));
+        paleta.querySelectorAll('[data-clave]').forEach((s) => s.classList.toggle('ring-tinta', s === sw));
+      });
+    });
 
     tarjeta.querySelector('[data-rol="editar"]').addEventListener('click', () => {
       vista.classList.add('hidden');
@@ -101,7 +119,7 @@
       await fetch(`${API_BASE}/catalogos/${catalogoId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, descripcion }),
+        body: JSON.stringify({ nombre, descripcion, color: colorSeleccionado }),
       });
       window.location.reload();
     });

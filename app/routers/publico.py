@@ -26,7 +26,7 @@ async def _catalogos_con_libros(libreria_id: int):
     calculada al vuelo (sin columna updated_at, sin triggers)."""
     filas = await db.pool().fetch(
         """
-        SELECT c.id, c.slug, c.nombre, c.descripcion,
+        SELECT c.id, c.slug, c.nombre, c.descripcion, c.color,
                COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) AS cant_libros,
                GREATEST(MAX(li.publicado_en), MAX(li.vendido_en), MAX(li.archivado_en)) AS ultima_actualizacion
         FROM catalogos c
@@ -39,7 +39,7 @@ async def _catalogos_con_libros(libreria_id: int):
         libreria_id,
     )
     return [
-        {**dict(f), "color": color_catalogo(f["id"])}
+        {**dict(f), "color": color_catalogo(f["id"], f["color"])}
         for f in filas
     ]
 
@@ -68,7 +68,7 @@ async def _render_catalogo(request: Request, slug: str, catalogo_slug: str | Non
         )
         if fila_catalogo is None:
             raise HTTPException(status_code=404)
-        catalogo = {**dict(fila_catalogo), "color": color_catalogo(fila_catalogo["id"])}
+        catalogo = {**dict(fila_catalogo), "color": color_catalogo(fila_catalogo["id"], fila_catalogo["color"])}
         cant_publicados = await db.pool().fetchval(
             """
             SELECT COUNT(*) FROM libros
