@@ -253,7 +253,7 @@ async def panel_metricas(request: Request, slug: str, token: str):
         libreria["id"],
     )
     filas_catalogos = await db.pool().fetch(
-        "SELECT id, nombre FROM catalogos WHERE libreria_id = $1", libreria["id"]
+        "SELECT id, nombre, color FROM catalogos WHERE libreria_id = $1", libreria["id"]
     )
 
     metricas = calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)

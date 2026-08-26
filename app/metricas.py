@@ -9,6 +9,8 @@ volumen de eventos de un MVP es chico y asi queda mas facil de leer/ajustar.
 import json
 from collections import Counter
 
+from app.colores import color_catalogo
+
 
 def calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos) -> dict:
     eventos = []
@@ -51,6 +53,7 @@ def calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
             continue
         grupo = por_catalogo.setdefault(cid, {
             "nombre": e["payload"].get("catalogo_nombre") or "?",
+            "color": color_catalogo(cid),
             "vistas": 0, "vistas_directas": 0, "vistas_desde_card": 0,
             "clics": 0, "busquedas": 0,
         })
@@ -65,11 +68,12 @@ def calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
         elif e["tipo"] == "busqueda":
             grupo["busquedas"] += 1
 
-    # El nombre actual pisa el snapshot del payload, por si el catalogo se
-    # renombro despues de emitidos esos eventos.
+    # El nombre y color actuales pisan el snapshot del payload, por si el
+    # catalogo se renombro/recoloreo despues de emitidos esos eventos.
     for c in filas_catalogos:
         if c["id"] in por_catalogo:
             por_catalogo[c["id"]]["nombre"] = c["nombre"]
+            por_catalogo[c["id"]]["color"] = color_catalogo(c["id"], c.get("color"))
 
     return {
         "resumen": {

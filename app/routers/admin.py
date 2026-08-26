@@ -152,7 +152,7 @@ async def admin_metricas(request: Request, token: str, libreria_id: int):
         libreria_id,
     )
     filas_catalogos = await db.pool().fetch(
-        "SELECT id, nombre FROM catalogos WHERE libreria_id = $1", libreria_id
+        "SELECT id, nombre, color FROM catalogos WHERE libreria_id = $1", libreria_id
     )
 
     metricas = calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
