@@ -13,7 +13,7 @@
     <p class="text-xs text-tinta/80 mt-1">Dada de alta el {{ libreria.creado_en.strftime('%d/%m/%Y') }}</p>
   </header>
 
-  <main class="flex-1 px-5 -mt-3 pb-10 max-w-3xl mx-auto w-full">
+  <main class="flex-1 px-5 pt-4 pb-10 max-w-3xl mx-auto w-full">
   <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">📊 Catálogo público</h2>
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
     <div class="bg-papel border border-borde rounded-xl2 p-3">
@@ -84,7 +84,7 @@
   <div class="space-y-2 mb-8">
     {% for c in por_catalogo[:3] %}
     <div class="{{ c.color.bg }} border {{ c.color.borde }} rounded-xl2 p-3 flex items-center gap-3">
-      <span class="tap shrink-0 w-7 h-7 rounded-full bg-tinta text-crema font-bold text-sm flex items-center justify-center">{{ loop.index }}</span>
+      <span class="shrink-0 w-5 text-center text-lg font-bold text-tinta/50">{{ loop.index }}</span>
       <div class="min-w-0 flex-1">
         <p class="font-bold truncate">{{ c.nombre }}</p>
         <p class="text-xs text-gris mt-0.5">
