@@ -31,26 +31,25 @@
           {{ c.cant_libros }} libro{{ 's' if c.cant_libros != 1 else '' }}
           {% if c.ultima_actualizacion %} · actualizado {{ c.ultima_actualizacion.strftime('%d/%m') }}{% endif %}
         </p>
-        <div class="flex gap-2 mt-2">
+        <div class="grid grid-cols-2 gap-2 mt-2">
           <button type="button" data-rol="copiar" data-link="{{ c.url }}"
-            class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
+            class="tap btn-secundario rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
           <a href="{{ c.url }}" target="_blank" rel="noopener"
-            class="tap btn-secundario flex-1 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
+            class="tap btn-secundario flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ir 🔗</a>
           <a href="{{ c.url_qr }}" download="qr-{{ libreria.slug }}-{{ c.slug }}.png"
-            class="tap btn-secundario shrink-0 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">QR 🏷️</a>
-        </div>
-        <div class="flex gap-2 mt-2">
+            class="tap btn-secundario flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">QR 🏷️</a>
           <a href="{{ c.url_libros }}"
-            class="tap btn-secundario flex-1 flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ver libros 📖</a>
+            class="tap btn-secundario flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ver libros 📖</a>
           <button type="button" data-rol="editar"
-            class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Editar ✏️</button>
+            class="tap btn-secundario rounded-lg px-3 py-2 text-sm font-medium">Editar ✏️</button>
           <button type="button" data-rol="borrar"
-            class="tap flex-1 rounded-lg px-3 py-2 text-sm font-medium border-2 border-terracota text-terracota">Borrar 🗑️</button>
+            class="tap rounded-lg px-3 py-2 text-sm font-medium border-2 border-terracota text-terracota">Borrar 🗑️</button>
         </div>
       </div>
       <div data-rol="edicion" class="hidden space-y-2">
         <input data-campo="nombre" value="{{ c.nombre }}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
-        <input data-campo="descripcion" value="{{ c.descripcion }}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
+        <textarea data-campo="descripcion" rows="3"
+          class="w-full rounded-lg border border-borde px-3 py-2 text-sm resize-none">{{ c.descripcion }}</textarea>
         <div class="flex gap-2">
           <button type="button" data-rol="guardar" class="tap btn-primario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Guardar</button>
           <button type="button" data-rol="cancelar" class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Cancelar</button>
