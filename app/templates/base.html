@@ -2,13 +2,12 @@
 <html lang="es-AR">
 <head>
 <script>
-  // Aplica el tema guardado ANTES de que se pinte la página, para evitar el
-  // flash del tema por defecto. Es una herramienta temporal de revisión de
-  // estilos: "original" se representa como ausencia de data-tema.
+  // Aplica la variante guardada ANTES de pintar la página, para evitar el
+  // flash de la variante por defecto. Herramienta temporal de revisión:
+  // "kraft-clasico" (el default) se representa como ausencia de data-tema.
   (function () {
     var COLORES_CHROME = {
-      original: '#4E9FBF', kraft: '#5B7A5A', editorial: '#2E4A7A',
-      almacen: '#2E7D6B', nocturno: '#1C1712',
+      'kraft-clasico': '#7A9E78', 'kraft-contraste': '#2E2116', 'kraft-suave': '#A54B3F',
     };
     try {
       var t = localStorage.getItem('libreroTemaPreview');
@@ -25,11 +24,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block titulo %}Librero{% endblock %}</title>
-<meta name="theme-color" content="#4E9FBF">
+<meta name="theme-color" content="#7A9E78">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%9A</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Lora:wght@600;700&family=Poppins:wght@600;700&family=Spectral:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -59,85 +58,77 @@
   };
 </script>
 <style>
-  /* Colores como tripletes RGB (sin "#"), para que Tailwind pueda generar
-     también las variantes con opacidad (bg-tinta/60, etc). Ver:
-     https://tailwindcss.com/docs/customizing-colors#using-css-variables */
-
-  /* Tema 1/5 — Original: Papel y tinta (el diseño de base, sin cambios). */
+  /* Paleta compartida por las 3 variantes (todas dentro de la linea "Kraft":
+     libreria de usados, papel kraft y tonos tierra). Lo que cambia entre
+     variantes es la forma/tratamiento de los botones y del contorno, no la
+     paleta de colores. Formato RGB (sin "#") para que Tailwind pueda generar
+     tambien las variantes con opacidad (bg-x/50, etc). */
   :root {
-    --tinta: 26 22 19; --celeste: 78 159 191; --celeste-claro: 191 227 238;
-    --crema: 245 239 221; --fondo: 245 239 221; --papel: 255 255 255; --borde: 220 211 187;
-    --gris: 107 98 89; --terracota: 201 123 99; --ambar: 199 154 61;
-    --texto-papel: 26 22 19; --borde-secundario: rgba(26, 22, 19, 0.7);
-    --radio-xl2: 14px; --font-display: inherit; --tracking-display: normal;
-  }
-
-  /* Tema 2/5 — Kraft: librería de usados, papel kraft y tonos tierra. */
-  html[data-tema="kraft"] {
     --tinta: 46 33 22; --celeste: 122 158 120; --celeste-claro: 215 224 210;
     --crema: 243 236 220; --fondo: 237 227 208; --papel: 251 247 238; --borde: 216 201 172;
     --gris: 122 111 92; --terracota: 165 75 63; --ambar: 184 134 58;
-    --texto-papel: 46 33 22; --borde-secundario: rgba(46, 33, 22, 0.7);
-    --radio-xl2: 12px; --font-display: 'Lora', serif; --tracking-display: normal;
+    --texto-papel: 46 33 22; --font-display: 'Lora', serif;
+
+    /* Variante 1/3 — Kraft Clásico (default): botones con relleno solido de
+       color (nada de negro), borde del mismo tono para un cierre limpio. */
+    --radio-xl2: 10px;
+    --borde-secundario: rgba(46, 33, 22, 0.55);
+    --btn-primario-a-bg: rgb(var(--celeste)); --btn-primario-a-color: rgb(var(--tinta)); --btn-primario-a-border: rgb(var(--celeste));
+    --btn-primario-b-bg: rgb(var(--terracota)); --btn-primario-b-color: rgb(var(--papel)); --btn-primario-b-border: rgb(var(--terracota));
+    --btn-primario-border-width: 2px;
   }
 
-  /* Tema 3/5 — Editorial contemporáneo: blanco, azul profundo, serif audaz. */
-  html[data-tema="editorial"] {
-    --tinta: 32 36 44; --celeste: 120 155 200; --celeste-claro: 201 214 234;
-    --crema: 242 241 236; --fondo: 255 255 255; --papel: 255 255 255; --borde: 225 223 216;
-    --gris: 107 107 112; --terracota: 193 68 58; --ambar: 184 137 46;
-    --texto-papel: 32 36 44; --borde-secundario: rgba(32, 36, 44, 0.75);
-    --radio-xl2: 8px; --font-display: 'Fraunces', serif; --tracking-display: -0.01em;
+  /* Variante 2/3 — Kraft Contraste: relleno oscuro (espresso, no negro puro)
+     con un borde de color mas grueso y decidido. */
+  html[data-tema="kraft-contraste"] {
+    --radio-xl2: 8px;
+    --borde-secundario: rgba(46, 33, 22, 0.75);
+    --btn-primario-a-bg: rgb(var(--tinta)); --btn-primario-a-color: rgb(var(--crema)); --btn-primario-a-border: rgb(var(--celeste));
+    --btn-primario-b-bg: rgb(var(--tinta)); --btn-primario-b-color: rgb(var(--crema)); --btn-primario-b-border: rgb(var(--terracota));
+    --btn-primario-border-width: 3px;
   }
 
-  /* Tema 4/5 — Almacén de barrio: cálido, redondeado, ocre y verde azulado. */
-  html[data-tema="almacen"] {
-    --tinta: 36 33 28; --celeste: 80 168 148; --celeste-claro: 191 227 216;
-    --crema: 255 246 229; --fondo: 251 243 227; --papel: 255 255 255; --borde: 232 217 184;
-    --gris: 122 112 95; --terracota: 217 113 74; --ambar: 217 164 65;
-    --texto-papel: 36 33 28; --borde-secundario: rgba(36, 33, 28, 0.7);
-    --radio-xl2: 18px; --font-display: 'Poppins', sans-serif; --tracking-display: 0.01em;
+  /* Variante 3/3 — Kraft Suave: botones tonales (fondo pálido del color de
+     acento + texto e ícono en ese mismo color), sin ningún relleno oscuro. */
+  html[data-tema="kraft-suave"] {
+    --radio-xl2: 16px;
+    --borde-secundario: rgba(46, 33, 22, 0.3);
+    --btn-primario-a-bg: rgb(224 232 220); --btn-primario-a-color: rgb(58 92 56); --btn-primario-a-border: rgb(var(--celeste));
+    --btn-primario-b-bg: rgb(238 220 213); --btn-primario-b-color: rgb(140 55 45); --btn-primario-b-border: rgb(var(--terracota));
+    --btn-primario-border-width: 2px;
   }
-
-  /* Tema 5/5 — Nocturno: café literario, la única variante oscura. */
-  html[data-tema="nocturno"] {
-    --tinta: 27 20 13; --celeste: 111 174 194; --celeste-claro: 169 212 224;
-    --crema: 245 239 221; --fondo: 28 23 18; --papel: 42 35 28; --borde: 74 65 54;
-    --gris: 183 172 154; --terracota: 224 143 115; --ambar: 224 181 99;
-    --texto-papel: 239 231 216; --borde-secundario: rgba(239, 231, 216, 0.35);
-    --radio-xl2: 14px; --font-display: 'Spectral', serif; --tracking-display: normal;
-  }
-
-  /* En el tema oscuro, "tinta" sigue siendo oscura a propósito (la usan los
-     headers con texto blanco fijo), así que solo el texto/borde que dependía
-     de tinta para leerse sobre "papel" (que sí pasa a oscuro) necesita
-     releerse como texto-papel. Los encabezados de catálogo (bg-celeste u
-     otro color de catálogo, siempre claros) no se tocan: ahí el texto oscuro
-     sigue siendo el correcto. */
-  html[data-tema="nocturno"] .bg-papel.text-tinta { color: rgb(var(--texto-papel)) !important; }
-  html[data-tema="nocturno"] .border-tinta { border-color: rgb(var(--borde)) !important; }
 
   html, body { background: rgb(var(--fondo)); }
   * { -webkit-tap-highlight-color: transparent; }
-  h1 { font-family: var(--font-display); letter-spacing: var(--tracking-display); }
+  h1 { font-family: var(--font-display); }
   input:focus, button:focus, a:focus { outline: 2px solid rgb(var(--celeste)); outline-offset: 2px; }
   .safe-b { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
   .tap { min-height: 48px; min-width: 48px; }
-
-  /* Los campos de formulario sin clase de color explícita heredan el fondo
-     nativo del navegador (normalmente blanco), que no sigue el tema. Los
-     fijamos a los tokens de superficie por default; una clase Tailwind
-     explícita (bg-crema, text-white, etc.) sigue pudiendo pisar esto. */
-  input, select, textarea { background-color: rgb(var(--papel)); color: rgb(var(--texto-papel)); }
 
   /* iOS hace zoom automatico al enfocar un input con font-size < 16px.
      Forzamos 16px en todo campo editable, sin importar la clase de Tailwind. */
   input, textarea, select { font-size: 16px !important; }
 
-  /* Botones: negro o blanco (decisión de diseño), con la excepción puntual
-     de WhatsApp que usa su verde de marca para mantener el reconocimiento. */
-  .btn-primario {
-    background: rgb(var(--tinta)); color: rgb(var(--crema));
+  /* Los campos de formulario sin clase de color explícita heredan el fondo
+     nativo del navegador (normalmente blanco). Los fijamos a los tokens de
+     superficie por default; una clase Tailwind explícita puede pisar esto. */
+  input, select, textarea { background-color: rgb(var(--papel)); color: rgb(var(--texto-papel)); }
+
+  /* Botones primarios: "Cargar estante" (border-celeste en el HTML) y
+     "Marcar vendidos" (border-ambar en el HTML) son semánticamente entrada
+     y salida, así que cada variante los trata como el par A/B de arriba,
+     sin tocar las clases del template. */
+  /* .border-celeste/.border-ambar (clases de Tailwind, mismo peso que estas
+     reglas) fijan el ancho en 2px; usamos el mismo selector compuesto para
+     poder pisar ese ancho por variante sin depender del orden de inyección
+     del CDN de Tailwind. */
+  .btn-primario.border-celeste {
+    background: var(--btn-primario-a-bg); color: var(--btn-primario-a-color);
+    border-color: var(--btn-primario-a-border); border-width: var(--btn-primario-border-width);
+  }
+  .btn-primario.border-ambar {
+    background: var(--btn-primario-b-bg); color: var(--btn-primario-b-color);
+    border-color: var(--btn-primario-b-border); border-width: var(--btn-primario-border-width);
   }
   .btn-secundario {
     background: rgb(var(--papel)); color: rgb(var(--texto-papel));
@@ -150,30 +141,28 @@
   /* Safari agrega su propio cromado redondeado a type=search, que se ve
      como un doble borde encima del nuestro. Lo desactivamos. */
   input[type="search"] { -webkit-appearance: none; appearance: none; }
-
-  /* Los buscadores ya tienen su propio borde negro de 2px: el anillo de
-     foco de arriba se sumaba como un segundo borde. Solo el borde. */
   input[type="search"]:focus { outline: none; }
 
-  /* Selector de temas: herramienta temporal de revisión visual, pensada
+  /* Selector de variantes: herramienta temporal de revisión visual, pensada
      para no competir con el contenido real (por eso queda chica y en la
-     esquina, sin usar los tokens de color del tema activo). */
+     esquina, con estilo propio fijo). */
   #selector-tema { position: fixed; top: 0; left: 0; z-index: 60; }
   #btn-selector-tema {
     width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-    font-size: 15px; line-height: 1; background: rgba(20, 16, 12, .55); color: #fff;
+    font-size: 15px; line-height: 1; background: rgba(46, 33, 22, .55); color: #fff;
     border-radius: 0 0 12px 0; opacity: .55; transition: opacity .15s ease;
   }
   #btn-selector-tema:hover, #btn-selector-tema:focus { opacity: 1; }
   #panel-selector-tema {
-    position: absolute; top: 30px; left: 0; width: 232px;
+    position: absolute; top: 30px; left: 0; width: 240px;
     background: #fff; border: 1px solid rgba(0,0,0,.12); border-radius: 0 12px 12px 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,.18); overflow: hidden;
   }
   .tema-opcion {
     display: flex; align-items: center; gap: 8px; width: 100%;
-    padding: 10px 12px; text-align: left; font-size: 13px; color: #1A1613;
+    padding: 10px 12px; text-align: left; font-size: 13px; color: #2E2116;
   }
+  .tema-opcion small { display: block; font-weight: 400; opacity: .7; font-size: 11px; }
   .tema-opcion:hover { background: rgba(0,0,0,.04); }
 </style>
 {% block head %}{% endblock %}
@@ -187,25 +176,17 @@
       Vista previa de estilo · temporal
     </p>
     <div style="padding-bottom: 6px;">
-      <button type="button" class="tema-opcion" data-tema-opcion="original">
-        <span style="width:14px;height:14px;border-radius:999px;background:#4E9FBF;flex-shrink:0;"></span>
-        Original — Papel y tinta
+      <button type="button" class="tema-opcion" data-tema-opcion="kraft-clasico">
+        <span style="width:14px;height:14px;border-radius:999px;background:#7A9E78;flex-shrink:0;"></span>
+        <span>Kraft Clásico<small>Botones de color sólido</small></span>
       </button>
-      <button type="button" class="tema-opcion" data-tema-opcion="kraft">
+      <button type="button" class="tema-opcion" data-tema-opcion="kraft-contraste">
+        <span style="width:14px;height:14px;border-radius:999px;background:#2E2116;flex-shrink:0;"></span>
+        <span>Kraft Contraste<small>Oscuro, borde grueso</small></span>
+      </button>
+      <button type="button" class="tema-opcion" data-tema-opcion="kraft-suave">
         <span style="width:14px;height:14px;border-radius:999px;background:#A54B3F;flex-shrink:0;"></span>
-        Kraft — Librería de usados
-      </button>
-      <button type="button" class="tema-opcion" data-tema-opcion="editorial">
-        <span style="width:14px;height:14px;border-radius:999px;background:#789BC8;flex-shrink:0;"></span>
-        Editorial contemporáneo
-      </button>
-      <button type="button" class="tema-opcion" data-tema-opcion="almacen">
-        <span style="width:14px;height:14px;border-radius:999px;background:#D9A441;flex-shrink:0;"></span>
-        Almacén de barrio
-      </button>
-      <button type="button" class="tema-opcion" data-tema-opcion="nocturno">
-        <span style="width:14px;height:14px;border-radius:999px;background:#1C1712;flex-shrink:0;"></span>
-        Nocturno — Café literario
+        <span>Kraft Suave<small>Botones tonales, redondeado</small></span>
       </button>
     </div>
   </div>
@@ -215,15 +196,15 @@
 (function () {
   var TEMA_KEY = 'libreroTemaPreview';
   var COLORES_CHROME = {
-    original: '#4E9FBF', kraft: '#5B7A5A', editorial: '#2E4A7A',
-    almacen: '#2E7D6B', nocturno: '#1C1712',
+    'kraft-clasico': '#7A9E78', 'kraft-contraste': '#2E2116', 'kraft-suave': '#A54B3F',
   };
+  var DEFECTO = 'kraft-clasico';
   var btn = document.getElementById('btn-selector-tema');
   var panel = document.getElementById('panel-selector-tema');
   if (!btn || !panel) return;
 
   function temaActual() {
-    return document.documentElement.getAttribute('data-tema') || 'original';
+    return document.documentElement.getAttribute('data-tema') || DEFECTO;
   }
 
   function marcarActivo() {
@@ -231,12 +212,12 @@
     panel.querySelectorAll('.tema-opcion').forEach(function (op) {
       var activo = op.dataset.temaOpcion === actual;
       op.style.fontWeight = activo ? '700' : '400';
-      op.style.background = activo ? 'rgba(78,159,191,.14)' : 'transparent';
+      op.style.background = activo ? 'rgba(122,158,120,.16)' : 'transparent';
     });
   }
 
   function aplicarTema(id) {
-    if (id === 'original') {
+    if (id === DEFECTO) {
       document.documentElement.removeAttribute('data-tema');
       try { localStorage.removeItem(TEMA_KEY); } catch (e) {}
     } else {
@@ -244,7 +225,7 @@
       try { localStorage.setItem(TEMA_KEY, id); } catch (e) {}
     }
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', COLORES_CHROME[id] || COLORES_CHROME.original);
+    if (meta) meta.setAttribute('content', COLORES_CHROME[id] || COLORES_CHROME[DEFECTO]);
     marcarActivo();
   }
 
