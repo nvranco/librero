@@ -8,17 +8,30 @@
     <h1 class="text-2xl font-bold text-white leading-tight mt-1">Marcar vendidos</h1>
   </header>
 
-  <main class="flex-1 px-5 py-5 pb-10">
+  <main class="flex-1 px-5 -mt-3 pb-10">
 
     <div id="paso-intro">
-      <p class="text-gris text-sm mb-4">
-        Sacá una foto de los libros que estás por entregar (lomos hacia la cámara,
-        igual que cuando cargás un estante) y te digo cuáles son para que confirmes.
-      </p>
-      <input id="input-fotos" type="file" accept="image/*" multiple class="hidden">
-      <button id="btn-sacar-fotos" type="button" class="tap btn-primario w-full rounded-xl2 font-bold text-lg">
-        Sacar fotos 📷
-      </button>
+      <div id="tarjeta-fotos" class="bg-papel border border-borde rounded-xl2 p-3">
+        <p class="font-medium">¿Vendiste varios de una?</p>
+        <p class="text-sm text-gris mt-1">
+          Sacá una foto de los libros que estás por entregar (lomos hacia la cámara,
+          igual que cuando cargás un estante) y te digo cuáles son para que confirmes.
+        </p>
+        <input id="input-fotos" type="file" accept="image/*" multiple class="hidden">
+        <button id="btn-sacar-fotos" type="button" class="tap btn-primario w-full rounded-xl2 font-bold mt-3">
+          Sacar fotos 📷
+        </button>
+      </div>
+
+      <input
+        id="buscador"
+        type="search"
+        inputmode="search"
+        placeholder="O buscá un libro puntual para darlo de baja…"
+        class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris mt-4"
+      >
+
+      <div id="lista-busqueda" class="mt-4 space-y-2"></div>
     </div>
 
     <div id="carga-estado" class="mt-6 hidden">
@@ -66,7 +79,11 @@
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
   const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
 
+  let libros = {{ libros_json | safe }};
+
   const pasoIntro = document.getElementById('paso-intro');
+  const buscador = document.getElementById('buscador');
+  const listaBusqueda = document.getElementById('lista-busqueda');
   const pasoConfirmar = document.getElementById('paso-confirmar');
   const pasoVacio = document.getElementById('paso-vacio');
   const cargaEstado = document.getElementById('carga-estado');
@@ -90,6 +107,71 @@
     div.textContent = texto || '';
     return div.innerHTML;
   }
+
+  function normalizar(texto) {
+    return (texto || '').toString().toLowerCase().trim();
+  }
+
+  // Busqueda puntual, alternativa al lote de fotos: pensada para dar de baja
+  // uno o dos libros sueltos sin tener que sacar fotos para eso.
+  function renderBusqueda() {
+    const q = normalizar(buscador.value);
+    const tarjetaFotos = document.getElementById('tarjeta-fotos');
+    if (tarjetaFotos) tarjetaFotos.classList.toggle('hidden', q.length > 0);
+
+    if (!q) {
+      listaBusqueda.innerHTML = '';
+      return;
+    }
+    const filtrados = libros.filter((l) =>
+      normalizar(l.titulo).includes(q) || normalizar(l.autor).includes(q)
+    );
+    if (filtrados.length === 0) {
+      listaBusqueda.innerHTML = '<p class="text-center text-gris py-6 text-sm">Nada coincide con esa búsqueda.</p>';
+      return;
+    }
+    listaBusqueda.innerHTML = filtrados.map((libro) => `
+      <div class="bg-papel border border-borde rounded-xl2 p-3 flex items-center justify-between gap-3" data-id="${libro.id}">
+        <div class="min-w-0">
+          <p class="font-medium truncate">${escaparHtml(libro.titulo)}</p>
+          <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || 'Autor no disponible')}</p>
+        </div>
+        <button type="button" data-accion="vendido" class="tap btn-secundario shrink-0 rounded-lg px-3 text-sm font-medium">
+          Marcar vendido
+        </button>
+      </div>
+    `).join('');
+
+    listaBusqueda.querySelectorAll('[data-id]').forEach((fila) => {
+      const id = Number(fila.dataset.id);
+      const libro = libros.find((l) => l.id === id);
+      fila.querySelector('[data-accion="vendido"]').addEventListener('click', async (ev) => {
+        const boton = ev.currentTarget;
+        boton.disabled = true;
+        boton.textContent = 'Marcando…';
+        try {
+          const resp = await fetch(`${API_BASE}/libros/${libro.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ titulo: libro.titulo, autor: libro.autor, estado: 'vendido' }),
+          });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          boton.textContent = 'Vendido ✓';
+          boton.classList.add('opacity-60');
+          setTimeout(() => {
+            libros = libros.filter((l) => l.id !== id);
+            renderBusqueda();
+          }, 700);
+        } catch (err) {
+          alert('No se pudo marcar como vendido. Probá de nuevo.');
+          boton.disabled = false;
+          boton.textContent = 'Marcar vendido';
+        }
+      });
+    });
+  }
+
+  buscador.addEventListener('input', renderBusqueda);
 
   // Misma barra/mensaje continuos del panel: se mueven solos, sin depender
   // de en que paso real esta el backend.
@@ -273,6 +355,7 @@
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const resultado = await resp.json();
 
+      libros = libros.filter((l) => !idsConfirmados.includes(l.id));
       pasoConfirmar.classList.add('hidden');
       pasoVacio.classList.remove('hidden');
       mensajeVacioVenta.textContent = `¡Listo! Marcamos ${resultado.vendidos} libro${resultado.vendidos === 1 ? '' : 's'} como vendido${resultado.vendidos === 1 ? '' : 's'}.`;

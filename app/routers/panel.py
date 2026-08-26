@@ -168,11 +168,19 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
 
 @router.get("/{slug}/panel/{token}/vender", response_class=HTMLResponse)
 async def panel_vender(request: Request, slug: str, token: str):
-    """P6 — flujo inverso a la carga: fotografiar libros para marcarlos
-    vendidos en lote. Pantalla simple, sin datos previos — todo lo arma el
-    JS contra /api/.../detectar-vendidos y /api/.../vendidos/confirmar."""
+    """P6 — marcar vendidos: por foto en lote (detectar-vendidos +
+    vendidos/confirmar) o buscando un libro puntual (mismo PATCH de
+    estado que usa el inventario)."""
     libreria = await _libreria_por_slug_y_token(slug, token)
-    return templates.TemplateResponse(request, "vender.html", {"libreria": libreria})
+    libros = await db.pool().fetch(
+        "SELECT id, titulo, autor FROM libros "
+        "WHERE libreria_id = $1 AND estado = 'publicado' AND archivado_en IS NULL ORDER BY titulo",
+        libreria["id"],
+    )
+    libros_json = json.dumps([dict(l) for l in libros]).replace("</", "<\\/")
+    return templates.TemplateResponse(
+        request, "vender.html", {"libreria": libreria, "libros_json": libros_json}
+    )
 
 
 @router.get("/{slug}/panel/{token}/lote/{lote_id}/catalogo", response_class=HTMLResponse)
