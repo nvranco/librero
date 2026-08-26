@@ -1,26 +1,6 @@
 <!doctype html>
 <html lang="es-AR">
 <head>
-<script>
-  // Aplica la variante guardada ANTES de pintar la página, para evitar el
-  // flash de la variante por defecto. Herramienta temporal de revisión:
-  // "kraft-clasico" (el default) se representa como ausencia de data-tema.
-  (function () {
-    var COLORES_CHROME = {
-      'kraft-clasico': '#7A9E78', 'kraft-contraste': '#2E2116', 'kraft-suave': '#A54B3F',
-    };
-    try {
-      var t = localStorage.getItem('libreroTemaPreview');
-      if (t && COLORES_CHROME[t]) {
-        document.documentElement.setAttribute('data-tema', t);
-        document.addEventListener('DOMContentLoaded', function () {
-          var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute('content', COLORES_CHROME[t]);
-        });
-      }
-    } catch (e) {}
-  })();
-</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block titulo %}Librero{% endblock %}</title>
@@ -58,44 +38,23 @@
   };
 </script>
 <style>
-  /* Paleta compartida por las 3 variantes (todas dentro de la linea "Kraft":
-     libreria de usados, papel kraft y tonos tierra). Lo que cambia entre
-     variantes es la forma/tratamiento de los botones y del contorno, no la
-     paleta de colores. Formato RGB (sin "#") para que Tailwind pueda generar
-     tambien las variantes con opacidad (bg-x/50, etc). */
+  /* Look and feel definitivo: "Kraft Suave" — libreria de usados, papel
+     kraft y tonos tierra, con botones tonales (fondo palido + texto e
+     icono del mismo color) y esquinas redondeadas. Colores en formato RGB
+     (sin "#") para que Tailwind pueda generar tambien las variantes con
+     opacidad (bg-x/50, etc). */
   :root {
     --tinta: 46 33 22; --celeste: 122 158 120; --celeste-claro: 215 224 210;
     --crema: 243 236 220; --fondo: 237 227 208; --papel: 251 247 238; --borde: 216 201 172;
     --gris: 122 111 92; --terracota: 165 75 63; --ambar: 184 134 58;
     --texto-papel: 46 33 22; --font-display: 'Lora', serif;
-
-    /* Variante 1/3 — Kraft Clásico (default): botones con relleno solido de
-       color (nada de negro), borde del mismo tono para un cierre limpio. */
-    --radio-xl2: 10px;
-    --borde-secundario: rgba(46, 33, 22, 0.55);
-    --btn-primario-a-bg: rgb(var(--celeste)); --btn-primario-a-color: rgb(var(--tinta)); --btn-primario-a-border: rgb(var(--celeste));
-    --btn-primario-b-bg: rgb(var(--terracota)); --btn-primario-b-color: rgb(var(--papel)); --btn-primario-b-border: rgb(var(--terracota));
-    --btn-primario-border-width: 2px;
-  }
-
-  /* Variante 2/3 — Kraft Contraste: relleno oscuro (espresso, no negro puro)
-     con un borde de color mas grueso y decidido. */
-  html[data-tema="kraft-contraste"] {
-    --radio-xl2: 8px;
-    --borde-secundario: rgba(46, 33, 22, 0.75);
-    --btn-primario-a-bg: rgb(var(--tinta)); --btn-primario-a-color: rgb(var(--crema)); --btn-primario-a-border: rgb(var(--celeste));
-    --btn-primario-b-bg: rgb(var(--tinta)); --btn-primario-b-color: rgb(var(--crema)); --btn-primario-b-border: rgb(var(--terracota));
-    --btn-primario-border-width: 3px;
-  }
-
-  /* Variante 3/3 — Kraft Suave: botones tonales (fondo pálido del color de
-     acento + texto e ícono en ese mismo color), sin ningún relleno oscuro. */
-  html[data-tema="kraft-suave"] {
     --radio-xl2: 16px;
     --borde-secundario: rgba(46, 33, 22, 0.3);
+
+    /* Cargar estante (border-celeste en el HTML): tonal verde. */
     --btn-primario-a-bg: rgb(224 232 220); --btn-primario-a-color: rgb(58 92 56); --btn-primario-a-border: rgb(var(--celeste));
-    --btn-primario-b-bg: rgb(238 220 213); --btn-primario-b-color: rgb(140 55 45); --btn-primario-b-border: rgb(var(--terracota));
-    --btn-primario-border-width: 2px;
+    /* Marcar vendidos (border-ambar en el HTML): tonal dorado. */
+    --btn-primario-b-bg: rgb(242 231 203); --btn-primario-b-color: rgb(122 86 28); --btn-primario-b-border: rgb(var(--ambar));
   }
 
   html, body { background: rgb(var(--fondo)); }
@@ -116,19 +75,14 @@
 
   /* Botones primarios: "Cargar estante" (border-celeste en el HTML) y
      "Marcar vendidos" (border-ambar en el HTML) son semánticamente entrada
-     y salida, así que cada variante los trata como el par A/B de arriba,
-     sin tocar las clases del template. */
-  /* .border-celeste/.border-ambar (clases de Tailwind, mismo peso que estas
-     reglas) fijan el ancho en 2px; usamos el mismo selector compuesto para
-     poder pisar ese ancho por variante sin depender del orden de inyección
-     del CDN de Tailwind. */
+     y salida — cada uno con su propio tratamiento tonal. El selector
+     compuesto (mismo peso que .border-celeste/.border-ambar de Tailwind)
+     evita depender del orden de inyección del CDN. */
   .btn-primario.border-celeste {
-    background: var(--btn-primario-a-bg); color: var(--btn-primario-a-color);
-    border-color: var(--btn-primario-a-border); border-width: var(--btn-primario-border-width);
+    background: var(--btn-primario-a-bg); color: var(--btn-primario-a-color); border-color: var(--btn-primario-a-border);
   }
   .btn-primario.border-ambar {
-    background: var(--btn-primario-b-bg); color: var(--btn-primario-b-color);
-    border-color: var(--btn-primario-b-border); border-width: var(--btn-primario-border-width);
+    background: var(--btn-primario-b-bg); color: var(--btn-primario-b-color); border-color: var(--btn-primario-b-border);
   }
   .btn-secundario {
     background: rgb(var(--papel)); color: rgb(var(--texto-papel));
@@ -142,123 +96,10 @@
      como un doble borde encima del nuestro. Lo desactivamos. */
   input[type="search"] { -webkit-appearance: none; appearance: none; }
   input[type="search"]:focus { outline: none; }
-
-  /* Selector de variantes: herramienta temporal de revisión visual, pensada
-     para no competir con el contenido real (por eso queda chica y en la
-     esquina, con estilo propio fijo). */
-  #selector-tema { position: fixed; top: 0; left: 0; z-index: 60; }
-  #btn-selector-tema {
-    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-    font-size: 15px; line-height: 1; background: rgba(46, 33, 22, .55); color: #fff;
-    border-radius: 0 0 12px 0; opacity: .55; transition: opacity .15s ease;
-  }
-  #btn-selector-tema:hover, #btn-selector-tema:focus { opacity: 1; }
-  #panel-selector-tema {
-    position: absolute; top: 30px; left: 0; width: 240px;
-    background: #fff; border: 1px solid rgba(0,0,0,.12); border-radius: 0 12px 12px 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.18); overflow: hidden;
-  }
-  .tema-opcion {
-    display: flex; align-items: center; gap: 8px; width: 100%;
-    padding: 10px 12px; text-align: left; font-size: 13px; color: #2E2116;
-  }
-  .tema-opcion small { display: block; font-weight: 400; opacity: .7; font-size: 11px; }
-  .tema-opcion:hover { background: rgba(0,0,0,.04); }
 </style>
 {% block head %}{% endblock %}
 </head>
 <body class="font-sans text-texto-papel bg-fondo min-h-screen antialiased">
-<div id="selector-tema">
-  <button id="btn-selector-tema" type="button" aria-haspopup="true" aria-expanded="false"
-    aria-label="Vista previa de estilo (herramienta de revisión, no afecta lo que ven tus clientes)">🎨</button>
-  <div id="panel-selector-tema" class="hidden">
-    <p style="padding: 10px 12px 4px; font-size: 11px; font-weight: 600; color: #6B6259;">
-      Vista previa de estilo · temporal
-    </p>
-    <div style="padding-bottom: 6px;">
-      <button type="button" class="tema-opcion" data-tema-opcion="kraft-clasico">
-        <span style="width:14px;height:14px;border-radius:999px;background:#7A9E78;flex-shrink:0;"></span>
-        <span>Kraft Clásico<small>Botones de color sólido</small></span>
-      </button>
-      <button type="button" class="tema-opcion" data-tema-opcion="kraft-contraste">
-        <span style="width:14px;height:14px;border-radius:999px;background:#2E2116;flex-shrink:0;"></span>
-        <span>Kraft Contraste<small>Oscuro, borde grueso</small></span>
-      </button>
-      <button type="button" class="tema-opcion" data-tema-opcion="kraft-suave">
-        <span style="width:14px;height:14px;border-radius:999px;background:#A54B3F;flex-shrink:0;"></span>
-        <span>Kraft Suave<small>Botones tonales, redondeado</small></span>
-      </button>
-    </div>
-  </div>
-</div>
 {% block contenido %}{% endblock %}
-<script>
-(function () {
-  var TEMA_KEY = 'libreroTemaPreview';
-  var COLORES_CHROME = {
-    'kraft-clasico': '#7A9E78', 'kraft-contraste': '#2E2116', 'kraft-suave': '#A54B3F',
-  };
-  var DEFECTO = 'kraft-clasico';
-  var btn = document.getElementById('btn-selector-tema');
-  var panel = document.getElementById('panel-selector-tema');
-  if (!btn || !panel) return;
-
-  function temaActual() {
-    return document.documentElement.getAttribute('data-tema') || DEFECTO;
-  }
-
-  function marcarActivo() {
-    var actual = temaActual();
-    panel.querySelectorAll('.tema-opcion').forEach(function (op) {
-      var activo = op.dataset.temaOpcion === actual;
-      op.style.fontWeight = activo ? '700' : '400';
-      op.style.background = activo ? 'rgba(122,158,120,.16)' : 'transparent';
-    });
-  }
-
-  function aplicarTema(id) {
-    if (id === DEFECTO) {
-      document.documentElement.removeAttribute('data-tema');
-      try { localStorage.removeItem(TEMA_KEY); } catch (e) {}
-    } else {
-      document.documentElement.setAttribute('data-tema', id);
-      try { localStorage.setItem(TEMA_KEY, id); } catch (e) {}
-    }
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', COLORES_CHROME[id] || COLORES_CHROME[DEFECTO]);
-    marcarActivo();
-  }
-
-  function cerrarPanel() {
-    panel.classList.add('hidden');
-    btn.setAttribute('aria-expanded', 'false');
-  }
-
-  btn.addEventListener('click', function () {
-    var abierto = !panel.classList.contains('hidden');
-    panel.classList.toggle('hidden');
-    btn.setAttribute('aria-expanded', String(!abierto));
-  });
-
-  document.addEventListener('click', function (ev) {
-    if (!panel.classList.contains('hidden') && !panel.contains(ev.target) && ev.target !== btn) {
-      cerrarPanel();
-    }
-  });
-
-  document.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Escape') cerrarPanel();
-  });
-
-  panel.querySelectorAll('.tema-opcion').forEach(function (op) {
-    op.addEventListener('click', function () {
-      aplicarTema(op.dataset.temaOpcion);
-      cerrarPanel();
-    });
-  });
-
-  marcarActivo();
-})();
-</script>
 </body>
 </html>

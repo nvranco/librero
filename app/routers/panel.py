@@ -71,30 +71,14 @@ async def panel_home(request: Request, slug: str, token: str):
     dias = [hoy - timedelta(days=i) for i in range(6, -1, -1)]
     cant_maxima = max([conteo_por_dia.get(d, 0) for d in dias] + [0])
     total_semana = sum(conteo_por_dia.get(d, 0) for d in dias)
-    # Coordenadas para un sparkline en vez de barras: con datos dispersos (la
-    # mayoria de los dias en 0) una linea se lee mejor que barras casi vacias.
-    # viewBox 0 0 300 56, 7 puntos entre x=14 y x=286.
-    ancho_paso = 272 / 6
-    visitas_semana = []
-    for i, d in enumerate(dias):
-        cant = conteo_por_dia.get(d, 0)
-        pct = round(cant / cant_maxima * 100, 1) if cant_maxima else 0
-        visitas_semana.append({
+    visitas_semana = [
+        {
             "dia_corto": DIAS_CORTOS[d.weekday()],
-            "cant": cant,
-            "pct": pct,
-            "x": round(14 + i * ancho_paso, 1),
-            "y": round(46 - (pct / 100 * 38), 1),
-            "es_pico": cant == cant_maxima and cant_maxima > 0,
-        })
-    if cant_maxima > 0:
-        dia_pico = next(d for d in visitas_semana if d["es_pico"])
-        resumen_visitas_semana = (
-            f"{total_semana} visita{'s' if total_semana != 1 else ''} en total, "
-            f"con un pico de {cant_maxima} el {dia_pico['dia_corto']}"
-        )
-    else:
-        resumen_visitas_semana = "Sin visitas esta semana"
+            "cant": conteo_por_dia.get(d, 0),
+            "pct": round(conteo_por_dia.get(d, 0) / cant_maxima * 100, 1) if cant_maxima else 0,
+        }
+        for d in dias
+    ]
 
     lotes_pendientes = await db.pool().fetch(
         """
@@ -119,7 +103,6 @@ async def panel_home(request: Request, slug: str, token: str):
             "clics_ciclo": clics_ciclo,
             "visitas_semana": visitas_semana,
             "total_semana": total_semana,
-            "resumen_visitas_semana": resumen_visitas_semana,
             "lotes_pendientes": lotes_pendientes,
             "url_publica": f"{base}/{slug}",
             "url_inventario": f"{base}/{slug}/panel/{token}/libros",
