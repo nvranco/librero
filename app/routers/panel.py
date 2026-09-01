@@ -147,7 +147,7 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
     # libros de los que ve en la foto.
     libros = await db.pool().fetch(
         """
-        SELECT id, foto_id, titulo, autor, titulo_raw, autor_raw, confianza
+        SELECT id, foto_id, foto_portada_id, mostrar_foto, titulo, autor, titulo_raw, autor_raw, confianza
         FROM libros WHERE lote_id = $1 AND duplicado_de IS NULL
         ORDER BY foto_id, confianza ASC
         """,
@@ -337,14 +337,22 @@ async def panel_inventario(request: Request, slug: str, token: str):
 
     libros = await db.pool().fetch(
         """
-        SELECT id, titulo, autor, estado, catalogo_id
+        SELECT id, titulo, autor, estado, catalogo_id, foto_portada_id
         FROM libros
         WHERE libreria_id = $1 AND estado IN ('publicado', 'vendido') AND archivado_en IS NULL
         ORDER BY titulo
         """,
         libreria["id"],
     )
-    libros_json = json.dumps([dict(l) for l in libros]).replace("</", "<\\/")
+    libros_json = json.dumps(
+        [
+            {
+                **{k: v for k, v in dict(l).items() if k != "foto_portada_id"},
+                "imagen_url": f"/api/{slug}/{token}/fotos/{l['foto_portada_id']}" if l["foto_portada_id"] else None,
+            }
+            for l in libros
+        ]
+    ).replace("</", "<\\/")
 
     filas_catalogos = await db.pool().fetch(
         "SELECT id, nombre, color FROM catalogos WHERE libreria_id = $1", libreria["id"]

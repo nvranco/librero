@@ -93,6 +93,23 @@ ALTER TABLE libros ADD COLUMN IF NOT EXISTS catalogo_id INTEGER REFERENCES catal
 -- al color derivado del id, asi ninguno queda sin color.
 ALTER TABLE catalogos ADD COLUMN IF NOT EXISTS color TEXT;
 
+-- Foto de tapa por libro: cuando una foto cargada resulta tener un solo
+-- libro (en vez de una estanteria con varios lomos), esa misma foto sirve
+-- como tapa exhibible en el catalogo publico. mostrar_foto es la decision
+-- del librero en la revision (por defecto se muestra); se ignora si
+-- foto_portada_id es NULL.
+ALTER TABLE libros ADD COLUMN IF NOT EXISTS foto_portada_id INTEGER REFERENCES fotos(id) ON DELETE SET NULL;
+ALTER TABLE libros ADD COLUMN IF NOT EXISTS mostrar_foto BOOLEAN NOT NULL DEFAULT TRUE;
+
+-- Desacopla la propiedad de una foto de pertenecer a un lote: hace falta
+-- para poder agregarle una foto de tapa suelta a un libro ya cargado (sin
+-- pasar por /lotes). libreria_id reemplaza al JOIN via lotes para saber de
+-- quien es una foto; el backfill corre en cada arranque pero es barato.
+ALTER TABLE fotos ADD COLUMN IF NOT EXISTS libreria_id INTEGER REFERENCES librerias(id) ON DELETE CASCADE;
+UPDATE fotos SET libreria_id = (SELECT l.libreria_id FROM lotes l WHERE l.id = fotos.lote_id)
+    WHERE libreria_id IS NULL;
+ALTER TABLE fotos ALTER COLUMN lote_id DROP NOT NULL;
+
 CREATE INDEX IF NOT EXISTS idx_librerias_slug ON librerias(slug);
 CREATE INDEX IF NOT EXISTS idx_libros_activos ON libros(libreria_id, estado) WHERE archivado_en IS NULL;
 CREATE INDEX IF NOT EXISTS idx_libros_libreria_estado ON libros(libreria_id, estado);

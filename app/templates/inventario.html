@@ -71,6 +71,8 @@
     </div>
     {% endif %}
   </main>
+
+  <input id="input-foto-libro" type="file" accept="image/*" class="hidden">
 </div>
 
 <script>
@@ -89,6 +91,26 @@
   const filtroCatalogo = document.getElementById('filtro-catalogo');
   const filtroCatalogoNombre = document.getElementById('filtro-catalogo-nombre');
   const btnQuitarFiltro = document.getElementById('btn-quitar-filtro');
+  const inputFotoLibro = document.getElementById('input-foto-libro');
+  let libroTargetFoto = null;
+
+  inputFotoLibro.addEventListener('change', async () => {
+    const archivo = inputFotoLibro.files && inputFotoLibro.files[0];
+    inputFotoLibro.value = '';
+    if (!archivo || !libroTargetFoto) return;
+    const libro = libroTargetFoto;
+    const formData = new FormData();
+    formData.append('foto', archivo);
+    try {
+      const resp = await fetch(`${API_BASE}/libros/${libro.id}/foto`, { method: 'POST', body: formData });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const datos = await resp.json();
+      libro.imagen_url = datos.imagen_url;
+      render();
+    } catch (err) {
+      alert('No se pudo subir la foto. Probá de nuevo.');
+    }
+  });
 
   // Llegar desde "Ver libros" en un catálogo puntual (Mis catálogos) precarga
   // este filtro, para poder revisar y reasignar solo esos libros.
@@ -165,9 +187,12 @@
     lista.innerHTML = filtrados.map((libro) => `
       <div class="bg-papel border border-borde rounded-xl2 p-3" data-id="${libro.id}">
         <button type="button" data-rol="expandir" class="tap w-full text-left flex items-center justify-between gap-2">
-          <span class="min-w-0">
-            <p class="font-medium truncate">${escaparHtml(libro.titulo)}</p>
-            <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+          <span class="min-w-0 flex items-center gap-2">
+            ${libro.imagen_url ? `<img src="${libro.imagen_url}" alt="" class="w-10 h-12 object-cover rounded border border-borde shrink-0">` : ''}
+            <span class="min-w-0">
+              <p class="font-medium truncate">${escaparHtml(libro.titulo)}</p>
+              <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+            </span>
           </span>
           ${libro.estado === 'vendido'
             ? '<span class="shrink-0 text-xs font-medium text-gris bg-borde rounded-full px-2 py-1">Vendido</span>'
@@ -179,6 +204,12 @@
             ${libro.estado !== 'vendido' ? '<button type="button" data-accion="vendido" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">Marcar vendido</button>' : ''}
             <button type="button" data-accion="editar" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">Editar ✏️</button>
             <button type="button" data-accion="eliminar" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">Eliminar 🗑️</button>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" data-accion="foto" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">
+              ${libro.imagen_url ? 'Cambiar foto 🖼️' : 'Agregar foto de tapa 📷'}
+            </button>
+            ${libro.imagen_url ? '<button type="button" data-accion="quitar-foto" class="tap btn-secundario flex-1 rounded-lg text-sm font-medium">Quitar foto 🗑️</button>' : ''}
           </div>
           <div data-rol="edicion" class="hidden space-y-2">
             <input data-campo="titulo" value="${escaparHtml(libro.titulo)}" class="tap w-full rounded-lg border-2 border-tinta px-3 py-2 text-sm">
@@ -213,6 +244,25 @@
         vista.classList.add('hidden');
         edicion.classList.remove('hidden');
       });
+
+      fila.querySelector('[data-accion="foto"]').addEventListener('click', () => {
+        libroTargetFoto = libro;
+        inputFotoLibro.click();
+      });
+
+      const btnQuitarFoto = fila.querySelector('[data-accion="quitar-foto"]');
+      if (btnQuitarFoto) {
+        btnQuitarFoto.addEventListener('click', async () => {
+          try {
+            const resp = await fetch(`${API_BASE}/libros/${libro.id}/foto`, { method: 'DELETE' });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            libro.imagen_url = null;
+            render();
+          } catch (err) {
+            alert('No se pudo quitar la foto. Probá de nuevo.');
+          }
+        });
+      }
 
       fila.querySelector('[data-accion="eliminar"]').addEventListener('click', async () => {
         if (!confirm(`¿Eliminar "${libro.titulo}" del inventario?`)) return;

@@ -115,11 +115,6 @@
     return div.innerHTML;
   }
 
-  function formatearFecha(iso) {
-    const [anio, mes, dia] = iso.split('-');
-    return `${dia}/${mes}`;
-  }
-
   function payloadCatalogo(extra) {
     const payload = extra || {};
     if (CATALOGO_ID !== null) {
@@ -277,16 +272,21 @@
     ocultarBotonGenerico();
     ocultarPistaOtroCatalogo();
     resultados.innerHTML = lista.map((libro, i) => `
-      <div class="bg-papel border border-borde rounded-xl2 p-4" data-idx="${i}">
-        <button type="button" data-rol="expandir" class="tap w-full text-left">
-          <p class="font-medium">${escaparHtml(libro.titulo)}</p>
-          <p class="text-sm text-gris">${escaparHtml(libro.autor || 'Autor no disponible')}</p>
-        </button>
-        <div data-rol="detalle" class="hidden mt-3 pt-3 border-t border-borde">
-          <p class="text-xs text-gris mb-3">Visto el ${formatearFecha(libro.visto)}</p>
+      <div class="bg-papel border border-borde rounded-xl2 p-3" data-idx="${i}">
+        <div class="flex gap-3">
+          ${libro.imagen_url ? `
+            <img src="${libro.imagen_url}" loading="lazy" alt=""
+              class="w-16 h-24 object-cover rounded-lg border border-borde shrink-0">
+          ` : ''}
+          <div class="min-w-0 flex-1">
+            <p class="font-medium">${escaparHtml(libro.titulo)}</p>
+            <p class="text-sm text-gris">${escaparHtml(libro.autor || 'Autor no disponible')}</p>
+          </div>
+        </div>
+        <div class="flex justify-end mt-2">
           <a data-rol="whatsapp" target="_blank" rel="noopener"
-            class="tap btn-whatsapp w-full flex items-center justify-center gap-2 rounded-xl2 font-medium">
-            Consultar por WhatsApp 💬
+            class="tap btn-whatsapp inline-flex items-center justify-center gap-2 rounded-xl2 font-medium px-4">
+            Consultar 💬
           </a>
         </div>
       </div>
@@ -294,10 +294,6 @@
 
     resultados.querySelectorAll('[data-idx]').forEach((el) => {
       const libro = lista[Number(el.dataset.idx)];
-      const detalle = el.querySelector('[data-rol="detalle"]');
-      el.querySelector('[data-rol="expandir"]').addEventListener('click', () => {
-        detalle.classList.toggle('hidden');
-      });
       const mensaje = armarMensajeLibro(libro);
       const enlace = el.querySelector('[data-rol="whatsapp"]');
       enlace.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;

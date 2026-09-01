@@ -60,6 +60,7 @@
   const estado = {{ libros_json | safe }}.map((libro) => ({
     ...libro,
     aprobado: libro.confianza >= UMBRAL_CONFIANZA,
+    mostrarFoto: libro.mostrar_foto,
   }));
 
   // Solo lectura: ya están en el catálogo, no se editan ni se aprueban acá.
@@ -131,6 +132,12 @@
             Corregido — vio "${escaparHtml(libro.titulo_raw)}${libro.autor_raw ? ' / ' + escaparHtml(libro.autor_raw) : ''}" en la foto ↩
           </button>
         ` : ''}
+        ${libro.foto_portada_id ? `
+          <label class="flex items-center gap-2 mt-2 text-xs text-gris">
+            <input type="checkbox" data-rol="mostrar-foto" ${libro.mostrarFoto ? 'checked' : ''}>
+            Mostrar esta foto en el catálogo público
+          </label>
+        ` : ''}
       </div>
       <button type="button" data-rol="toggle"
         class="tap shrink-0 rounded-lg font-bold text-lg px-3 ${libro.aprobado ? 'bg-tinta text-crema' : 'bg-papel border-2 border-tinta text-tinta'}">
@@ -144,6 +151,13 @@
     });
 
     fila.querySelector('[data-rol="texto"]').addEventListener('click', () => editarFila(fila, libro));
+
+    const chkMostrarFoto = fila.querySelector('[data-rol="mostrar-foto"]');
+    if (chkMostrarFoto) {
+      chkMostrarFoto.addEventListener('change', () => {
+        libro.mostrarFoto = chkMostrarFoto.checked;
+      });
+    }
 
     const btnOriginal = fila.querySelector('[data-rol="ver-original"]');
     if (btnOriginal) {
@@ -220,6 +234,7 @@
           titulo: libro.titulo,
           autor: libro.autor,
           estado: estadoFinal === 'publicado' ? (libro.aprobado ? 'publicado' : 'descartado') : 'descartado',
+          mostrar_foto: libro.foto_portada_id ? libro.mostrarFoto : null,
         }),
       })
     );

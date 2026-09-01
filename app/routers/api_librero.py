@@ -35,6 +35,7 @@ class ActualizarLibro(BaseModel):
     titulo: str
     autor: str = ""
     estado: str
+    mostrar_foto: bool | None = None
 
 
 class ConfirmarVentas(BaseModel):
@@ -86,8 +87,8 @@ async def crear_lote(
         path = carpeta_lote / f"{orden}.jpg"
         path.write_bytes(contenido)
         foto_id = await db.pool().fetchval(
-            "INSERT INTO fotos (lote_id, path, orden) VALUES ($1, $2, $3) RETURNING id",
-            lote_id, str(path), orden,
+            "INSERT INTO fotos (lote_id, libreria_id, path, orden) VALUES ($1, $2, $3, $4) RETURNING id",
+            lote_id, libreria["id"], str(path), orden,
         )
         fila_fotos.append((foto_id, path))
 
@@ -108,7 +109,7 @@ async def estado_lote(slug: str, token: str, lote_id: int):
 
     libros = await db.pool().fetch(
         """
-        SELECT id, foto_id, titulo, autor, titulo_raw, autor_raw, confianza, estado
+        SELECT id, foto_id, foto_portada_id, titulo, autor, titulo_raw, autor_raw, confianza, estado
         FROM libros WHERE lote_id = $1 AND duplicado_de IS NULL
         ORDER BY confianza ASC
         """,
@@ -242,6 +243,12 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
     for completada in asyncio.as_completed(tareas):
         foto_id, libros_detectados = await completada
 
+        # Si la foto tuvo un solo libro (en vez de una estanteria con varios
+        # lomos), esa foto ES la tapa de ese libro: se guarda como su
+        # foto_portada_id para exhibirla en el catalogo publico. No hace
+        # falta que el librero elija nada de antemano, se auto-detecta.
+        es_foto_de_un_libro = len(libros_detectados) == 1
+
         for libro in libros_detectados:
             titulo_detectado = str(libro.get("titulo_detectado") or "").strip()
             autor_detectado = str(libro.get("autor_detectado") or "").strip()
@@ -258,15 +265,16 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
             if duplicado_de is not None and duplicado_de in ya_vistos:
                 continue
 
+            foto_portada_id = foto_id if es_foto_de_un_libro else None
             nuevo_id = await db.pool().fetchval(
                 """
                 INSERT INTO libros
-                    (libreria_id, lote_id, foto_id, titulo_raw, autor_raw, titulo, autor,
+                    (libreria_id, lote_id, foto_id, foto_portada_id, titulo_raw, autor_raw, titulo, autor,
                      confianza, estado, duplicado_de)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING id
                 """,
-                libreria_id, lote_id, foto_id,
+                libreria_id, lote_id, foto_id, foto_portada_id,
                 titulo_detectado, autor_detectado, titulo_corregido, autor_corregido, confianza,
                 "descartado" if duplicado_de is not None else "pendiente",
                 duplicado_de,
@@ -297,11 +305,7 @@ async def servir_foto(slug: str, token: str, foto_id: int):
     libreria = await _libreria_por_slug_y_token(slug, token)
 
     fila = await db.pool().fetchrow(
-        """
-        SELECT f.path FROM fotos f
-        JOIN lotes l ON l.id = f.lote_id
-        WHERE f.id = $1 AND l.libreria_id = $2
-        """,
+        "SELECT path FROM fotos WHERE id = $1 AND libreria_id = $2",
         foto_id, libreria["id"],
     )
     if fila is None:
@@ -325,10 +329,12 @@ async def actualizar_libro(slug: str, token: str, libro_id: int, cambios: Actual
         UPDATE libros
         SET titulo = $1, autor = $2, estado = $3,
             publicado_en = CASE WHEN $3 = 'publicado' THEN now() ELSE publicado_en END,
-            vendido_en = CASE WHEN $3 = 'vendido' THEN now() ELSE vendido_en END
+            vendido_en = CASE WHEN $3 = 'vendido' THEN now() ELSE vendido_en END,
+            mostrar_foto = COALESCE($6, mostrar_foto)
         WHERE id = $4 AND libreria_id = $5
         """,
         cambios.titulo.strip(), cambios.autor.strip(), cambios.estado, libro_id, libreria["id"],
+        cambios.mostrar_foto,
     )
     if resultado == "UPDATE 0":
         raise HTTPException(status_code=404)
@@ -391,6 +397,48 @@ async def eliminar_libro(slug: str, token: str, libro_id: int):
         "DELETE FROM libros WHERE id = $1 AND libreria_id = $2", libro_id, libreria["id"]
     )
     if resultado == "DELETE 0":
+        raise HTTPException(status_code=404)
+    return {"ok": True}
+
+
+@router.post("/api/{slug}/{token}/libros/{libro_id}/foto")
+async def agregar_foto_libro(slug: str, token: str, libro_id: int, foto: UploadFile):
+    """Agrega o reemplaza la foto de tapa de un libro YA cargado, sin pasar
+    por vision/OCR — titulo y autor ya existen, esto es pura foto + guardado."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    existe = await db.pool().fetchval(
+        "SELECT 1 FROM libros WHERE id = $1 AND libreria_id = $2", libro_id, libreria["id"]
+    )
+    if not existe:
+        raise HTTPException(status_code=404)
+
+    contenido = vision.redimensionar(await foto.read())
+    carpeta = DATA_DIR / str(libreria["id"]) / "tapas"
+    carpeta.mkdir(parents=True, exist_ok=True)
+    path = carpeta / f"{libro_id}-{secrets.token_hex(4)}.jpg"
+    path.write_bytes(contenido)
+
+    foto_id = await db.pool().fetchval(
+        "INSERT INTO fotos (libreria_id, path) VALUES ($1, $2) RETURNING id",
+        libreria["id"], str(path),
+    )
+    await db.pool().execute(
+        "UPDATE libros SET foto_portada_id = $1, mostrar_foto = TRUE WHERE id = $2",
+        foto_id, libro_id,
+    )
+    return {"ok": True, "imagen_url": f"/api/{slug}/{token}/fotos/{foto_id}"}
+
+
+@router.delete("/api/{slug}/{token}/libros/{libro_id}/foto")
+async def quitar_foto_libro(slug: str, token: str, libro_id: int):
+    """No borra el archivo ni la fila de fotos, solo desvincula — mismo
+    criterio de 'nunca borrar de verdad' que reiniciar_inventario."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    resultado = await db.pool().execute(
+        "UPDATE libros SET foto_portada_id = NULL WHERE id = $1 AND libreria_id = $2",
+        libro_id, libreria["id"],
+    )
+    if resultado == "UPDATE 0":
         raise HTTPException(status_code=404)
     return {"ok": True}
 
