@@ -28,7 +28,7 @@ import unicodedata
 from pathlib import Path
 
 import httpx
-from PIL import Image
+from PIL import Image, ImageOps
 
 from app.config import OPENROUTER_API_KEY, OPENROUTER_MODEL
 
@@ -149,8 +149,14 @@ def sanear_libro(libro: dict) -> dict:
 
 
 def redimensionar(foto_bytes: bytes, lado_mayor: int = _LADO_MAYOR, calidad: int = _JPEG_QUALITY) -> bytes:
-    """Lado mayor a `lado_mayor` px, JPEG calidad `calidad` (Pillow, en el server)."""
+    """Lado mayor a `lado_mayor` px, JPEG calidad `calidad` (Pillow, en el server).
+
+    Los celulares suelen guardar la foto con los pixeles en el sensor
+    original y la rotacion real en un tag EXIF, en vez de rotar la imagen.
+    Image.open() no aplica ese tag solo — sin exif_transpose, las fotos
+    salen giradas (esto se vio en produccion con fotos de tapa acostadas)."""
     imagen = Image.open(io.BytesIO(foto_bytes))
+    imagen = ImageOps.exif_transpose(imagen)
     imagen = imagen.convert("RGB")
     ancho, alto = imagen.size
     lado_actual = max(ancho, alto)

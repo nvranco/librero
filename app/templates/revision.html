@@ -118,32 +118,59 @@
     const bajaConfianza = libro.confianza < UMBRAL_CONFIANZA;
     const corregido = fueCorregido(libro);
     const fila = document.createElement('div');
-    fila.className = `bg-papel border ${bajaConfianza ? 'border-ambar' : 'border-borde'} rounded-xl2 p-3 flex items-start gap-3`;
     fila.dataset.id = libro.id;
 
-    fila.innerHTML = `
-      <div class="flex-1 min-w-0">
-        <div class="cursor-text" data-rol="texto">
-          <p class="font-medium truncate" data-campo="titulo">${escaparHtml(libro.titulo)}</p>
-          <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
-        </div>
-        ${corregido ? `
-          <button type="button" data-rol="ver-original" class="text-xs text-terracota font-medium mt-1">
-            Corregido — vio "${escaparHtml(libro.titulo_raw)}${libro.autor_raw ? ' / ' + escaparHtml(libro.autor_raw) : ''}" en la foto ↩
-          </button>
-        ` : ''}
-        ${libro.foto_portada_id ? `
-          <label class="flex items-center gap-2 mt-2 text-xs text-gris">
-            <input type="checkbox" data-rol="mostrar-foto" ${libro.mostrarFoto ? 'checked' : ''}>
-            Mostrar esta foto en el catálogo público
-          </label>
-        ` : ''}
-      </div>
+    const notaCorregido = corregido ? `
+      <button type="button" data-rol="ver-original" class="text-xs text-terracota font-medium mt-1">
+        Corregido — vio "${escaparHtml(libro.titulo_raw)}${libro.autor_raw ? ' / ' + escaparHtml(libro.autor_raw) : ''}" en la foto ↩
+      </button>
+    ` : '';
+
+    const botonToggle = `
       <button type="button" data-rol="toggle"
         class="tap shrink-0 rounded-lg font-bold text-lg px-3 ${libro.aprobado ? 'bg-tinta text-crema' : 'bg-papel border-2 border-tinta text-tinta'}">
         ${libro.aprobado ? '✓' : '✕'}
       </button>
     `;
+
+    if (libro.foto_portada_id) {
+      // Libro con foto propia: arriba, el mismo formato que va a tener en el
+      // catalogo publico (foto a la izquierda, titulo/autor a la derecha);
+      // abajo de una linea divisoria, los controles de revision.
+      fila.className = `bg-papel border ${bajaConfianza ? 'border-ambar' : 'border-borde'} rounded-xl2 overflow-hidden`;
+      fila.innerHTML = `
+        <div class="flex">
+          <img src="/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}/fotos/${libro.foto_portada_id}" alt=""
+            class="w-24 shrink-0 object-cover">
+          <div class="min-w-0 flex-1 p-3">
+            <div class="cursor-text" data-rol="texto">
+              <p class="font-medium truncate" data-campo="titulo">${escaparHtml(libro.titulo)}</p>
+              <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+            </div>
+            ${notaCorregido}
+          </div>
+        </div>
+        <div class="border-t border-borde px-3 py-2 flex items-center justify-between gap-3">
+          <label class="flex items-center gap-2 text-xs text-gris min-w-0">
+            <input type="checkbox" data-rol="mostrar-foto" ${libro.mostrarFoto ? 'checked' : ''}>
+            <span class="truncate">Mostrar esta foto en el catálogo público</span>
+          </label>
+          ${botonToggle}
+        </div>
+      `;
+    } else {
+      fila.className = `bg-papel border ${bajaConfianza ? 'border-ambar' : 'border-borde'} rounded-xl2 p-3 flex items-start gap-3`;
+      fila.innerHTML = `
+        <div class="flex-1 min-w-0">
+          <div class="cursor-text" data-rol="texto">
+            <p class="font-medium truncate" data-campo="titulo">${escaparHtml(libro.titulo)}</p>
+            <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+          </div>
+          ${notaCorregido}
+        </div>
+        ${botonToggle}
+      `;
+    }
 
     fila.querySelector('[data-rol="toggle"]').addEventListener('click', () => {
       libro.aprobado = !libro.aprobado;
@@ -173,7 +200,7 @@
   }
 
   function editarFila(fila, libro) {
-    if (fila.querySelector('input')) return; // ya está en edición
+    if (fila.querySelector('input[data-campo]')) return; // ya está en edición
     fila.querySelector('[data-rol="texto"]').innerHTML = `
       <input data-campo="titulo" value="${escaparHtml(libro.titulo)}"
         class="tap w-full rounded-lg border border-borde px-2 py-1 text-sm font-medium mb-1">
