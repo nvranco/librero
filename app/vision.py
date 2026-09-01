@@ -25,6 +25,7 @@ import logging
 import re
 import time
 import unicodedata
+from pathlib import Path
 
 import httpx
 from PIL import Image
@@ -35,6 +36,8 @@ logger = logging.getLogger("librero.vision")
 
 _LADO_MAYOR = 2048
 _JPEG_QUALITY = 85
+_LADO_MINIATURA = 480
+_JPEG_QUALITY_MINIATURA = 72
 
 _PROMPT = (
     "Sos un asistente que cataloga libros a partir de fotos de estanterias. "
@@ -145,18 +148,33 @@ def sanear_libro(libro: dict) -> dict:
     return saneado
 
 
-def redimensionar(foto_bytes: bytes) -> bytes:
-    """Lado mayor a 2048px, JPEG q85 (Pillow, en el server)."""
+def redimensionar(foto_bytes: bytes, lado_mayor: int = _LADO_MAYOR, calidad: int = _JPEG_QUALITY) -> bytes:
+    """Lado mayor a `lado_mayor` px, JPEG calidad `calidad` (Pillow, en el server)."""
     imagen = Image.open(io.BytesIO(foto_bytes))
     imagen = imagen.convert("RGB")
     ancho, alto = imagen.size
-    lado_mayor = max(ancho, alto)
-    if lado_mayor > _LADO_MAYOR:
-        factor = _LADO_MAYOR / lado_mayor
+    lado_actual = max(ancho, alto)
+    if lado_actual > lado_mayor:
+        factor = lado_mayor / lado_actual
         imagen = imagen.resize((int(ancho * factor), int(alto * factor)), Image.LANCZOS)
     buffer = io.BytesIO()
-    imagen.save(buffer, format="JPEG", quality=_JPEG_QUALITY)
+    imagen.save(buffer, format="JPEG", quality=calidad)
     return buffer.getvalue()
+
+
+def ruta_miniatura(path: Path) -> Path:
+    """Ruta del thumbnail liviano que acompaña una foto de tapa: se sirve en
+    el catalogo publico en vez del archivo a resolucion de OCR (2048px), que
+    para una miniatura de ~110px de ancho es mucho mas peso del necesario."""
+    return path.with_name(f"{path.stem}_web{path.suffix}")
+
+
+def generar_miniatura_portada(path: Path) -> None:
+    """Genera (o regenera) la version chica de una foto de tapa ya guardada
+    en disco, para exhibicion publica."""
+    original = path.read_bytes()
+    chica = redimensionar(original, lado_mayor=_LADO_MINIATURA, calidad=_JPEG_QUALITY_MINIATURA)
+    ruta_miniatura(path).write_bytes(chica)
 
 
 def _parsear_respuesta(texto: str) -> dict:

@@ -237,6 +237,7 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
     # vuelve a aparecer en otra foto del mismo lote, se descarta en silencio.
     ya_vistos: set[int] = set()
     cant_nuevos = cant_duplicados = 0
+    paths_por_foto = dict(fotos)
 
     tareas = [_analizar_una(foto_id, path, lote_id) for foto_id, path in fotos]
 
@@ -246,8 +247,12 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
         # Si la foto tuvo un solo libro (en vez de una estanteria con varios
         # lomos), esa foto ES la tapa de ese libro: se guarda como su
         # foto_portada_id para exhibirla en el catalogo publico. No hace
-        # falta que el librero elija nada de antemano, se auto-detecta.
+        # falta que el librero elija nada de antemano, se auto-detecta. Se
+        # genera de una un thumbnail liviano — el catalogo publico nunca
+        # sirve la foto a resolucion de OCR (2048px).
         es_foto_de_un_libro = len(libros_detectados) == 1
+        if es_foto_de_un_libro:
+            vision.generar_miniatura_portada(paths_por_foto[foto_id])
 
         for libro in libros_detectados:
             titulo_detectado = str(libro.get("titulo_detectado") or "").strip()
@@ -417,6 +422,7 @@ async def agregar_foto_libro(slug: str, token: str, libro_id: int, foto: UploadF
     carpeta.mkdir(parents=True, exist_ok=True)
     path = carpeta / f"{libro_id}-{secrets.token_hex(4)}.jpg"
     path.write_bytes(contenido)
+    vision.generar_miniatura_portada(path)
 
     foto_id = await db.pool().fetchval(
         "INSERT INTO fotos (libreria_id, path) VALUES ($1, $2) RETURNING id",

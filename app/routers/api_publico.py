@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
-from app import db
+from app import db, vision
 
 router = APIRouter()
 
@@ -72,6 +72,9 @@ async def portada_libro(slug: str, libro_id: int):
         raise HTTPException(status_code=404)
 
     path = Path(fila["path"])
+    miniatura = vision.ruta_miniatura(path)
+    if miniatura.exists():
+        path = miniatura
     if not path.exists():
         raise HTTPException(status_code=404)
     return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=3600"})
