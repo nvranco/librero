@@ -13,6 +13,17 @@
 
   <main class="flex-1 px-5 py-5 pb-40">
 
+    <div id="paso-directo" class="hidden text-center pt-10">
+      <p class="text-4xl mb-3">📷</p>
+      <p class="text-gris">Ya viste esta guía hoy. Elegí las fotos cuando quieras.</p>
+      <button id="btn-directo" type="button" class="tap btn-primario w-full rounded-xl2 font-bold mt-5">
+        Cargar fotos 📷
+      </button>
+      <p class="text-center text-xs text-gris mt-3">
+        <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}/guia" class="text-celeste font-medium underline underline-offset-2">Ver los pasos de nuevo</a>
+      </p>
+    </div>
+
     <div id="paso-1">
       <p class="text-xs font-bold text-gris uppercase tracking-wide mb-1">Paso 1 de 2 · Digitalización masiva</p>
       <h2 class="text-xl font-bold leading-tight">Estante completo, varios libros a la vez</h2>
@@ -112,6 +123,8 @@
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
   const API_LOTES = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}/lotes`;
 
+  const pasoDirecto = document.getElementById('paso-directo');
+  const btnDirecto = document.getElementById('btn-directo');
   const paso1 = document.getElementById('paso-1');
   const paso2 = document.getElementById('paso-2');
   const btnPasoSiguiente = document.getElementById('btn-paso-siguiente');
@@ -123,6 +136,29 @@
   const cargaDetalle = document.getElementById('carga-detalle');
   const cargaBarra = document.getElementById('carga-barra');
   const cargaContador = document.getElementById('carga-contador');
+
+  // La guia completa se muestra una vez por dia por dispositivo cuando se
+  // llega desde el boton principal ("Cargar estante", que linkea con
+  // ?auto=1). Si ya se vio hoy, se salta directo al selector de fotos —
+  // pero solo si vino por ese camino: el link "Como sacar una buena foto"
+  // (sin el parametro) siempre muestra la guia completa a pedido.
+  const CLAVE_GUIA_VISTA = 'librero_guia_vista';
+  function fechaLocalHoy() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  let yaVistaHoy = false;
+  try {
+    yaVistaHoy = localStorage.getItem(CLAVE_GUIA_VISTA) === fechaLocalHoy();
+  } catch (err) { /* localStorage puede fallar en navegacion privada */ }
+
+  if (new URLSearchParams(location.search).get('auto') === '1' && yaVistaHoy) {
+    paso1.classList.add('hidden');
+    pasoDirecto.classList.remove('hidden');
+    btnDirecto.addEventListener('click', abrirSelectorFotos);
+  } else {
+    try { localStorage.setItem(CLAVE_GUIA_VISTA, fechaLocalHoy()); } catch (err) {}
+  }
 
   btnPasoSiguiente.addEventListener('click', () => {
     paso1.classList.add('hidden');
@@ -209,6 +245,8 @@
   async function subirLote(archivos) {
     btnConfirmarGuia.disabled = true;
     btnConfirmarGuia.classList.add('opacity-60');
+    btnDirecto.disabled = true;
+    btnDirecto.classList.add('opacity-60');
     cargaEstado.classList.remove('hidden');
     cargaContador.classList.add('hidden');
     progresoActual = 4;
@@ -297,6 +335,8 @@
   function reactivarBoton() {
     btnConfirmarGuia.disabled = false;
     btnConfirmarGuia.classList.remove('opacity-60');
+    btnDirecto.disabled = false;
+    btnDirecto.classList.remove('opacity-60');
   }
 </script>
 {% endblock %}
