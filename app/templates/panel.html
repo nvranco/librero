@@ -56,6 +56,17 @@
     </div>
     {% endif %}
 
+    <div id="carga-estado" class="mt-6 hidden">
+      <div class="bg-papel border-2 border-celeste rounded-xl2 p-4 shadow-sm">
+        <p id="carga-mensaje" class="font-bold text-lg">Subiendo fotos…</p>
+        <p id="carga-detalle" class="text-sm text-gris mt-0.5">&nbsp;</p>
+        <div class="mt-3 h-2 w-full bg-borde rounded-full overflow-hidden">
+          <div id="carga-barra" class="h-full bg-celeste rounded-full transition-all duration-700 ease-out" style="width: 4%"></div>
+        </div>
+        <p id="carga-contador" class="text-sm font-medium mt-2 hidden"></p>
+      </div>
+    </div>
+
     {% if lotes_pendientes %}
     <div class="mt-6">
       <p class="text-sm font-medium text-gris mb-2">Lotes pendientes de revisión</p>
@@ -89,12 +100,14 @@
     </div>
   </main>
 
+  <input id="input-fotos" type="file" accept="image/*" multiple class="hidden">
+
   <div class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-crema/95 backdrop-blur-0 border-t border-borde px-5 py-3 safe-b">
     <div class="space-y-2">
-      <a href="{{ url_guia }}?auto=1"
+      <button id="btn-cargar" type="button"
         class="tap btn-primario w-full rounded-xl2 font-bold text-lg flex items-center justify-center gap-1 border-2 border-celeste">
         Cargar estante 📷
-      </a>
+      </button>
       <a href="{{ url_vender }}"
         class="tap btn-primario w-full rounded-xl2 font-bold text-lg flex items-center justify-center gap-1 border-2 border-ambar">
         Marcar vendidos 💰
@@ -107,6 +120,11 @@
 </div>
 
 <script>
+  const LIBRERO_SLUG = "{{ libreria.slug }}";
+  const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const API_LOTES = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}/lotes`;
+  const URL_GUIA = "{{ url_guia }}";
+
   function animarContadores() {
     document.querySelectorAll('[data-contador]').forEach((el) => {
       const destino = Number(el.dataset.contador);
@@ -123,5 +141,199 @@
     });
   }
   animarContadores();
+
+  const btnCargar = document.getElementById('btn-cargar');
+  const inputFotos = document.getElementById('input-fotos');
+  const cargaEstado = document.getElementById('carga-estado');
+  const cargaMensaje = document.getElementById('carga-mensaje');
+  const cargaDetalle = document.getElementById('carga-detalle');
+  const cargaBarra = document.getElementById('carga-barra');
+  const cargaContador = document.getElementById('carga-contador');
+
+  // La guia completa (con los 2 pasos) solo hace falta la primera vez del
+  // dia en este dispositivo — de ahi en mas, tocar "Cargar estante" abre la
+  // camara/galeria directo, sin pantalla intermedia. La marca de "ya vista
+  // hoy" la deja guia.html cuando el librero efectivamente la ve.
+  const CLAVE_GUIA_VISTA = 'librero_guia_vista';
+  function fechaLocalHoy() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  function yaVioLaGuiaHoy() {
+    try {
+      return localStorage.getItem(CLAVE_GUIA_VISTA) === fechaLocalHoy();
+    } catch (err) {
+      return false; // localStorage puede fallar en navegacion privada
+    }
+  }
+
+  btnCargar.addEventListener('click', () => {
+    if (yaVioLaGuiaHoy()) {
+      abrirSelectorFotos();
+    } else {
+      window.location.href = URL_GUIA;
+    }
+  });
+
+  function abrirSelectorFotos() {
+    inputFotos.value = '';
+    inputFotos.click();
+  }
+
+  inputFotos.addEventListener('change', function () {
+    const archivos = Array.from(inputFotos.files || []);
+    if (archivos.length === 0) return;
+    if (archivos.length > 10) {
+      alert('Máximo 10 fotos por lote. Elegí menos y probá de nuevo.');
+      return;
+    }
+    subirLote(archivos);
+  });
+
+  // Mensajes que van rotando mientras se espera. No son decorativos: cada uno
+  // nombra la etapa real del pipeline, así el librero entiende qué está pasando.
+  const MENSAJES_PROCESO = [
+    'Mirando las fotos…',
+    'Leyendo títulos y autores…',
+    'Corrigiendo mayúsculas y acentos…',
+    'Comparando con tu catálogo…',
+    'Descartando repetidos…',
+    'Armando la lista para que revises…',
+  ];
+
+  let rotacionMensajes = null;
+  let animacionBarra = null;
+  let fadeMensaje = null;
+  let progresoActual = 4;
+
+  function ponerBarra(pct) {
+    progresoActual = Math.max(progresoActual, Math.min(pct, 97));
+    cargaBarra.style.width = progresoActual + '%';
+  }
+
+  // La barra y el mensaje se mueven todo el tiempo, sin depender de en qué
+  // paso real está el backend: lo único que importa para el librero es ver
+  // que algo sigue pasando, no el detalle exacto de qué foto va.
+  function arrancarProgreso() {
+    let i = 0;
+    cargaDetalle.textContent = MENSAJES_PROCESO[0];
+    rotacionMensajes = setInterval(() => {
+      i = (i + 1) % MENSAJES_PROCESO.length;
+      cargaDetalle.style.opacity = '0';
+      fadeMensaje = setTimeout(() => {
+        cargaDetalle.textContent = MENSAJES_PROCESO[i];
+        cargaDetalle.style.opacity = '1';
+      }, 200);
+    }, 2200);
+
+    // Avance continuo aunque el backend todavía no haya devuelto nada: se
+    // acerca asintóticamente al 97% para no quedarse clavada ni mentir que terminó.
+    animacionBarra = setInterval(() => {
+      const restante = 97 - progresoActual;
+      ponerBarra(progresoActual + Math.max(restante * 0.02, 0.2));
+    }, 150);
+  }
+
+  function frenarProgreso() {
+    clearInterval(rotacionMensajes);
+    clearInterval(animacionBarra);
+    clearTimeout(fadeMensaje);
+    rotacionMensajes = null;
+    animacionBarra = null;
+    fadeMensaje = null;
+  }
+
+  async function subirLote(archivos) {
+    btnCargar.disabled = true;
+    btnCargar.classList.add('opacity-60');
+    cargaEstado.classList.remove('hidden');
+    cargaContador.classList.add('hidden');
+    progresoActual = 4;
+    ponerBarra(4);
+    cargaMensaje.textContent = `Subiendo ${archivos.length} foto${archivos.length > 1 ? 's' : ''}…`;
+    cargaDetalle.textContent = 'Preparando las imágenes…';
+    cargaEstado.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const formData = new FormData();
+    archivos.forEach((archivo) => formData.append('fotos', archivo));
+
+    let loteId;
+    try {
+      const resp = await fetch(API_LOTES, { method: 'POST', body: formData });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const datos = await resp.json();
+      loteId = datos.lote_id;
+    } catch (err) {
+      frenarProgreso();
+      cargaMensaje.textContent = 'No se pudo subir el lote. Probá de nuevo.';
+      cargaDetalle.textContent = '';
+      reactivarBoton();
+      return;
+    }
+
+    cargaMensaje.textContent = 'Procesando tus fotos…';
+    ponerBarra(12);
+    arrancarProgreso();
+    sondearLote(loteId);
+  }
+
+  async function sondearLote(loteId) {
+    try {
+      const resp = await fetch(`${API_LOTES}/${loteId}`);
+      const datos = await resp.json();
+
+      // La barra y el mensaje ya avanzan solos (arrancarProgreso). Acá solo
+      // usamos el dato real para el contador de libros encontrados, que sí
+      // vale la pena mostrar en vivo.
+      const cantLibros = (datos.libros || []).length;
+      const dups = datos.duplicados || 0;
+      if (cantLibros > 0 || dups > 0) {
+        cargaContador.classList.remove('hidden');
+        let texto = `📚 ${cantLibros} libro${cantLibros === 1 ? '' : 's'} nuevo${cantLibros === 1 ? '' : 's'} hasta ahora`;
+        if (dups > 0) texto += ` · 🔁 ${dups} que ya tenías`;
+        cargaContador.textContent = texto;
+      }
+
+      if (datos.estado === 'procesando') {
+        setTimeout(() => sondearLote(loteId), 1200);
+        return;
+      }
+
+      frenarProgreso();
+      cargaBarra.style.width = '100%';
+
+      if (cantLibros === 0 && dups === 0) {
+        cargaMensaje.textContent = 'No se detectó ningún libro legible en esas fotos.';
+        cargaDetalle.textContent = 'Probá con más luz o acercándote un poco.';
+        reactivarBoton();
+        return;
+      }
+
+      if (cantLibros === 0) {
+        cargaMensaje.textContent = 'Esos libros ya los tenías cargados';
+        cargaDetalle.textContent = `Los ${dups} libros de estas fotos ya están en tu catálogo.`;
+        reactivarBoton();
+        return;
+      }
+
+      cargaMensaje.textContent = `Listo: ${cantLibros} libro${cantLibros === 1 ? '' : 's'}`;
+      cargaDetalle.textContent = 'Abriendo la revisión…';
+      // Pequeño delay para que se alcance a ver la barra llena y el mensaje
+      // final antes de saltar a la pantalla de revisión.
+      setTimeout(() => {
+        window.location.href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/lote/${loteId}`;
+      }, 600);
+    } catch (err) {
+      frenarProgreso();
+      cargaMensaje.textContent = 'Se perdió la conexión revisando el lote. Refrescá la página.';
+      cargaDetalle.textContent = '';
+      reactivarBoton();
+    }
+  }
+
+  function reactivarBoton() {
+    btnCargar.disabled = false;
+    btnCargar.classList.remove('opacity-60');
+  }
 </script>
 {% endblock %}
