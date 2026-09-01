@@ -115,6 +115,10 @@
     return div.innerHTML;
   }
 
+  const ICONO_WHATSAPP = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.83 14.1c-.24.68-1.4 1.32-1.93 1.4-.5.08-1.12.11-1.8-.11-.42-.13-.96-.31-1.65-.6-2.9-1.25-4.79-4.17-4.94-4.36-.14-.19-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.27-.29.58-.36.78-.36.19 0 .39 0 .56.01.18.01.42-.07.66.5.24.58.83 2 .9 2.15.07.15.12.32.02.51-.1.19-.15.31-.3.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.61.17.29.75 1.24 1.6 2.01 1.1.98 2.03 1.29 2.32 1.44.29.14.46.12.64-.07.18-.19.75-.87.95-1.17.2-.29.4-.24.67-.15.27.1 1.7.8 1.99.95.29.14.48.22.55.34.07.13.07.72-.17 1.39z"/>
+  </svg>`;
+
   function payloadCatalogo(extra) {
     const payload = extra || {};
     if (CATALOGO_ID !== null) {
@@ -272,22 +276,21 @@
     ocultarBotonGenerico();
     ocultarPistaOtroCatalogo();
     resultados.innerHTML = lista.map((libro, i) => `
-      <div class="bg-papel border border-borde rounded-xl2 p-3" data-idx="${i}">
-        <div class="flex gap-3">
-          ${libro.imagen_url ? `
-            <img src="${libro.imagen_url}" loading="lazy" alt=""
-              class="w-16 h-24 object-cover rounded-lg border border-borde shrink-0">
-          ` : ''}
-          <div class="min-w-0 flex-1">
-            <p class="font-medium">${escaparHtml(libro.titulo)}</p>
-            <p class="text-sm text-gris">${escaparHtml(libro.autor || 'Autor no disponible')}</p>
+      <div class="bg-papel border border-borde rounded-xl2 overflow-hidden flex" data-idx="${i}">
+        ${libro.imagen_url ? `
+          <img src="${libro.imagen_url}" loading="lazy" alt=""
+            class="w-28 shrink-0 object-cover">
+        ` : ''}
+        <div class="min-w-0 flex-1 p-3 flex flex-col">
+          <p class="font-medium">${escaparHtml(libro.titulo)}</p>
+          <p class="text-sm text-gris">${escaparHtml(libro.autor || 'Autor no disponible')}</p>
+          <div class="flex justify-end mt-auto pt-2">
+            <a data-rol="whatsapp" target="_blank" rel="noopener"
+              class="tap inline-flex items-center justify-center gap-2 rounded-xl2 font-medium px-4 border-2 border-whatsapp text-whatsapp">
+              ${ICONO_WHATSAPP}
+              Consultar
+            </a>
           </div>
-        </div>
-        <div class="flex justify-end mt-2">
-          <a data-rol="whatsapp" target="_blank" rel="noopener"
-            class="tap btn-whatsapp inline-flex items-center justify-center gap-2 rounded-xl2 font-medium px-4">
-            Consultar 💬
-          </a>
         </div>
       </div>
     `).join('');
