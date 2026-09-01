@@ -123,9 +123,18 @@ async def panel_home(request: Request, slug: str, token: str):
             "url_vender": f"{base}/{slug}/panel/{token}/vender",
             "url_catalogos": f"{base}/{slug}/panel/{token}/catalogos",
             "url_metricas": f"{base}/{slug}/panel/{token}/metricas",
+            "url_guia": f"{base}/{slug}/panel/{token}/guia",
             "url_qr": f"/api/{slug}/{token}/qr.png",
         },
     )
+
+
+@router.get("/{slug}/panel/{token}/guia", response_class=HTMLResponse)
+async def panel_guia(request: Request, slug: str, token: str):
+    """P2b — guia de carga en 2 pasos (estante completo / libro particular),
+    pantalla propia que termina abriendo el selector de fotos."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    return templates.TemplateResponse(request, "guia.html", {"libreria": libreria})
 
 
 @router.get("/{slug}/panel/{token}/lote/{lote_id}", response_class=HTMLResponse)
