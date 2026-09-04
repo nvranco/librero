@@ -1,0 +1,24 @@
+{
+  "foto": "008_IMG_1986",
+  "lomos_ilegibles": 5,
+  "libros": [
+    {"titulo_detectado": "MI HIJO, EL ASESINO", "autor_detectado": "P. QUENTIN",
+     "titulo_corregido": "Mi hijo, el asesino", "autor_corregido": "Patrick Quentin",
+     "confianza": 0.88},
+    {"titulo_detectado": "UNA NOVIA PARA HAMPTON HOUSE", "autor_detectado": "H. WAUGH",
+     "titulo_corregido": "Una novia para Hampton House", "autor_corregido": "Hillary Waugh",
+     "confianza": 0.85},
+    {"titulo_detectado": "UN FRAGMENTO DE MIEDO", "autor_detectado": "J. BINGHAM",
+     "titulo_corregido": "Un fragmento de miedo", "autor_corregido": "John Bingham",
+     "confianza": 0.85},
+    {"titulo_detectado": "SANATORIO DE ALTURA", "autor_detectado": "M. DUPLAN",
+     "titulo_corregido": "Sanatorio de altura", "autor_corregido": "M. Duplan",
+     "confianza": 0.55},
+    {"titulo_detectado": "LA EFIGIE DERRETIDA", "autor_detectado": "V. CANNING",
+     "titulo_corregido": "La efigie derretida", "autor_corregido": "Victor Canning",
+     "confianza": 0.88},
+    {"titulo_detectado": "LA SENDA DEL CRIMEN", "autor_detectado": "J. SYMONS",
+     "titulo_corregido": "La senda del crimen", "autor_corregido": "Julian Symons",
+     "confianza": 0.88}
+  ]
+}

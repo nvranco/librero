@@ -1,0 +1,24 @@
+{
+  "foto": "054_IMG_2033",
+  "lomos_ilegibles": 12,
+  "libros": [
+    {"titulo_detectado": "El cuaderno rojo", "autor_detectado": "AUSTER",
+     "titulo_corregido": "El cuaderno rojo", "autor_corregido": "Paul Auster",
+     "confianza": 0.92},
+    {"titulo_detectado": "Brooklyn Follies", "autor_detectado": "AUSTER",
+     "titulo_corregido": "Brooklyn Follies", "autor_corregido": "Paul Auster",
+     "confianza": 0.93},
+    {"titulo_detectado": "La noche del oráculo", "autor_detectado": "AUSTER",
+     "titulo_corregido": "La noche del oráculo", "autor_corregido": "Paul Auster",
+     "confianza": 0.93},
+    {"titulo_detectado": "Brooklyn Follies", "autor_detectado": "AUSTER",
+     "titulo_corregido": "Brooklyn Follies", "autor_corregido": "Paul Auster",
+     "confianza": 0.93},
+    {"titulo_detectado": "CINCO ESCRITOS MORALES", "autor_detectado": "UMBERTO ECO",
+     "titulo_corregido": "Cinco escritos morales", "autor_corregido": "Umberto Eco",
+     "confianza": 0.93},
+    {"titulo_detectado": "Interpretación y sobreinterpretación", "autor_detectado": "Eco",
+     "titulo_corregido": "Interpretación y sobreinterpretación", "autor_corregido": "Umberto Eco",
+     "confianza": 0.9}
+  ]
+}

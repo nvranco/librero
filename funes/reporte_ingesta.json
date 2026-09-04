@@ -1,0 +1,2477 @@
+{
+  "libreria_id": 2,
+  "slug": "funes",
+  "token_panel": "6UVbsIactQZJKALpwPWULieExOg3y68J",
+  "fotos": [
+    {
+      "indice": "001",
+      "original": "IMG_1979.HEIC",
+      "foto_id": 89,
+      "lote_id": 10,
+      "nuevos": 9,
+      "fusionados": 0,
+      "ilegibles": 2
+    },
+    {
+      "indice": "002",
+      "original": "IMG_1980.HEIC",
+      "foto_id": 90,
+      "lote_id": 10,
+      "nuevos": 10,
+      "fusionados": 0,
+      "ilegibles": 12
+    },
+    {
+      "indice": "003",
+      "original": "IMG_1981.HEIC",
+      "foto_id": 91,
+      "lote_id": 10,
+      "nuevos": 10,
+      "fusionados": 0,
+      "ilegibles": 12
+    },
+    {
+      "indice": "004",
+      "original": "IMG_1982.HEIC",
+      "foto_id": 92,
+      "lote_id": 10,
+      "nuevos": 9,
+      "fusionados": 3,
+      "ilegibles": 6
+    },
+    {
+      "indice": "005",
+      "original": "IMG_1983.HEIC",
+      "foto_id": 93,
+      "lote_id": 10,
+      "nuevos": 0,
+      "fusionados": 12,
+      "ilegibles": 12
+    },
+    {
+      "indice": "006",
+      "original": "IMG_1984.HEIC",
+      "foto_id": 94,
+      "lote_id": 10,
+      "nuevos": 10,
+      "fusionados": 2,
+      "ilegibles": 10
+    },
+    {
+      "indice": "007",
+      "original": "IMG_1985.HEIC",
+      "foto_id": 95,
+      "lote_id": 10,
+      "nuevos": 8,
+      "fusionados": 2,
+      "ilegibles": 20
+    },
+    {
+      "indice": "008",
+      "original": "IMG_1986.HEIC",
+      "foto_id": 96,
+      "lote_id": 10,
+      "nuevos": 6,
+      "fusionados": 0,
+      "ilegibles": 5
+    },
+    {
+      "indice": "009",
+      "original": "IMG_1987.HEIC",
+      "foto_id": 97,
+      "lote_id": 10,
+      "nuevos": 6,
+      "fusionados": 0,
+      "ilegibles": 4
+    },
+    {
+      "indice": "010",
+      "original": "IMG_1988.HEIC",
+      "foto_id": 98,
+      "lote_id": 10,
+      "nuevos": 0,
+      "fusionados": 2,
+      "ilegibles": 16
+    },
+    {
+      "indice": "011",
+      "original": "IMG_1989.HEIC",
+      "foto_id": 99,
+      "lote_id": 11,
+      "nuevos": 0,
+      "fusionados": 10,
+      "ilegibles": 16
+    },
+    {
+      "indice": "012",
+      "original": "IMG_1990.HEIC",
+      "foto_id": 100,
+      "lote_id": 11,
+      "nuevos": 5,
+      "fusionados": 4,
+      "ilegibles": 16
+    },
+    {
+      "indice": "013",
+      "original": "IMG_1991.HEIC",
+      "foto_id": 101,
+      "lote_id": 11,
+      "nuevos": 7,
+      "fusionados": 1,
+      "ilegibles": 14
+    },
+    {
+      "indice": "014",
+      "original": "IMG_1992.HEIC",
+      "foto_id": 102,
+      "lote_id": 11,
+      "nuevos": 6,
+      "fusionados": 3,
+      "ilegibles": 21
+    },
+    {
+      "indice": "015",
+      "original": "IMG_1993.HEIC",
+      "foto_id": 103,
+      "lote_id": 11,
+      "nuevos": 7,
+      "fusionados": 3,
+      "ilegibles": 16
+    },
+    {
+      "indice": "016",
+      "original": "IMG_1994.HEIC",
+      "foto_id": 104,
+      "lote_id": 11,
+      "nuevos": 6,
+      "fusionados": 3,
+      "ilegibles": 7
+    },
+    {
+      "indice": "017",
+      "original": "IMG_1995.HEIC",
+      "foto_id": 105,
+      "lote_id": 11,
+      "nuevos": 10,
+      "fusionados": 0,
+      "ilegibles": 11
+    },
+    {
+      "indice": "018",
+      "original": "IMG_1996.HEIC",
+      "foto_id": 106,
+      "lote_id": 11,
+      "nuevos": 10,
+      "fusionados": 1,
+      "ilegibles": 13
+    },
+    {
+      "indice": "019",
+      "original": "IMG_1997.HEIC",
+      "foto_id": 107,
+      "lote_id": 11,
+      "nuevos": 12,
+      "fusionados": 4,
+      "ilegibles": 8
+    },
+    {
+      "indice": "020",
+      "original": "IMG_1998.HEIC",
+      "foto_id": 108,
+      "lote_id": 11,
+      "nuevos": 11,
+      "fusionados": 1,
+      "ilegibles": 3
+    },
+    {
+      "indice": "021",
+      "original": "IMG_1999.HEIC",
+      "foto_id": 109,
+      "lote_id": 12,
+      "nuevos": 11,
+      "fusionados": 0,
+      "ilegibles": 3
+    },
+    {
+      "indice": "022",
+      "original": "IMG_2001.HEIC",
+      "foto_id": 110,
+      "lote_id": 12,
+      "nuevos": 13,
+      "fusionados": 0,
+      "ilegibles": 12
+    },
+    {
+      "indice": "023",
+      "original": "IMG_2002.HEIC",
+      "foto_id": 111,
+      "lote_id": 12,
+      "nuevos": 10,
+      "fusionados": 2,
+      "ilegibles": 5
+    },
+    {
+      "indice": "024",
+      "original": "IMG_2003.HEIC",
+      "foto_id": 112,
+      "lote_id": 12,
+      "nuevos": 14,
+      "fusionados": 2,
+      "ilegibles": 16
+    },
+    {
+      "indice": "025",
+      "original": "IMG_2004.HEIC",
+      "foto_id": 113,
+      "lote_id": 12,
+      "nuevos": 0,
+      "fusionados": 16,
+      "ilegibles": 16
+    },
+    {
+      "indice": "026",
+      "original": "IMG_2005.HEIC",
+      "foto_id": 114,
+      "lote_id": 12,
+      "nuevos": 11,
+      "fusionados": 6,
+      "ilegibles": 26
+    },
+    {
+      "indice": "027",
+      "original": "IMG_2006.HEIC",
+      "foto_id": 115,
+      "lote_id": 12,
+      "nuevos": 11,
+      "fusionados": 0,
+      "ilegibles": 10
+    },
+    {
+      "indice": "028",
+      "original": "IMG_2007.HEIC",
+      "foto_id": 116,
+      "lote_id": 12,
+      "nuevos": 14,
+      "fusionados": 1,
+      "ilegibles": 12
+    },
+    {
+      "indice": "029",
+      "original": "IMG_2008.HEIC",
+      "foto_id": 117,
+      "lote_id": 12,
+      "nuevos": 12,
+      "fusionados": 0,
+      "ilegibles": 14
+    },
+    {
+      "indice": "030",
+      "original": "IMG_2009.HEIC",
+      "foto_id": 118,
+      "lote_id": 12,
+      "nuevos": 13,
+      "fusionados": 0,
+      "ilegibles": 14
+    },
+    {
+      "indice": "031",
+      "original": "IMG_2010.HEIC",
+      "foto_id": 119,
+      "lote_id": 13,
+      "nuevos": 16,
+      "fusionados": 0,
+      "ilegibles": 16
+    },
+    {
+      "indice": "032",
+      "original": "IMG_2011.HEIC",
+      "foto_id": 120,
+      "lote_id": 13,
+      "nuevos": 14,
+      "fusionados": 1,
+      "ilegibles": 16
+    },
+    {
+      "indice": "033",
+      "original": "IMG_2012.HEIC",
+      "foto_id": 121,
+      "lote_id": 13,
+      "nuevos": 13,
+      "fusionados": 4,
+      "ilegibles": 16
+    },
+    {
+      "indice": "034",
+      "original": "IMG_2013.HEIC",
+      "foto_id": 122,
+      "lote_id": 13,
+      "nuevos": 16,
+      "fusionados": 1,
+      "ilegibles": 9
+    },
+    {
+      "indice": "035",
+      "original": "IMG_2014.HEIC",
+      "foto_id": 123,
+      "lote_id": 13,
+      "nuevos": 4,
+      "fusionados": 1,
+      "ilegibles": 25
+    },
+    {
+      "indice": "036",
+      "original": "IMG_2015.HEIC",
+      "foto_id": 124,
+      "lote_id": 13,
+      "nuevos": 3,
+      "fusionados": 0,
+      "ilegibles": 35
+    },
+    {
+      "indice": "037",
+      "original": "IMG_2016.HEIC",
+      "foto_id": 125,
+      "lote_id": 13,
+      "nuevos": 2,
+      "fusionados": 0,
+      "ilegibles": 3
+    },
+    {
+      "indice": "038",
+      "original": "IMG_2017.HEIC",
+      "foto_id": 126,
+      "lote_id": 13,
+      "nuevos": 3,
+      "fusionados": 0,
+      "ilegibles": 4
+    },
+    {
+      "indice": "039",
+      "original": "IMG_2018.HEIC",
+      "foto_id": 127,
+      "lote_id": 13,
+      "nuevos": 5,
+      "fusionados": 0,
+      "ilegibles": 4
+    },
+    {
+      "indice": "040",
+      "original": "IMG_2019.HEIC",
+      "foto_id": 128,
+      "lote_id": 13,
+      "nuevos": 5,
+      "fusionados": 0,
+      "ilegibles": 4
+    },
+    {
+      "indice": "041",
+      "original": "IMG_2020.HEIC",
+      "foto_id": 129,
+      "lote_id": 14,
+      "nuevos": 5,
+      "fusionados": 0,
+      "ilegibles": 5
+    },
+    {
+      "indice": "042",
+      "original": "IMG_2021.HEIC",
+      "foto_id": 130,
+      "lote_id": 14,
+      "nuevos": 6,
+      "fusionados": 0,
+      "ilegibles": 6
+    },
+    {
+      "indice": "043",
+      "original": "IMG_2022.HEIC",
+      "foto_id": 131,
+      "lote_id": 14,
+      "nuevos": 6,
+      "fusionados": 0,
+      "ilegibles": 5
+    },
+    {
+      "indice": "044",
+      "original": "IMG_2023.HEIC",
+      "foto_id": 132,
+      "lote_id": 14,
+      "nuevos": 5,
+      "fusionados": 0,
+      "ilegibles": 6
+    },
+    {
+      "indice": "045",
+      "original": "IMG_2024.HEIC",
+      "foto_id": 133,
+      "lote_id": 14,
+      "nuevos": 4,
+      "fusionados": 1,
+      "ilegibles": 6
+    },
+    {
+      "indice": "046",
+      "original": "IMG_2025.HEIC",
+      "foto_id": 134,
+      "lote_id": 14,
+      "nuevos": 4,
+      "fusionados": 1,
+      "ilegibles": 6
+    },
+    {
+      "indice": "047",
+      "original": "IMG_2026.HEIC",
+      "foto_id": 135,
+      "lote_id": 14,
+      "nuevos": 4,
+      "fusionados": 1,
+      "ilegibles": 8
+    },
+    {
+      "indice": "048",
+      "original": "IMG_2027.HEIC",
+      "foto_id": 136,
+      "lote_id": 14,
+      "nuevos": 3,
+      "fusionados": 1,
+      "ilegibles": 8
+    },
+    {
+      "indice": "049",
+      "original": "IMG_2028.HEIC",
+      "foto_id": 137,
+      "lote_id": 14,
+      "nuevos": 1,
+      "fusionados": 3,
+      "ilegibles": 8
+    },
+    {
+      "indice": "050",
+      "original": "IMG_2029.HEIC",
+      "foto_id": 138,
+      "lote_id": 14,
+      "nuevos": 0,
+      "fusionados": 4,
+      "ilegibles": 8
+    },
+    {
+      "indice": "051",
+      "original": "IMG_2030.HEIC",
+      "foto_id": 139,
+      "lote_id": 15,
+      "nuevos": 2,
+      "fusionados": 0,
+      "ilegibles": 7
+    },
+    {
+      "indice": "052",
+      "original": "IMG_2031.HEIC",
+      "foto_id": 140,
+      "lote_id": 15,
+      "nuevos": 1,
+      "fusionados": 1,
+      "ilegibles": 8
+    },
+    {
+      "indice": "053",
+      "original": "IMG_2032.HEIC",
+      "foto_id": 141,
+      "lote_id": 15,
+      "nuevos": 4,
+      "fusionados": 2,
+      "ilegibles": 10
+    },
+    {
+      "indice": "054",
+      "original": "IMG_2033.HEIC",
+      "foto_id": 142,
+      "lote_id": 15,
+      "nuevos": 5,
+      "fusionados": 1,
+      "ilegibles": 12
+    },
+    {
+      "indice": "055",
+      "original": "IMG_2034.HEIC",
+      "foto_id": 143,
+      "lote_id": 15,
+      "nuevos": 3,
+      "fusionados": 0,
+      "ilegibles": 30
+    },
+    {
+      "indice": "056",
+      "original": "IMG_2035.HEIC",
+      "foto_id": 144,
+      "lote_id": 15,
+      "nuevos": 3,
+      "fusionados": 1,
+      "ilegibles": 35
+    },
+    {
+      "indice": "057",
+      "original": "IMG_2036.HEIC",
+      "foto_id": 145,
+      "lote_id": 15,
+      "nuevos": 4,
+      "fusionados": 0,
+      "ilegibles": 30
+    },
+    {
+      "indice": "058",
+      "original": "IMG_2037.HEIC",
+      "foto_id": 146,
+      "lote_id": 15,
+      "nuevos": 4,
+      "fusionados": 1,
+      "ilegibles": 25
+    },
+    {
+      "indice": "059",
+      "original": "IMG_2038.HEIC",
+      "foto_id": 147,
+      "lote_id": 15,
+      "nuevos": 18,
+      "fusionados": 0,
+      "ilegibles": 6
+    },
+    {
+      "indice": "060",
+      "original": "IMG_2039.HEIC",
+      "foto_id": 148,
+      "lote_id": 15,
+      "nuevos": 10,
+      "fusionados": 1,
+      "ilegibles": 5
+    },
+    {
+      "indice": "061",
+      "original": "IMG_2040.HEIC",
+      "foto_id": 149,
+      "lote_id": 16,
+      "nuevos": 5,
+      "fusionados": 1,
+      "ilegibles": 20
+    },
+    {
+      "indice": "062",
+      "original": "IMG_2041.HEIC",
+      "foto_id": 150,
+      "lote_id": 16,
+      "nuevos": 6,
+      "fusionados": 0,
+      "ilegibles": 40
+    },
+    {
+      "indice": "063",
+      "original": "IMG_2042.HEIC",
+      "foto_id": 151,
+      "lote_id": 16,
+      "nuevos": 5,
+      "fusionados": 0,
+      "ilegibles": 40
+    },
+    {
+      "indice": "064",
+      "original": "IMG_2043.HEIC",
+      "foto_id": 152,
+      "lote_id": 16,
+      "nuevos": 11,
+      "fusionados": 1,
+      "ilegibles": 6
+    },
+    {
+      "indice": "065",
+      "original": "IMG_2044.HEIC",
+      "foto_id": 153,
+      "lote_id": 16,
+      "nuevos": 19,
+      "fusionados": 7,
+      "ilegibles": 3
+    },
+    {
+      "indice": "066",
+      "original": "IMG_2045.HEIC",
+      "foto_id": 154,
+      "lote_id": 16,
+      "nuevos": 12,
+      "fusionados": 2,
+      "ilegibles": 3
+    },
+    {
+      "indice": "067",
+      "original": "IMG_2046.HEIC",
+      "foto_id": 155,
+      "lote_id": 16,
+      "nuevos": 16,
+      "fusionados": 3,
+      "ilegibles": 13
+    },
+    {
+      "indice": "068",
+      "original": "IMG_2047.HEIC",
+      "foto_id": 156,
+      "lote_id": 16,
+      "nuevos": 15,
+      "fusionados": 8,
+      "ilegibles": 4
+    },
+    {
+      "indice": "069",
+      "original": "IMG_2048.HEIC",
+      "foto_id": 157,
+      "lote_id": 16,
+      "nuevos": 13,
+      "fusionados": 3,
+      "ilegibles": 4
+    },
+    {
+      "indice": "070",
+      "original": "IMG_2049.HEIC",
+      "foto_id": 158,
+      "lote_id": 16,
+      "nuevos": 9,
+      "fusionados": 5,
+      "ilegibles": 6
+    },
+    {
+      "indice": "071",
+      "original": "IMG_2050.HEIC",
+      "foto_id": 159,
+      "lote_id": 17,
+      "nuevos": 14,
+      "fusionados": 3,
+      "ilegibles": 3
+    },
+    {
+      "indice": "072",
+      "original": "IMG_2051.HEIC",
+      "foto_id": 160,
+      "lote_id": 17,
+      "nuevos": 24,
+      "fusionados": 4,
+      "ilegibles": 1
+    },
+    {
+      "indice": "073",
+      "original": "IMG_2052.HEIC",
+      "foto_id": 161,
+      "lote_id": 17,
+      "nuevos": 21,
+      "fusionados": 1,
+      "ilegibles": 13
+    },
+    {
+      "indice": "074",
+      "original": "IMG_2053.HEIC",
+      "foto_id": 162,
+      "lote_id": 17,
+      "nuevos": 23,
+      "fusionados": 2,
+      "ilegibles": 1
+    },
+    {
+      "indice": "075",
+      "original": "IMG_2054.HEIC",
+      "foto_id": 163,
+      "lote_id": 17,
+      "nuevos": 18,
+      "fusionados": 5,
+      "ilegibles": 0
+    },
+    {
+      "indice": "076",
+      "original": "IMG_2055.HEIC",
+      "foto_id": 164,
+      "lote_id": 17,
+      "nuevos": 18,
+      "fusionados": 3,
+      "ilegibles": 2
+    },
+    {
+      "indice": "077",
+      "original": "IMG_2056.HEIC",
+      "foto_id": 165,
+      "lote_id": 17,
+      "nuevos": 18,
+      "fusionados": 3,
+      "ilegibles": 2
+    },
+    {
+      "indice": "078",
+      "original": "IMG_2057.HEIC",
+      "foto_id": 166,
+      "lote_id": 17,
+      "nuevos": 14,
+      "fusionados": 10,
+      "ilegibles": 2
+    },
+    {
+      "indice": "079",
+      "original": "IMG_2058.HEIC",
+      "foto_id": 167,
+      "lote_id": 17,
+      "nuevos": 0,
+      "fusionados": 1,
+      "ilegibles": 18
+    },
+    {
+      "indice": "080",
+      "original": "IMG_2059.HEIC",
+      "foto_id": 168,
+      "lote_id": 17,
+      "nuevos": 8,
+      "fusionados": 3,
+      "ilegibles": 34
+    },
+    {
+      "indice": "081",
+      "original": "IMG_2060.HEIC",
+      "foto_id": 169,
+      "lote_id": 18,
+      "nuevos": 5,
+      "fusionados": 7,
+      "ilegibles": 32
+    },
+    {
+      "indice": "082",
+      "original": "IMG_2061.HEIC",
+      "foto_id": 170,
+      "lote_id": 18,
+      "nuevos": 2,
+      "fusionados": 4,
+      "ilegibles": 2
+    },
+    {
+      "indice": "083",
+      "original": "IMG_2062.HEIC",
+      "foto_id": 171,
+      "lote_id": 18,
+      "nuevos": 3,
+      "fusionados": 1,
+      "ilegibles": 27
+    },
+    {
+      "indice": "084",
+      "original": "IMG_2063.HEIC",
+      "foto_id": 172,
+      "lote_id": 18,
+      "nuevos": 3,
+      "fusionados": 21,
+      "ilegibles": 2
+    },
+    {
+      "indice": "085",
+      "original": "IMG_2064.HEIC",
+      "foto_id": 173,
+      "lote_id": 18,
+      "nuevos": 0,
+      "fusionados": 23,
+      "ilegibles": 2
+    },
+    {
+      "indice": "086",
+      "original": "IMG_2065.HEIC",
+      "foto_id": 174,
+      "lote_id": 18,
+      "nuevos": 19,
+      "fusionados": 1,
+      "ilegibles": 28
+    },
+    {
+      "indice": "087",
+      "original": "IMG_2066.HEIC",
+      "foto_id": 175,
+      "lote_id": 18,
+      "nuevos": 21,
+      "fusionados": 0,
+      "ilegibles": 20
+    },
+    {
+      "indice": "088",
+      "original": "IMG_2067.HEIC",
+      "foto_id": 176,
+      "lote_id": 18,
+      "nuevos": 16,
+      "fusionados": 0,
+      "ilegibles": 30
+    }
+  ],
+  "fusiones": [
+    [
+      "004",
+      "El chino",
+      "Henning Mankell",
+      122
+    ],
+    [
+      "004",
+      "El chino",
+      "Henning Mankell",
+      122
+    ],
+    [
+      "004",
+      "Asesinos sin rostro",
+      "Henning Mankell",
+      120
+    ],
+    [
+      "005",
+      "Asesinos sin rostro",
+      "Henning Mankell",
+      120
+    ],
+    [
+      "005",
+      "La leona blanca",
+      "Henning Mankell",
+      121
+    ],
+    [
+      "005",
+      "El chino",
+      "Henning Mankell",
+      122
+    ],
+    [
+      "005",
+      "La falsa pista",
+      "Henning Mankell",
+      123
+    ],
+    [
+      "005",
+      "Los perros de Riga",
+      "Henning Mankell",
+      124
+    ],
+    [
+      "005",
+      "El chino",
+      "Henning Mankell",
+      122
+    ],
+    [
+      "005",
+      "La quinta mujer",
+      "Henning Mankell",
+      125
+    ],
+    [
+      "005",
+      "El chino",
+      "Henning Mankell",
+      122
+    ],
+    [
+      "005",
+      "Pisando los talones",
+      "Henning Mankell",
+      126
+    ],
+    [
+      "005",
+      "Cortafuegos",
+      "Henning Mankell",
+      127
+    ],
+    [
+      "005",
+      "Huesos en el jardín",
+      "Henning Mankell",
+      128
+    ],
+    [
+      "005",
+      "Asesinos sin rostro",
+      "Henning Mankell",
+      120
+    ],
+    [
+      "006",
+      "El soberano del Nilo",
+      "Wilbur Smith",
+      133
+    ],
+    [
+      "006",
+      "Grito de guerra",
+      "Wilbur Smith",
+      137
+    ],
+    [
+      "007",
+      "El séptimo papiro",
+      "Wilbur Smith",
+      129
+    ],
+    [
+      "007",
+      "El soberano del Nilo",
+      "Wilbur Smith",
+      133
+    ],
+    [
+      "010",
+      "Enigma para fantoches",
+      "Patrick Quentin",
+      153
+    ],
+    [
+      "010",
+      "Cañones y manteca",
+      "Nicolas Freeling",
+      154
+    ],
+    [
+      "011",
+      "Como el mar",
+      "Wilbur Smith",
+      139
+    ],
+    [
+      "011",
+      "Hechicero",
+      "Wilbur Smith",
+      140
+    ],
+    [
+      "011",
+      "El ojo del tigre",
+      "Wilbur Smith",
+      141
+    ],
+    [
+      "011",
+      "Muere el gorrión",
+      "Wilbur Smith",
+      142
+    ],
+    [
+      "011",
+      "Los cazadores de diamantes",
+      "Wilbur Smith",
+      143
+    ],
+    [
+      "011",
+      "El triunfo del sol",
+      "Wilbur Smith",
+      144
+    ],
+    [
+      "011",
+      "El lado oscuro del sol",
+      "Wilbur Smith",
+      145
+    ],
+    [
+      "011",
+      "Costa ardiente",
+      "Wilbur Smith",
+      146
+    ],
+    [
+      "011",
+      "El séptimo papiro",
+      "Wilbur Smith",
+      129
+    ],
+    [
+      "011",
+      "El soberano del Nilo",
+      "Wilbur Smith",
+      133
+    ],
+    [
+      "012",
+      "El ojo del tigre",
+      "Wilbur Smith",
+      141
+    ],
+    [
+      "012",
+      "Horizonte azul",
+      "Wilbur Smith",
+      134
+    ],
+    [
+      "012",
+      "El monzón",
+      "Wilbur Smith",
+      138
+    ],
+    [
+      "012",
+      "Voraz como el mar",
+      "Wilbur Smith",
+      159
+    ],
+    [
+      "013",
+      "El monzón",
+      "Wilbur Smith",
+      138
+    ],
+    [
+      "014",
+      "Causa justa",
+      "John Grisham",
+      170
+    ],
+    [
+      "014",
+      "Causa justa",
+      "John Grisham",
+      170
+    ],
+    [
+      "014",
+      "Los adversarios",
+      "John Grisham",
+      171
+    ],
+    [
+      "015",
+      "La guerra de Hart",
+      "John Katzenbach",
+      179
+    ],
+    [
+      "015",
+      "El intermediario",
+      "John Grisham",
+      183
+    ],
+    [
+      "015",
+      "Siete vidas",
+      "John Grisham",
+      168
+    ],
+    [
+      "016",
+      "Un final perfecto",
+      "John Katzenbach",
+      188
+    ],
+    [
+      "016",
+      "El código Da Vinci",
+      "Dan Brown",
+      187
+    ],
+    [
+      "016",
+      "Inferno",
+      "Dan Brown",
+      186
+    ],
+    [
+      "018",
+      "Mal de amores",
+      "Ángeles Mastretta",
+      202
+    ],
+    [
+      "019",
+      "Nosotras que nos queremos tanto",
+      "Marcela Serrano",
+      209
+    ],
+    [
+      "019",
+      "Mal de amores",
+      "Ángeles Mastretta",
+      202
+    ],
+    [
+      "019",
+      "Arráncame la vida",
+      "Ángeles Mastretta",
+      204
+    ],
+    [
+      "019",
+      "Cincuenta sombras de Grey",
+      "E. L. James",
+      98
+    ],
+    [
+      "020",
+      "Bajo la estrella polar",
+      "Stef Penney",
+      217
+    ],
+    [
+      "023",
+      "El viaje de Cilka",
+      "Heather Morris",
+      258
+    ],
+    [
+      "023",
+      "La casa alemana",
+      "Annette Hess",
+      253
+    ],
+    [
+      "024",
+      "Asesinato en el campo de golf",
+      "Agatha Christie",
+      268
+    ],
+    [
+      "024",
+      "El misterioso caso de Styles",
+      "Agatha Christie",
+      269
+    ],
+    [
+      "025",
+      "Obras completas: Hacia cero / Pleamares de la vida / Cinco cerditos",
+      "Agatha Christie",
+      267
+    ],
+    [
+      "025",
+      "Asesinato en el campo de golf",
+      "Agatha Christie",
+      268
+    ],
+    [
+      "025",
+      "Asesinato en el campo de golf",
+      "Agatha Christie",
+      268
+    ],
+    [
+      "025",
+      "El misterioso caso de Styles",
+      "Agatha Christie",
+      269
+    ],
+    [
+      "025",
+      "El misterioso caso de Styles",
+      "Agatha Christie",
+      269
+    ],
+    [
+      "025",
+      "El misterioso Sr. Brown",
+      "Agatha Christie",
+      270
+    ],
+    [
+      "025",
+      "El misterio de Sans Souci",
+      "Agatha Christie",
+      271
+    ],
+    [
+      "025",
+      "Asesinato en el Orient Express",
+      "Agatha Christie",
+      272
+    ],
+    [
+      "025",
+      "Los casos de Miss Marple",
+      "Agatha Christie",
+      273
+    ],
+    [
+      "025",
+      "Tres ratones ciegos",
+      "Agatha Christie",
+      274
+    ],
+    [
+      "025",
+      "El misterio de Sittaford",
+      "Agatha Christie",
+      275
+    ],
+    [
+      "025",
+      "Hacia cero",
+      "Agatha Christie",
+      276
+    ],
+    [
+      "025",
+      "El hombre del traje color castaño",
+      "Agatha Christie",
+      277
+    ],
+    [
+      "025",
+      "El asesinato de Rogelio Ackroyd",
+      "Agatha Christie",
+      278
+    ],
+    [
+      "025",
+      "Poirot infringe la ley",
+      "Agatha Christie",
+      279
+    ],
+    [
+      "025",
+      "Muerte en el Nilo",
+      "Agatha Christie",
+      280
+    ],
+    [
+      "026",
+      "Asesinato en el Orient Express",
+      "Agatha Christie",
+      272
+    ],
+    [
+      "026",
+      "Cinco cerditos",
+      "Agatha Christie",
+      287
+    ],
+    [
+      "026",
+      "El misterioso Mr. Brown",
+      "Agatha Christie",
+      288
+    ],
+    [
+      "026",
+      "Miss Marple y trece problemas",
+      "Agatha Christie",
+      290
+    ],
+    [
+      "026",
+      "Muerte en la vicaría",
+      "Agatha Christie",
+      291
+    ],
+    [
+      "026",
+      "Intriga en Bagdad",
+      "Agatha Christie",
+      285
+    ],
+    [
+      "028",
+      "La mujer justa",
+      "Sándor Márai",
+      307
+    ],
+    [
+      "032",
+      "El último encuentro",
+      "Sándor Márai",
+      361
+    ],
+    [
+      "033",
+      "El lector",
+      "Bernhard Schlink",
+      359
+    ],
+    [
+      "033",
+      "Sumisión",
+      "Michel Houellebecq",
+      358
+    ],
+    [
+      "033",
+      "El lector",
+      "Bernhard Schlink",
+      359
+    ],
+    [
+      "033",
+      "Sostiene Pereira",
+      "Antonio Tabucchi",
+      379
+    ],
+    [
+      "034",
+      "Rumbo al Mar Blanco",
+      "Malcolm Lowry",
+      384
+    ],
+    [
+      "035",
+      "Fahrenheit 451",
+      "Ray Bradbury",
+      402
+    ],
+    [
+      "045",
+      "Un toque de infinito",
+      "Howard Fast",
+      428
+    ],
+    [
+      "046",
+      "Crónica de una muerte anunciada",
+      "Gabriel García Márquez",
+      450
+    ],
+    [
+      "047",
+      "Relato de un náufrago",
+      "Gabriel García Márquez",
+      453
+    ],
+    [
+      "048",
+      "Los funerales de la mamá grande",
+      "Gabriel García Márquez",
+      456
+    ],
+    [
+      "049",
+      "Los funerales de la mamá grande",
+      "Gabriel García Márquez",
+      456
+    ],
+    [
+      "049",
+      "Relato de un náufrago",
+      "Gabriel García Márquez",
+      453
+    ],
+    [
+      "049",
+      "El otoño del patriarca",
+      "Gabriel García Márquez",
+      459
+    ],
+    [
+      "050",
+      "Los funerales de la mamá grande",
+      "Gabriel García Márquez",
+      456
+    ],
+    [
+      "050",
+      "Doce cuentos peregrinos",
+      "Gabriel García Márquez",
+      460
+    ],
+    [
+      "050",
+      "Relato de un náufrago",
+      "Gabriel García Márquez",
+      453
+    ],
+    [
+      "050",
+      "El otoño del patriarca",
+      "Gabriel García Márquez",
+      459
+    ],
+    [
+      "052",
+      "La otra oportunidad",
+      "Philip José Farmer",
+      435
+    ],
+    [
+      "053",
+      "El país de las últimas cosas",
+      "Paul Auster",
+      464
+    ],
+    [
+      "053",
+      "El país de las últimas cosas",
+      "Paul Auster",
+      464
+    ],
+    [
+      "054",
+      "Brooklyn Follies",
+      "Paul Auster",
+      469
+    ],
+    [
+      "056",
+      "El turista accidental",
+      "Anne Tyler",
+      473
+    ],
+    [
+      "058",
+      "Casa de verano con piscina",
+      "Herman Koch",
+      297
+    ],
+    [
+      "060",
+      "Una ciudad asediada",
+      "Margaret Oliphant",
+      514
+    ],
+    [
+      "061",
+      "En cueros",
+      "Luke Rhinehart",
+      369
+    ],
+    [
+      "064",
+      "El juguete rabioso",
+      "Roberto Arlt",
+      534
+    ],
+    [
+      "065",
+      "Los lanzallamas",
+      "Roberto Arlt",
+      535
+    ],
+    [
+      "065",
+      "Los siete locos",
+      "Roberto Arlt",
+      537
+    ],
+    [
+      "065",
+      "El juguete rabioso",
+      "Roberto Arlt",
+      534
+    ],
+    [
+      "065",
+      "Aguafuertes porteñas",
+      "",
+      538
+    ],
+    [
+      "065",
+      "Aguafuertes porteñas",
+      "",
+      538
+    ],
+    [
+      "065",
+      "El matadero / La cautiva",
+      "Esteban Echeverría",
+      547
+    ],
+    [
+      "065",
+      "Martín Fierro",
+      "José Hernández",
+      542
+    ],
+    [
+      "066",
+      "Orgullo y prejuicio",
+      "Jane Austen",
+      561
+    ],
+    [
+      "066",
+      "Las mil y una noches",
+      "Anónimo",
+      563
+    ],
+    [
+      "067",
+      "Rimas y leyendas",
+      "",
+      584
+    ],
+    [
+      "067",
+      "Los 39 escalones",
+      "John Buchan",
+      579
+    ],
+    [
+      "067",
+      "Pequeños poemas en prosa",
+      "Charles Baudelaire",
+      580
+    ],
+    [
+      "068",
+      "Las flores del mal",
+      "Charles Baudelaire",
+      585
+    ],
+    [
+      "068",
+      "El profesor",
+      "Charlotte Brontë",
+      586
+    ],
+    [
+      "068",
+      "Crónicas marcianas",
+      "Ray Bradbury",
+      587
+    ],
+    [
+      "068",
+      "La peste",
+      "Albert Camus",
+      588
+    ],
+    [
+      "068",
+      "La peste",
+      "Albert Camus",
+      588
+    ],
+    [
+      "068",
+      "Estudio en escarlata",
+      "Arthur Conan Doyle",
+      506
+    ],
+    [
+      "068",
+      "El sabueso de los Baskerville",
+      "Arthur Conan Doyle",
+      505
+    ],
+    [
+      "068",
+      "Estudio en escarlata",
+      "Arthur Conan Doyle",
+      506
+    ],
+    [
+      "069",
+      "La patrona",
+      "Fiódor Dostoievski",
+      608
+    ],
+    [
+      "069",
+      "El doble",
+      "Fiódor Dostoievski",
+      612
+    ],
+    [
+      "069",
+      "El jugador",
+      "Fiódor Dostoievski",
+      610
+    ],
+    [
+      "070",
+      "La metamorfosis",
+      "Franz Kafka",
+      617
+    ],
+    [
+      "070",
+      "La muralla china",
+      "Franz Kafka",
+      620
+    ],
+    [
+      "070",
+      "América",
+      "Franz Kafka",
+      619
+    ],
+    [
+      "070",
+      "El castillo",
+      "Franz Kafka",
+      618
+    ],
+    [
+      "070",
+      "La gilada",
+      "",
+      625
+    ],
+    [
+      "071",
+      "Los miserables",
+      "Víctor Hugo",
+      627
+    ],
+    [
+      "071",
+      "Platero y yo",
+      "Juan Ramón Jiménez",
+      483
+    ],
+    [
+      "071",
+      "Rubaiyat",
+      "Omar Khayyam",
+      623
+    ],
+    [
+      "072",
+      "El señor de las moscas",
+      "William Golding",
+      648
+    ],
+    [
+      "072",
+      "El Viy y otros relatos",
+      "Nikolái Gógol",
+      510
+    ],
+    [
+      "072",
+      "Fausto",
+      "Johann Wolfgang von Goethe",
+      530
+    ],
+    [
+      "072",
+      "Un mundo feliz",
+      "Aldous Huxley",
+      626
+    ],
+    [
+      "073",
+      "El fantasma de la Ópera",
+      "Gaston Leroux",
+      515
+    ],
+    [
+      "074",
+      "El cuervo y otros relatos",
+      "Edgar Allan Poe",
+      699
+    ],
+    [
+      "074",
+      "Cuentos de amor de locura y de muerte",
+      "Horacio Quiroga",
+      507
+    ],
+    [
+      "075",
+      "Cyrano de Bergerac",
+      "Edmond Rostand",
+      707
+    ],
+    [
+      "075",
+      "Antígona",
+      "Sófocles",
+      708
+    ],
+    [
+      "075",
+      "Antígona",
+      "Sófocles",
+      708
+    ],
+    [
+      "075",
+      "El arte de la guerra",
+      "Sun Tzu",
+      713
+    ],
+    [
+      "075",
+      "El club de los suicidas",
+      "Robert Louis Stevenson",
+      716
+    ],
+    [
+      "076",
+      "Romeo y Julieta",
+      "William Shakespeare",
+      723
+    ],
+    [
+      "076",
+      "Romeo y Julieta",
+      "William Shakespeare",
+      723
+    ],
+    [
+      "076",
+      "Otelo",
+      "William Shakespeare",
+      724
+    ],
+    [
+      "077",
+      "Frankenstein",
+      "",
+      732
+    ],
+    [
+      "077",
+      "Viaje al centro de la Tierra",
+      "Julio Verne",
+      480
+    ],
+    [
+      "077",
+      "La vuelta al mundo en 80 días",
+      "Julio Verne",
+      751
+    ],
+    [
+      "078",
+      "La vuelta al mundo en 80 días",
+      "Julio Verne",
+      751
+    ],
+    [
+      "078",
+      "Un capitán de quince años",
+      "Julio Verne",
+      754
+    ],
+    [
+      "078",
+      "Veinte mil leguas de viaje submarino",
+      "Julio Verne",
+      755
+    ],
+    [
+      "078",
+      "La Eneida",
+      "Virgilio",
+      756
+    ],
+    [
+      "078",
+      "Canto a mí mismo",
+      "Walt Whitman",
+      757
+    ],
+    [
+      "078",
+      "Fin de viaje",
+      "Virginia Woolf",
+      758
+    ],
+    [
+      "078",
+      "Entre actos",
+      "Virginia Woolf",
+      759
+    ],
+    [
+      "078",
+      "Freshwater",
+      "Virginia Woolf",
+      760
+    ],
+    [
+      "078",
+      "Flush",
+      "Virginia Woolf",
+      761
+    ],
+    [
+      "078",
+      "Canto a mí mismo",
+      "Walt Whitman",
+      757
+    ],
+    [
+      "079",
+      "Costa ardiente",
+      "Wilbur Smith",
+      146
+    ],
+    [
+      "080",
+      "Te digo más...",
+      "Roberto Fontanarrosa",
+      778
+    ],
+    [
+      "080",
+      "El mayor de mis defectos",
+      "Roberto Fontanarrosa",
+      781
+    ],
+    [
+      "080",
+      "Best seller",
+      "Roberto Fontanarrosa",
+      779
+    ],
+    [
+      "081",
+      "El mayor de mis defectos",
+      "Roberto Fontanarrosa",
+      781
+    ],
+    [
+      "081",
+      "No sé si he sido claro",
+      "Roberto Fontanarrosa",
+      780
+    ],
+    [
+      "081",
+      "El área 18",
+      "Roberto Fontanarrosa",
+      783
+    ],
+    [
+      "081",
+      "Te digo más...",
+      "Roberto Fontanarrosa",
+      778
+    ],
+    [
+      "081",
+      "Te digo más...",
+      "Roberto Fontanarrosa",
+      778
+    ],
+    [
+      "081",
+      "No sé si he sido claro",
+      "Roberto Fontanarrosa",
+      780
+    ],
+    [
+      "081",
+      "No sé si he sido claro",
+      "Roberto Fontanarrosa",
+      780
+    ],
+    [
+      "082",
+      "La dama de las camelias",
+      "Alejandro Dumas",
+      485
+    ],
+    [
+      "082",
+      "La dama de las camelias",
+      "Alejandro Dumas",
+      485
+    ],
+    [
+      "082",
+      "La dama de las camelias",
+      "Alejandro Dumas",
+      485
+    ],
+    [
+      "082",
+      "La dama de las camelias",
+      "Alejandro Dumas",
+      485
+    ],
+    [
+      "083",
+      "Las historias más terroríficas de las mil y una noches",
+      "",
+      793
+    ],
+    [
+      "084",
+      "Veinte mil leguas de viaje submarino",
+      "Julio Verne",
+      755
+    ],
+    [
+      "084",
+      "Canto a mí mismo",
+      "Walt Whitman",
+      757
+    ],
+    [
+      "084",
+      "Fin de viaje",
+      "Virginia Woolf",
+      758
+    ],
+    [
+      "084",
+      "Entre actos",
+      "Virginia Woolf",
+      759
+    ],
+    [
+      "084",
+      "Freshwater",
+      "Virginia Woolf",
+      760
+    ],
+    [
+      "084",
+      "Flush",
+      "Virginia Woolf",
+      761
+    ],
+    [
+      "084",
+      "Una habitación propia",
+      "Virginia Woolf",
+      763
+    ],
+    [
+      "084",
+      "Orlando",
+      "Virginia Woolf",
+      764
+    ],
+    [
+      "084",
+      "La edad de la inocencia",
+      "Edith Wharton",
+      765
+    ],
+    [
+      "084",
+      "La guerra de los mundos",
+      "H. G. Wells",
+      766
+    ],
+    [
+      "084",
+      "El hombre invisible",
+      "H. G. Wells",
+      767
+    ],
+    [
+      "084",
+      "La máquina del tiempo",
+      "H. G. Wells",
+      768
+    ],
+    [
+      "084",
+      "Una historia de los tiempos venideros",
+      "H. G. Wells",
+      769
+    ],
+    [
+      "084",
+      "El crítico como artista",
+      "Oscar Wilde",
+      770
+    ],
+    [
+      "084",
+      "De profundis",
+      "Oscar Wilde",
+      771
+    ],
+    [
+      "084",
+      "El crimen de lord Arthur Savile",
+      "Oscar Wilde",
+      772
+    ],
+    [
+      "084",
+      "Canto a mí mismo",
+      "Walt Whitman",
+      757
+    ],
+    [
+      "084",
+      "Hojas de hierba",
+      "Walt Whitman",
+      773
+    ],
+    [
+      "084",
+      "Don Juan Tenorio",
+      "José Zorrilla",
+      774
+    ],
+    [
+      "084",
+      "Frankenstein",
+      "Mary Shelley",
+      743
+    ],
+    [
+      "084",
+      "El sabueso de los Baskerville",
+      "Arthur Conan Doyle",
+      505
+    ],
+    [
+      "085",
+      "Frankenstein",
+      "Mary Shelley",
+      743
+    ],
+    [
+      "085",
+      "Niebla",
+      "Miguel de Unamuno",
+      744
+    ],
+    [
+      "085",
+      "Del sentimiento trágico de la vida",
+      "Miguel de Unamuno",
+      745
+    ],
+    [
+      "085",
+      "Cándido",
+      "Voltaire",
+      746
+    ],
+    [
+      "085",
+      "Zadig o el destino",
+      "Voltaire",
+      747
+    ],
+    [
+      "085",
+      "Metrópolis",
+      "Thea von Harbou",
+      748
+    ],
+    [
+      "085",
+      "El faro del fin del mundo",
+      "Julio Verne",
+      749
+    ],
+    [
+      "085",
+      "Cinco semanas en globo",
+      "Julio Verne",
+      750
+    ],
+    [
+      "085",
+      "La vuelta al mundo en 80 días",
+      "Julio Verne",
+      751
+    ],
+    [
+      "085",
+      "Viaje al centro de la Tierra",
+      "Julio Verne",
+      480
+    ],
+    [
+      "085",
+      "Los hijos del capitán Grant - Chile y Argentina",
+      "Julio Verne",
+      752
+    ],
+    [
+      "085",
+      "Los 500 millones de la Begum",
+      "Julio Verne",
+      753
+    ],
+    [
+      "085",
+      "La vuelta al mundo en 80 días",
+      "Julio Verne",
+      751
+    ],
+    [
+      "085",
+      "Un capitán de quince años",
+      "Julio Verne",
+      754
+    ],
+    [
+      "085",
+      "Veinte mil leguas de viaje submarino",
+      "Julio Verne",
+      755
+    ],
+    [
+      "085",
+      "La Eneida",
+      "Virgilio",
+      756
+    ],
+    [
+      "085",
+      "Canto a mí mismo",
+      "Walt Whitman",
+      757
+    ],
+    [
+      "085",
+      "Fin de viaje",
+      "Virginia Woolf",
+      758
+    ],
+    [
+      "085",
+      "Entre actos",
+      "Virginia Woolf",
+      759
+    ],
+    [
+      "085",
+      "Freshwater",
+      "Virginia Woolf",
+      760
+    ],
+    [
+      "085",
+      "Flush",
+      "Virginia Woolf",
+      761
+    ],
+    [
+      "085",
+      "El lector común",
+      "Virginia Woolf",
+      762
+    ],
+    [
+      "085",
+      "Una habitación propia",
+      "Virginia Woolf",
+      763
+    ],
+    [
+      "086",
+      "El proceso grupal",
+      "Enrique Pichon-Rivière",
+      815
+    ]
+  ],
+  "baja_confianza": [
+    [
+      104,
+      "002",
+      "Curuzú Gil",
+      "ADRIANA HA…",
+      0.45
+    ],
+    [
+      114,
+      "003",
+      "La p…ida del roble",
+      "Gillian Bl…",
+      0.25
+    ],
+    [
+      153,
+      "009",
+      "Enigma para fantoches",
+      "",
+      0.4
+    ],
+    [
+      154,
+      "009",
+      "Cañones y manteca",
+      "",
+      0.4
+    ],
+    [
+      220,
+      "019",
+      "(título en cursiva ilegible, termina en \"vida\")",
+      "Fernanda Pérez",
+      0.3
+    ],
+    [
+      223,
+      "020",
+      "LOS EXTRAÑOS DE M... (resto tapado por el libro vecino)",
+      "",
+      0.3
+    ],
+    [
+      229,
+      "020",
+      "(título en cursiva roja, tapado casi por completo por el libro vecino)",
+      "Viviana Rivero",
+      0.3
+    ],
+    [
+      233,
+      "021",
+      "El rey del invierno",
+      "",
+      0.4
+    ],
+    [
+      256,
+      "022",
+      "REN... de ESCOM... (tapa parcialmente tapada)",
+      "Gabriela Exilart",
+      0.35
+    ],
+    [
+      292,
+      "027",
+      "Los hombres duros no bailan",
+      "",
+      0.4
+    ],
+    [
+      303,
+      "028",
+      "...E HAY (lomo cortado por el borde de la foto)",
+      "",
+      0.25
+    ],
+    [
+      399,
+      "034",
+      "El año del Mono",
+      "",
+      0.4
+    ],
+    [
+      403,
+      "035",
+      "Los universos vislumbrados",
+      "",
+      0.4
+    ],
+    [
+      404,
+      "035",
+      "War of Ragnarok",
+      "",
+      0.4
+    ],
+    [
+      407,
+      "036",
+      "LOS UNIVERSOS ... (resto tapado por otro libro)",
+      "",
+      0.3
+    ],
+    [
+      421,
+      "040",
+      "Tierra Fantasy",
+      "",
+      0.4
+    ],
+    [
+      430,
+      "042",
+      "La leyenda del esclavo",
+      "",
+      0.4
+    ],
+    [
+      444,
+      "044",
+      "espacio / Ciencia-ficción",
+      "",
+      0.25
+    ],
+    [
+      467,
+      "053",
+      "...el Mío Cid",
+      "Anónimo",
+      0.4
+    ],
+    [
+      525,
+      "062",
+      "Más allá del bien y del mal / La genealogía de la moral",
+      "",
+      0.4
+    ],
+    [
+      526,
+      "063",
+      "Cuentos perversos",
+      "",
+      0.4
+    ],
+    [
+      530,
+      "063",
+      "FAUSTO",
+      "",
+      0.35
+    ],
+    [
+      538,
+      "064",
+      "Aguafuertes porteñas",
+      "",
+      0.4
+    ],
+    [
+      539,
+      "064",
+      "Bases",
+      "",
+      0.35
+    ],
+    [
+      540,
+      "064",
+      "Los dueños de la Argentina",
+      "",
+      0.4
+    ],
+    [
+      541,
+      "064",
+      "Diccionario multilingüe ilustrado",
+      "",
+      0.4
+    ],
+    [
+      543,
+      "065",
+      "50 relatos extraordinarios",
+      "",
+      0.4
+    ],
+    [
+      625,
+      "070",
+      "La gilada",
+      "",
+      0.4
+    ],
+    [
+      626,
+      "071",
+      "Un mundo feliz",
+      "",
+      0.4
+    ],
+    [
+      640,
+      "072",
+      "…na Frank",
+      "",
+      0.2
+    ],
+    [
+      681,
+      "073",
+      "El enfermo imaginario",
+      "",
+      0.45
+    ],
+    [
+      723,
+      "075",
+      "Romeo y Julieta",
+      "",
+      0.4
+    ],
+    [
+      724,
+      "075",
+      "Otelo",
+      "",
+      0.4
+    ],
+    [
+      725,
+      "075",
+      "Antonio y Cleopatra",
+      "",
+      0.4
+    ],
+    [
+      760,
+      "077",
+      "Freshwater",
+      "",
+      0.45
+    ],
+    [
+      775,
+      "078",
+      "…da",
+      "Stefan Zweig",
+      0.3
+    ],
+    [
+      820,
+      "087",
+      "Más allá del ego",
+      "",
+      0.4
+    ],
+    [
+      824,
+      "087",
+      "Rehabilitación psiquiátrica y reinserción social de las personas con trastornos mentales crónicos graves",
+      "",
+      0.4
+    ],
+    [
+      839,
+      "088",
+      "Marcar la diferencia",
+      "",
+      0.4
+    ],
+    [
+      848,
+      "088",
+      "Acompañamiento terapéutico",
+      "",
+      0.4
+    ]
+  ],
+  "guardrail_autor": [
+    [
+      "009",
+      "Enigma para fantoches",
+      "Patrick Quentin"
+    ],
+    [
+      "009",
+      "Cañones y manteca",
+      "Nicolas Freeling"
+    ],
+    [
+      "021",
+      "El rey del invierno",
+      "Bernard Cornwell"
+    ],
+    [
+      "087",
+      "Más allá del ego",
+      "Abraham Maslow, Stanislav Grof, Charles Tart, Ken Wilber, Fritjof Capra y otros"
+    ],
+    [
+      "087",
+      "Rehabilitación psiquiátrica y reinserción social de las personas con trastornos mentales crónicos graves",
+      "Mónica Fernández Bruno y Pablo M. Gabay"
+    ],
+    [
+      "088",
+      "Marcar la diferencia",
+      "Rachel T. Hare-Mustin y Jeanne Marecek"
+    ],
+    [
+      "088",
+      "Acompañamiento terapéutico",
+      "M. Laura Frank, Maricel Costa y Dolores Hernández"
+    ]
+  ],
+  "sin_deteccion": [],
+  "totales": {
+    "fotos": 88,
+    "libros": 762,
+    "fusionados": 225,
+    "ilegibles": 1076
+  }
+}

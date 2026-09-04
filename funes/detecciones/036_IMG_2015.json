@@ -1,0 +1,15 @@
+{
+  "foto": "036_IMG_2015",
+  "lomos_ilegibles": 35,
+  "libros": [
+    {"titulo_detectado": "TRAS EL INCIERTO HORIZONTE", "autor_detectado": "Frederik Pohl",
+     "titulo_corregido": "Tras el incierto horizonte", "autor_corregido": "Frederik Pohl",
+     "confianza": 0.93},
+    {"titulo_detectado": "LOS ANALES DE LOS HEECHEES", "autor_detectado": "Frederik Pohl",
+     "titulo_corregido": "Los anales de los Heechees", "autor_corregido": "Frederik Pohl",
+     "confianza": 0.92},
+    {"titulo_detectado": "LOS UNIVERSOS ... (resto tapado por otro libro)", "autor_detectado": "",
+     "titulo_corregido": "LOS UNIVERSOS ... (resto tapado por otro libro)", "autor_corregido": "",
+     "confianza": 0.3}
+  ]
+}

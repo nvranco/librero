@@ -1,0 +1,33 @@
+{
+  "foto": "001_IMG_1979",
+  "lomos_ilegibles": 2,
+  "libros": [
+    {"titulo_detectado": "QUERERTE NO ES SÓLO CUESTIÓN DE SUERTE", "autor_detectado": "KATE EBERLEN",
+     "titulo_corregido": "Quererte no es sólo cuestión de suerte", "autor_corregido": "Kate Eberlen",
+     "confianza": 0.95},
+    {"titulo_detectado": "Como vivido cien veces", "autor_detectado": "CRISTINA BAJO",
+     "titulo_corregido": "Como vivido cien veces", "autor_corregido": "Cristina Bajo",
+     "confianza": 0.95},
+    {"titulo_detectado": "INOCENCIA Y PERFIDIA", "autor_detectado": "ELIZABETH BOWMAN",
+     "titulo_corregido": "Inocencia y perfidia", "autor_corregido": "Elizabeth Bowman",
+     "confianza": 0.85},
+    {"titulo_detectado": "EL SARRACEN", "autor_detectado": "DOUGLAS REEMAN",
+     "titulo_corregido": "El sarraceno", "autor_corregido": "Douglas Reeman",
+     "confianza": 0.8},
+    {"titulo_detectado": "LA CANCIÓN DEL MAR I", "autor_detectado": "GLORIA V. CASAÑAS",
+     "titulo_corregido": "La canción del mar", "autor_corregido": "Gloria V. Casañas",
+     "confianza": 0.88},
+    {"titulo_detectado": "Y PORÃ", "autor_detectado": "GLORIA V. CASAÑAS",
+     "titulo_corregido": "Y Porã", "autor_corregido": "Gloria V. Casañas",
+     "confianza": 0.85},
+    {"titulo_detectado": "LA CATEDRAL DEL MAR", "autor_detectado": "ILDEFONSO FALCONES",
+     "titulo_corregido": "La catedral del mar", "autor_corregido": "Ildefonso Falcones",
+     "confianza": 0.95},
+    {"titulo_detectado": "Cincuenta sombras de Grey", "autor_detectado": "E.L. James",
+     "titulo_corregido": "Cincuenta sombras de Grey", "autor_corregido": "E. L. James",
+     "confianza": 0.95},
+    {"titulo_detectado": "KENKEN para principiantes", "autor_detectado": "TETSUYA MIYAMOTO",
+     "titulo_corregido": "KenKen para principiantes", "autor_corregido": "Tetsuya Miyamoto",
+     "confianza": 0.6}
+  ]
+}

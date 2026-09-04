@@ -1,0 +1,21 @@
+{
+  "foto": "040_IMG_2019",
+  "lomos_ilegibles": 4,
+  "libros": [
+    {"titulo_detectado": "EL JARDIN DE LAS DELICIAS", "autor_detectado": "Ian Watson",
+     "titulo_corregido": "El jardín de las delicias", "autor_corregido": "Ian Watson",
+     "confianza": 0.93},
+    {"titulo_detectado": "LOS MEJORES RELATOS DE FANTASIA III", "autor_detectado": "Jakubowski",
+     "titulo_corregido": "Los mejores relatos de fantasía III", "autor_corregido": "Maxim Jakubowski",
+     "confianza": 0.75},
+    {"titulo_detectado": "EL CIERVO BLANCO", "autor_detectado": "Nancy Springer",
+     "titulo_corregido": "El ciervo blanco", "autor_corregido": "Nancy Springer",
+     "confianza": 0.93},
+    {"titulo_detectado": "TIERRA FANTASY", "autor_detectado": "",
+     "titulo_corregido": "Tierra Fantasy", "autor_corregido": "",
+     "confianza": 0.4},
+    {"titulo_detectado": "GENERACIONES PERDIDAS", "autor_detectado": "Richard Bessiere",
+     "titulo_corregido": "Generaciones perdidas", "autor_corregido": "Richard Bessière",
+     "confianza": 0.88}
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "foto": "016_IMG_1994",
+  "lomos_ilegibles": 7,
+  "libros": [
+    {"titulo_detectado": "ORIGEN", "autor_detectado": "DAN BROWN",
+     "titulo_corregido": "Origen", "autor_corregido": "Dan Brown",
+     "confianza": 0.95},
+    {"titulo_detectado": "LA CONSPIRACIÓN", "autor_detectado": "Dan Brown",
+     "titulo_corregido": "La conspiración", "autor_corregido": "Dan Brown",
+     "confianza": 0.95},
+    {"titulo_detectado": "INFERNO", "autor_detectado": "DAN BROWN",
+     "titulo_corregido": "Inferno", "autor_corregido": "Dan Brown",
+     "confianza": 0.95},
+    {"titulo_detectado": "El código da Vinci", "autor_detectado": "Dan Brown",
+     "titulo_corregido": "El código Da Vinci", "autor_corregido": "Dan Brown",
+     "confianza": 0.95},
+    {"titulo_detectado": "UN FINAL PERFECTO", "autor_detectado": "JOHN KATZENBACH",
+     "titulo_corregido": "Un final perfecto", "autor_corregido": "John Katzenbach",
+     "confianza": 0.95},
+    {"titulo_detectado": "UN FINAL PERFECTO", "autor_detectado": "JOHN KATZENBACH",
+     "titulo_corregido": "Un final perfecto", "autor_corregido": "John Katzenbach",
+     "confianza": 0.95},
+    {"titulo_detectado": "EL CÓDIGO DA VINCI", "autor_detectado": "Dan Brown",
+     "titulo_corregido": "El código Da Vinci", "autor_corregido": "Dan Brown",
+     "confianza": 0.95},
+    {"titulo_detectado": "La fortaleza digital", "autor_detectado": "Dan Brown",
+     "titulo_corregido": "La fortaleza digital", "autor_corregido": "Dan Brown",
+     "confianza": 0.95},
+    {"titulo_detectado": "INFERNO", "autor_detectado": "DAN BROWN",
+     "titulo_corregido": "Inferno", "autor_corregido": "Dan Brown",
+     "confianza": 0.95}
+  ]
+}

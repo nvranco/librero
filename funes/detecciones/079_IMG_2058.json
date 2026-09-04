@@ -1,0 +1,9 @@
+{
+  "foto": "079_IMG_2058",
+  "lomos_ilegibles": 18,
+  "libros": [
+    {"titulo_detectado": "COSTA ARDIENTE", "autor_detectado": "Wilbur Smith",
+     "titulo_corregido": "Costa ardiente", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.97}
+  ]
+}

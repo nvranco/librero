@@ -1,0 +1,21 @@
+{
+  "foto": "035_IMG_2014",
+  "lomos_ilegibles": 25,
+  "libros": [
+    {"titulo_detectado": "La naranja mecánica", "autor_detectado": "Anthony Burgess",
+     "titulo_corregido": "La naranja mecánica", "autor_corregido": "Anthony Burgess",
+     "confianza": 0.95},
+    {"titulo_detectado": "FAHRENHEIT 451", "autor_detectado": "RAY BRADBURY",
+     "titulo_corregido": "Fahrenheit 451", "autor_corregido": "Ray Bradbury",
+     "confianza": 0.95},
+    {"titulo_detectado": "Fahrenheit 451", "autor_detectado": "RAY BRADBURY",
+     "titulo_corregido": "Fahrenheit 451", "autor_corregido": "Ray Bradbury",
+     "confianza": 0.95},
+    {"titulo_detectado": "LOS UNIVERSOS VISLUMBRADOS", "autor_detectado": "",
+     "titulo_corregido": "Los universos vislumbrados", "autor_corregido": "",
+     "confianza": 0.4},
+    {"titulo_detectado": "WAR OF RAGNAROK", "autor_detectado": "",
+     "titulo_corregido": "War of Ragnarok", "autor_corregido": "",
+     "confianza": 0.4}
+  ]
+}

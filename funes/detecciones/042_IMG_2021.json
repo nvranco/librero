@@ -1,0 +1,24 @@
+{
+  "foto": "042_IMG_2021",
+  "lomos_ilegibles": 6,
+  "libros": [
+    {"titulo_detectado": "UN TOQUE DE INFINITO", "autor_detectado": "HOWARD FAST",
+     "titulo_corregido": "Un toque de infinito", "autor_corregido": "Howard Fast",
+     "confianza": 0.93},
+    {"titulo_detectado": "LO MEJOR DE JACK VANCE", "autor_detectado": "JACK VANCE",
+     "titulo_corregido": "Lo mejor de Jack Vance", "autor_corregido": "Jack Vance",
+     "confianza": 0.85},
+    {"titulo_detectado": "LA LEYENDA DEL ESCLAVO", "autor_detectado": "",
+     "titulo_corregido": "La leyenda del esclavo", "autor_corregido": "",
+     "confianza": 0.4},
+    {"titulo_detectado": "CARNE", "autor_detectado": "PHILIP JOSE FARMER",
+     "titulo_corregido": "Carne", "autor_corregido": "Philip José Farmer",
+     "confianza": 0.93},
+    {"titulo_detectado": "LEGADOS MACABROS", "autor_detectado": "M. Ashley",
+     "titulo_corregido": "Legados macabros", "autor_corregido": "Mike Ashley",
+     "confianza": 0.72},
+    {"titulo_detectado": "REGRESO AL PASADO", "autor_detectado": "Gérard Klein",
+     "titulo_corregido": "Regreso al pasado", "autor_corregido": "Gérard Klein",
+     "confianza": 0.92}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "foto": "050_IMG_2029",
+  "lomos_ilegibles": 8,
+  "libros": [
+    {"titulo_detectado": "LOS FUNERALES DE LA MAMÁ GRANDE", "autor_detectado": "GABRIEL GARCÍA MÁRQUEZ",
+     "titulo_corregido": "Los funerales de la mamá grande", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.94},
+    {"titulo_detectado": "Doce cuentos peregrinos", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Doce cuentos peregrinos", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95},
+    {"titulo_detectado": "RELATO DE UN NÁUFRAGO", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Relato de un náufrago", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95},
+    {"titulo_detectado": "EL OTOÑO DEL PATRIARCA", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "El otoño del patriarca", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95}
+  ]
+}

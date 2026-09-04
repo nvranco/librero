@@ -1,0 +1,30 @@
+{
+  "foto": "013_IMG_1991",
+  "lomos_ilegibles": 14,
+  "libros": [
+    {"titulo_detectado": "LA TRAMPA", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "La trampa", "autor_corregido": "John Grisham",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL MONZÓN", "autor_detectado": "Wilbur Smith",
+     "titulo_corregido": "El monzón", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.95},
+    {"titulo_detectado": "EL CASO FITZGERALD", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "El caso Fitzgerald", "autor_corregido": "John Grisham",
+     "confianza": 0.8},
+    {"titulo_detectado": "EL SOBORNO", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "El soborno", "autor_corregido": "John Grisham",
+     "confianza": 0.93},
+    {"titulo_detectado": "El rey de los pleitos", "autor_detectado": "John Grisham",
+     "titulo_corregido": "El rey de los pleitos", "autor_corregido": "John Grisham",
+     "confianza": 0.93},
+    {"titulo_detectado": "SIETE VIDAS", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "Siete vidas", "autor_corregido": "John Grisham",
+     "confianza": 0.9},
+    {"titulo_detectado": "EL TESTAMENTO", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "El testamento", "autor_corregido": "John Grisham",
+     "confianza": 0.95},
+    {"titulo_detectado": "CAUSA JUSTA", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "Causa justa", "autor_corregido": "John Grisham",
+     "confianza": 0.9}
+  ]
+}

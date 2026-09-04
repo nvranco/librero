@@ -1,0 +1,15 @@
+{
+  "foto": "055_IMG_2034",
+  "lomos_ilegibles": 30,
+  "libros": [
+    {"titulo_detectado": "El turista accidental", "autor_detectado": "ANNE TYLER",
+     "titulo_corregido": "El turista accidental", "autor_corregido": "Anne Tyler",
+     "confianza": 0.95},
+    {"titulo_detectado": "KIM", "autor_detectado": "RUDYARD KIPLING",
+     "titulo_corregido": "Kim", "autor_corregido": "Rudyard Kipling",
+     "confianza": 0.95},
+    {"titulo_detectado": "Memorias de Adriano", "autor_detectado": "Marguerite Yourcenar",
+     "titulo_corregido": "Memorias de Adriano", "autor_corregido": "Marguerite Yourcenar",
+     "confianza": 0.95}
+  ]
+}

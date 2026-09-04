@@ -1,0 +1,21 @@
+{
+  "foto": "045_IMG_2024",
+  "lomos_ilegibles": 6,
+  "libros": [
+    {"titulo_detectado": "UN RELAMPAGO", "autor_detectado": "Maurice Limat",
+     "titulo_corregido": "Un relámpago", "autor_corregido": "Maurice Limat",
+     "confianza": 0.88},
+    {"titulo_detectado": "HEROES BARBAROS", "autor_detectado": "Hans S. Santesson",
+     "titulo_corregido": "Héroes bárbaros", "autor_corregido": "Hans S. Santesson",
+     "confianza": 0.9},
+    {"titulo_detectado": "UN TOQUE DE INFINITO", "autor_detectado": "HOWARD FAST",
+     "titulo_corregido": "Un toque de infinito", "autor_corregido": "Howard Fast",
+     "confianza": 0.93},
+    {"titulo_detectado": "Estación Hawksbill", "autor_detectado": "Robert Silverberg",
+     "titulo_corregido": "Estación Hawksbill", "autor_corregido": "Robert Silverberg",
+     "confianza": 0.94},
+    {"titulo_detectado": "ENCUENTRO EN ZARATHUSTRA", "autor_detectado": "H. BEAM PIPER",
+     "titulo_corregido": "Encuentro en Zarathustra", "autor_corregido": "H. Beam Piper",
+     "confianza": 0.92}
+  ]
+}

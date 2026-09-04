@@ -1,0 +1,24 @@
+{
+  "foto": "062_IMG_2041",
+  "lomos_ilegibles": 40,
+  "libros": [
+    {"titulo_detectado": "«EL ENIGMA DEL SANTO DOMINGO»", "autor_detectado": "Herman Melville",
+     "titulo_corregido": "El enigma del Santo Domingo", "autor_corregido": "Herman Melville",
+     "confianza": 0.9},
+    {"titulo_detectado": "NOVELAS Y CUENTOS - TOMO 38", "autor_detectado": "Dostoiewsky y Tolstoy",
+     "titulo_corregido": "Novelas y cuentos", "autor_corregido": "Fiódor Dostoievski y León Tolstói",
+     "confianza": 0.8},
+    {"titulo_detectado": "QUINCE PERROS", "autor_detectado": "ANDRÉ ALEXIS",
+     "titulo_corregido": "Quince perros", "autor_corregido": "André Alexis",
+     "confianza": 0.93},
+    {"titulo_detectado": "Cuando fuimos los peripatéticos", "autor_detectado": "HÉCTOR LOZANO",
+     "titulo_corregido": "Cuando fuimos los peripatéticos", "autor_corregido": "Héctor Lozano",
+     "confianza": 0.9},
+    {"titulo_detectado": "El balneario", "autor_detectado": "CARMEN MARTÍN GAITE",
+     "titulo_corregido": "El balneario", "autor_corregido": "Carmen Martín Gaite",
+     "confianza": 0.93},
+    {"titulo_detectado": "MÁS ALLÁ DEL BIEN Y DEL MAL / LA GENEALOGÍA DE LA MORAL", "autor_detectado": "",
+     "titulo_corregido": "Más allá del bien y del mal / La genealogía de la moral", "autor_corregido": "",
+     "confianza": 0.4}
+  ]
+}

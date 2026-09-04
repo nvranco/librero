@@ -1,0 +1,33 @@
+{
+  "foto": "014_IMG_1992",
+  "lomos_ilegibles": 21,
+  "libros": [
+    {"titulo_detectado": "LOS ADVERSARIOS", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "Los adversarios", "autor_corregido": "John Grisham",
+     "confianza": 0.85},
+    {"titulo_detectado": "EL SECRETO DE GRAY MOUNTAIN", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "El secreto de Gray Mountain", "autor_corregido": "John Grisham",
+     "confianza": 0.95},
+    {"titulo_detectado": "CAUSA JUSTA", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "Causa justa", "autor_corregido": "John Grisham",
+     "confianza": 0.93},
+    {"titulo_detectado": "CAUSA JUSTA", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "Causa justa", "autor_corregido": "John Grisham",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL MANUSCRITO", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "El manuscrito", "autor_corregido": "John Grisham",
+     "confianza": 0.9},
+    {"titulo_detectado": "LOS ADVERSARIOS", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "Los adversarios", "autor_corregido": "John Grisham",
+     "confianza": 0.9},
+    {"titulo_detectado": "LEGÍTIMA DEFENSA", "autor_detectado": "John Grisham",
+     "titulo_corregido": "Legítima defensa", "autor_corregido": "John Grisham",
+     "confianza": 0.95},
+    {"titulo_detectado": "EL INOCENTE", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "El inocente", "autor_corregido": "John Grisham",
+     "confianza": 0.93},
+    {"titulo_detectado": "AJUSTE DE CUENTAS", "autor_detectado": "JOHN GRISHAM",
+     "titulo_corregido": "Ajuste de cuentas", "autor_corregido": "John Grisham",
+     "confianza": 0.93}
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "foto": "058_IMG_2037",
+  "lomos_ilegibles": 25,
+  "libros": [
+    {"titulo_detectado": "PLATERO Y YO", "autor_detectado": "JUAN RAMON JIMENEZ",
+     "titulo_corregido": "Platero y yo", "autor_corregido": "Juan Ramón Jiménez",
+     "confianza": 0.92},
+    {"titulo_detectado": "CASA DE VERANO CON PISCINA", "autor_detectado": "HERMAN KOCH",
+     "titulo_corregido": "Casa de verano con piscina", "autor_corregido": "Herman Koch",
+     "confianza": 0.95},
+    {"titulo_detectado": "FAUSTO WERTHER", "autor_detectado": "WOLFGANG GOETHE",
+     "titulo_corregido": "Fausto / Werther", "autor_corregido": "Johann Wolfgang von Goethe",
+     "confianza": 0.9},
+    {"titulo_detectado": "LA DAMA DE LAS CAMELIAS", "autor_detectado": "ALEJANDRO DUMAS",
+     "titulo_corregido": "La dama de las camelias", "autor_corregido": "Alejandro Dumas",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL AMANTE DE LADY CHATTERLEY", "autor_detectado": "DAVID HERBERT LAWRENCE",
+     "titulo_corregido": "El amante de Lady Chatterley", "autor_corregido": "David Herbert Lawrence",
+     "confianza": 0.95}
+  ]
+}

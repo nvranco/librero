@@ -7,6 +7,11 @@ venv/
 .env.local
 data/
 *.sqlite3
+
+# Muestra original de Funes (36 MB): el catalogo vive en funes_libros desde que
+# se migro a Postgres, ningun codigo lee este archivo. Solo lo usan los scripts
+# de migracion de funes/, que corren a mano y en local.
+app/funes_chat/muestra.json
 .DS_Store
 .idea/
 .vscode/

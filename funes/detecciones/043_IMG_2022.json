@@ -1,0 +1,24 @@
+{
+  "foto": "043_IMG_2022",
+  "lomos_ilegibles": 5,
+  "libros": [
+    {"titulo_detectado": "LA LEY DEL TALION", "autor_detectado": "KLEIN",
+     "titulo_corregido": "La ley del talión", "autor_corregido": "Klein",
+     "confianza": 0.7},
+    {"titulo_detectado": "LA OTRA OPORTUNIDAD", "autor_detectado": "Philip J. Farmer",
+     "titulo_corregido": "La otra oportunidad", "autor_corregido": "Philip José Farmer",
+     "confianza": 0.9},
+    {"titulo_detectado": "EL SOÑADOR", "autor_detectado": "STURGEON",
+     "titulo_corregido": "El soñador", "autor_corregido": "Theodore Sturgeon",
+     "confianza": 0.85},
+    {"titulo_detectado": "EL VALLE MAS ALLA DEL TIEMPO", "autor_detectado": "Lin Carter",
+     "titulo_corregido": "El valle más allá del tiempo", "autor_corregido": "Lin Carter",
+     "confianza": 0.9},
+    {"titulo_detectado": "VOLVERE AYER", "autor_detectado": "Domingo Santos",
+     "titulo_corregido": "Volveré ayer", "autor_corregido": "Domingo Santos",
+     "confianza": 0.82},
+    {"titulo_detectado": "alas nocturnas", "autor_detectado": "R. Silverberg",
+     "titulo_corregido": "Alas nocturnas", "autor_corregido": "Robert Silverberg",
+     "confianza": 0.9}
+  ]
+}

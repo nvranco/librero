@@ -1,0 +1,21 @@
+{
+  "foto": "044_IMG_2023",
+  "lomos_ilegibles": 6,
+  "libros": [
+    {"titulo_detectado": "LA PUERTA DE IVREL", "autor_detectado": "C. J. Cherryh",
+     "titulo_corregido": "La puerta de Ivrel", "autor_corregido": "C. J. Cherryh",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL POZO DE SHIUAN", "autor_detectado": "C. J. Cherryh",
+     "titulo_corregido": "El pozo de Shiuan", "autor_corregido": "C. J. Cherryh",
+     "confianza": 0.93},
+    {"titulo_detectado": "CUENTOS PARALELOS", "autor_detectado": "ISAAC ASIMOV",
+     "titulo_corregido": "Cuentos paralelos", "autor_corregido": "Isaac Asimov",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL FINAL DE LOS USHA", "autor_detectado": "Jan de Fast",
+     "titulo_corregido": "El final de los Usha", "autor_corregido": "Jan de Fast",
+     "confianza": 0.88},
+    {"titulo_detectado": "espacio / Ciencia-ficción", "autor_detectado": "",
+     "titulo_corregido": "espacio / Ciencia-ficción", "autor_corregido": "",
+     "confianza": 0.25}
+  ]
+}

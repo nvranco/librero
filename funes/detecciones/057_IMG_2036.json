@@ -1,0 +1,18 @@
+{
+  "foto": "057_IMG_2036",
+  "lomos_ilegibles": 30,
+  "libros": [
+    {"titulo_detectado": "VINIERON LAS LLUVIAS", "autor_detectado": "Louis Bromfield",
+     "titulo_corregido": "Vinieron las lluvias", "autor_corregido": "Louis Bromfield",
+     "confianza": 0.95},
+    {"titulo_detectado": "Viaje al centro de la Tierra", "autor_detectado": "Julio Verne",
+     "titulo_corregido": "Viaje al centro de la Tierra", "autor_corregido": "Julio Verne",
+     "confianza": 0.95},
+    {"titulo_detectado": "Hamlet | Macbeth", "autor_detectado": "William Shakespeare",
+     "titulo_corregido": "Hamlet / Macbeth", "autor_corregido": "William Shakespeare",
+     "confianza": 0.93},
+    {"titulo_detectado": "El fantasma de Canterville y otros cuentos", "autor_detectado": "Oscar Wilde",
+     "titulo_corregido": "El fantasma de Canterville y otros cuentos", "autor_corregido": "Oscar Wilde",
+     "confianza": 0.95}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "foto": "037_IMG_2016",
+  "lomos_ilegibles": 3,
+  "libros": [
+    {"titulo_detectado": "PORTICO", "autor_detectado": "Frederik Pohl",
+     "titulo_corregido": "Pórtico", "autor_corregido": "Frederik Pohl",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL ENCUENTRO", "autor_detectado": "Frederik Pohl",
+     "titulo_corregido": "El encuentro", "autor_corregido": "Frederik Pohl",
+     "confianza": 0.9}
+  ]
+}

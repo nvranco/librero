@@ -1,0 +1,12 @@
+{
+  "foto": "010_IMG_1988",
+  "lomos_ilegibles": 16,
+  "libros": [
+    {"titulo_detectado": "ENIGMA PARA FANTOCHES", "autor_detectado": "P. QUENTIN",
+     "titulo_corregido": "Enigma para fantoches", "autor_corregido": "Patrick Quentin",
+     "confianza": 0.9},
+    {"titulo_detectado": "CAÑONES Y MANTECA", "autor_detectado": "N. FREELING",
+     "titulo_corregido": "Cañones y manteca", "autor_corregido": "Nicolas Freeling",
+     "confianza": 0.88}
+  ]
+}

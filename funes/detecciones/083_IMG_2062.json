@@ -1,0 +1,24 @@
+{
+  "foto": "083_IMG_2062",
+  "lomos_ilegibles": 27,
+  "libros": [
+    {"titulo_detectado": "UN ASUNTO TENEBROSO", "autor_detectado": "HONORÉ DE BALZAC",
+     "titulo_corregido": "Un asunto tenebroso", "autor_corregido": "Honoré de Balzac",
+     "confianza": 0.97},
+    {"titulo_detectado": "ESPIRITA novela fantástica", "autor_detectado": "THÉOPHILE GAUTIER",
+     "titulo_corregido": "Espirita, novela fantástica", "autor_corregido": "Théophile Gautier",
+     "confianza": 0.95},
+    {"titulo_detectado": "Las historias más terroríficas de las mil y una noches", "autor_detectado": "",
+     "titulo_corregido": "Las historias más terroríficas de las mil y una noches", "autor_corregido": "",
+     "confianza": 0.9},
+    {"titulo_detectado": "LAS HISTORIAS MÁS TERRORÍFICAS DE LAS MIL Y UNA NOCHES", "autor_detectado": "",
+     "titulo_corregido": "Las historias más terroríficas de las mil y una noches", "autor_corregido": "",
+     "confianza": 0.85},
+    {"titulo_detectado": "", "autor_detectado": "KAT ZHANG",
+     "titulo_corregido": "", "autor_corregido": "Kat Zhang",
+     "confianza": 0.3},
+    {"titulo_detectado": "", "autor_detectado": "KAT ZHANG",
+     "titulo_corregido": "", "autor_corregido": "Kat Zhang",
+     "confianza": 0.3}
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "foto": "082_IMG_2061",
+  "lomos_ilegibles": 2,
+  "libros": [
+    {"titulo_detectado": "Madame Bovary", "autor_detectado": "GUSTAVE FLAUBERT",
+     "titulo_corregido": "Madame Bovary", "autor_corregido": "Gustave Flaubert",
+     "confianza": 0.96},
+    {"titulo_detectado": "Cumbres borrascosas", "autor_detectado": "EMILY BRONTË",
+     "titulo_corregido": "Cumbres borrascosas", "autor_corregido": "Emily Brontë",
+     "confianza": 0.97},
+    {"titulo_detectado": "LA DAMA DE LAS CAMELIAS", "autor_detectado": "ALEJANDRO DUMAS",
+     "titulo_corregido": "La dama de las camelias", "autor_corregido": "Alejandro Dumas",
+     "confianza": 0.96},
+    {"titulo_detectado": "LA DAMA DE LAS CAMELIAS", "autor_detectado": "ALEJANDRO DUMAS",
+     "titulo_corregido": "La dama de las camelias", "autor_corregido": "Alejandro Dumas",
+     "confianza": 0.96},
+    {"titulo_detectado": "LA DAMA DE LAS CAMELIAS", "autor_detectado": "ALEJANDRO DUMAS",
+     "titulo_corregido": "La dama de las camelias", "autor_corregido": "Alejandro Dumas",
+     "confianza": 0.96},
+    {"titulo_detectado": "LA DAMA DE LAS CAMELIAS", "autor_detectado": "ALEJANDRO DUMAS",
+     "titulo_corregido": "La dama de las camelias", "autor_corregido": "Alejandro Dumas",
+     "confianza": 0.85}
+  ]
+}

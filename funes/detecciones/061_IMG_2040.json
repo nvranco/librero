@@ -1,0 +1,24 @@
+{
+  "foto": "061_IMG_2040",
+  "lomos_ilegibles": 20,
+  "libros": [
+    {"titulo_detectado": "EL FANTASMA DE LA ÓPERA", "autor_detectado": "GASTON LEROUX",
+     "titulo_corregido": "El fantasma de la Ópera", "autor_corregido": "Gaston Leroux",
+     "confianza": 0.95},
+    {"titulo_detectado": "En cueros", "autor_detectado": "Luke Rhinehart",
+     "titulo_corregido": "En cueros", "autor_corregido": "Luke Rhinehart",
+     "confianza": 0.93},
+    {"titulo_detectado": "CARNAVAL", "autor_detectado": "ISAK DINESEN",
+     "titulo_corregido": "Carnaval", "autor_corregido": "Isak Dinesen",
+     "confianza": 0.93},
+    {"titulo_detectado": "INTÉRPRETE DE EMOCIONES", "autor_detectado": "JHUMPA LAHIRI",
+     "titulo_corregido": "Intérprete de emociones", "autor_corregido": "Jhumpa Lahiri",
+     "confianza": 0.93},
+    {"titulo_detectado": "París: suite 1940", "autor_detectado": "José Carlos Llop",
+     "titulo_corregido": "París: suite 1940", "autor_corregido": "José Carlos Llop",
+     "confianza": 0.93},
+    {"titulo_detectado": "UNA VIDA MEJOR", "autor_detectado": "Ulrich Peltzer",
+     "titulo_corregido": "Una vida mejor", "autor_corregido": "Ulrich Peltzer",
+     "confianza": 0.93}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "foto": "048_IMG_2027",
+  "lomos_ilegibles": 8,
+  "libros": [
+    {"titulo_detectado": "LOS FUNERALES DE LA MAMÁ GRANDE", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Los funerales de la mamá grande", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95},
+    {"titulo_detectado": "Cien años de soledad", "autor_detectado": "GABRIEL GARCÍA MÁRQUEZ",
+     "titulo_corregido": "Cien años de soledad", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.96},
+    {"titulo_detectado": "NOTICIA DE UN SECUESTRO", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Noticia de un secuestro", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95},
+    {"titulo_detectado": "EL OTOÑO DEL PATRIARCA", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "El otoño del patriarca", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95}
+  ]
+}

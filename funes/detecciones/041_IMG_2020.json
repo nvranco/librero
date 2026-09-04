@@ -1,0 +1,21 @@
+{
+  "foto": "041_IMG_2020",
+  "lomos_ilegibles": 5,
+  "libros": [
+    {"titulo_detectado": "Mundo azul", "autor_detectado": "Jack Vance",
+     "titulo_corregido": "Mundo azul", "autor_corregido": "Jack Vance",
+     "confianza": 0.9},
+    {"titulo_detectado": "La ciudad", "autor_detectado": "Mario Levrero",
+     "titulo_corregido": "La ciudad", "autor_corregido": "Mario Levrero",
+     "confianza": 0.92},
+    {"titulo_detectado": "LAS TUMBAS DE ATUAN", "autor_detectado": "Ursula K. Le Guin",
+     "titulo_corregido": "Las tumbas de Atuan", "autor_corregido": "Ursula K. Le Guin",
+     "confianza": 0.93},
+    {"titulo_detectado": "LA COSTA MAS LEJANA", "autor_detectado": "Ursula K. Le Guin",
+     "titulo_corregido": "La costa más lejana", "autor_corregido": "Ursula K. Le Guin",
+     "confianza": 0.93},
+    {"titulo_detectado": "LA CIENCIA FICCION DE H. G. WELLS (I)", "autor_detectado": "H. G. Wells",
+     "titulo_corregido": "La ciencia ficción de H. G. Wells (I)", "autor_corregido": "H. G. Wells",
+     "confianza": 0.9}
+  ]
+}

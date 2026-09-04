@@ -1,0 +1,21 @@
+{
+  "foto": "039_IMG_2018",
+  "lomos_ilegibles": 4,
+  "libros": [
+    {"titulo_detectado": "EL ENJAMBRE", "autor_detectado": "ARTHUR HERZOG",
+     "titulo_corregido": "El enjambre", "autor_corregido": "Arthur Herzog",
+     "confianza": 0.94},
+    {"titulo_detectado": "VOLKHAVAAR", "autor_detectado": "Tanith Lee",
+     "titulo_corregido": "Volkhavaar", "autor_corregido": "Tanith Lee",
+     "confianza": 0.93},
+    {"titulo_detectado": "LOS MEJORES RELATOS DE FANTASIA I", "autor_detectado": "Avram Davidson",
+     "titulo_corregido": "Los mejores relatos de fantasía I", "autor_corregido": "Avram Davidson",
+     "confianza": 0.8},
+    {"titulo_detectado": "EL CIRCO DEL Dr. LAO", "autor_detectado": "CHARLES G. FINNEY",
+     "titulo_corregido": "El circo del Dr. Lao", "autor_corregido": "Charles G. Finney",
+     "confianza": 0.94},
+    {"titulo_detectado": "DEPORTE SANGRIENTO", "autor_detectado": "ROBERT F. JONES",
+     "titulo_corregido": "Deporte sangriento", "autor_corregido": "Robert F. Jones",
+     "confianza": 0.93}
+  ]
+}

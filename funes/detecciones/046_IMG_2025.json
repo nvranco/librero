@@ -1,0 +1,21 @@
+{
+  "foto": "046_IMG_2025",
+  "lomos_ilegibles": 6,
+  "libros": [
+    {"titulo_detectado": "Eugénie Grandet", "autor_detectado": "HONORÉ DE BALZAC",
+     "titulo_corregido": "Eugénie Grandet", "autor_corregido": "Honoré de Balzac",
+     "confianza": 0.95},
+    {"titulo_detectado": "Crónica de una muerte anunciada", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Crónica de una muerte anunciada", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95},
+    {"titulo_detectado": "Crónica de una muerte anunciada", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Crónica de una muerte anunciada", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95},
+    {"titulo_detectado": "GALEANO", "autor_detectado": "FABIÁN KOVACIC",
+     "titulo_corregido": "Galeano", "autor_corregido": "Fabián Kovacic",
+     "confianza": 0.9},
+    {"titulo_detectado": "Memoria del fuego I", "autor_detectado": "EDUARDO GALEANO",
+     "titulo_corregido": "Memoria del fuego I", "autor_corregido": "Eduardo Galeano",
+     "confianza": 0.92}
+  ]
+}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block titulo %}Qué guarda Funes{% endblock %}
+
+{% block contenido %}
+<div class="min-h-screen flex flex-col">
+
+  <header class="bg-celeste px-5 py-4">
+    <div class="flex items-center justify-center gap-2">
+      <h1 class="text-2xl font-bold text-tinta leading-tight" style="font-family: var(--font-display);">Funes</h1>
+      <svg viewBox="0 0 32 32" class="w-6 h-6 text-tinta shrink-0" fill="none"
+           stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <circle cx="16" cy="16" r="13"  stroke-dasharray="65.8 15.9" transform="rotate(-125 16 16)"/>
+        <circle cx="16" cy="16" r="9.3" stroke-dasharray="47.1 11.4" transform="rotate(-5 16 16)"/>
+        <circle cx="16" cy="16" r="5.6" stroke-dasharray="28.4 6.8"  transform="rotate(115 16 16)"/>
+        <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+  </header>
+
+  <div class="flex-1 px-5 py-6 safe-b text-sm leading-relaxed">
+    <h2 class="text-xl font-bold mb-1" style="font-family: var(--font-display);">Qué guarda Funes</h2>
+    <p class="text-gris mb-5">Funes está en prueba. Esto es todo lo que registra, sin vueltas.</p>
+
+    <h3 class="font-bold mt-5 mb-1">Qué se guarda</h3>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>Las opciones que elegís y el texto que escribís durante la conversación.</li>
+      <li>Los libros que Funes te recomienda y lo que te responde.</li>
+      <li>Tu opinión sobre cada recomendación, y si tocaste “¿Dónde lo consigo?”.</li>
+      <li>Si llegaste por un QR o por un link, para saber qué sirvió.</li>
+    </ul>
+
+    <h3 class="font-bold mt-5 mb-1">Qué no se guarda</h3>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>Tu nombre, tu mail y tu teléfono. No hay cuentas ni registro.</li>
+      <li>Nada que permita identificarte por fuera de esta conversación.</li>
+    </ul>
+    <p class="mt-2">
+      Para hilar tus respuestas se guarda un identificador al azar en tu navegador.
+      Se borra solo cuando cerrás la pestaña.
+    </p>
+
+    <h3 class="font-bold mt-5 mb-1">Para qué</h3>
+    <p>
+      Para entender si las recomendaciones le sirven a alguien y para mejorarlas.
+      Es un proyecto en prueba, no hay publicidad ni venta de datos a terceros.
+    </p>
+
+    <h3 class="font-bold mt-5 mb-1">Dónde se procesa</h3>
+    <p>
+      Lo que escribís se manda a un proveedor de inteligencia artificial
+      <strong>fuera de la Argentina</strong> para armar la recomendación. Es una
+      transferencia internacional de datos, y por eso conviene que no escribas
+      nada personal o sensible en los campos de texto libre.
+    </p>
+
+    <h3 class="font-bold mt-5 mb-1">Cómo pedir que borremos tu conversación</h3>
+    {% if contacto %}
+    <p>
+      Escribinos a <a class="underline font-medium" href="mailto:{{ contacto }}">{{ contacto }}</a>
+      y la borramos. Si podés, contanos el día y la hora aproximada, que es lo único
+      que tenemos para encontrarla.
+    </p>
+    {% else %}
+    <p>
+      Todavía estamos armando el canal de contacto para esto. Mientras tanto,
+      si querés que borremos tu conversación, escribile a quien te compartió Funes.
+    </p>
+    {% endif %}
+    <p class="mt-2 text-gris">
+      Ley 25.326 de Protección de Datos Personales. La Agencia de Acceso a la
+      Información Pública atiende los reclamos sobre el tratamiento de datos.
+    </p>
+
+    <p class="mt-8">
+      <a href="/funes-chat" class="tap btn-secundario inline-flex items-center rounded-xl2 px-4 py-3 font-medium">
+        Volver a Funes
+      </a>
+    </p>
+  </div>
+
+</div>
+{% endblock %}

@@ -139,6 +139,121 @@ CREATE TABLE IF NOT EXISTS funes_libros (
 -- se descarta de funes_libros, no se vuelve a completar.
 ALTER TABLE funes_libros DROP COLUMN IF EXISTS editorial;
 
+-- Macro-categoria para el filtro duro de Funes: 'literatura' | 'historia' |
+-- 'divulgacion'. Es la primera pregunta de la conversacion y recorta el
+-- catalogo ANTES del coseno: con 503 libros de historia y divulgacion
+-- mezclados entre literatura, el vector solo puede devolverle un manual de
+-- cosmologia a quien pidio una novela, y un absurdo mata la sesion.
+--
+-- Se deriva de categoria/genero, que cubren 1377 de las 1381 filas. El reparto
+-- verificado es historia=368, divulgacion=187, literatura=826.
+--
+-- macro_manual es la valvula de escape para corregir un libro puntual por SQL
+-- sin que el proximo arranque lo pise.
+ALTER TABLE funes_libros ADD COLUMN IF NOT EXISTS macro_manual TEXT;
+ALTER TABLE funes_libros ADD COLUMN IF NOT EXISTS macro TEXT;
+
+-- Se recalcula en cada arranque para que la regla de mapeo viva en un solo
+-- lugar (este archivo). El IS DISTINCT FROM lo vuelve un no-op desde la segunda
+-- corrida: no ensucia 1381 filas en cada deploy.
+WITH derivado AS (
+    SELECT id, COALESCE(macro_manual, CASE
+        WHEN genero    LIKE 'HISTORIA%'             THEN 'historia'
+        WHEN categoria LIKE 'CIENCIAS DE LA SALUD%' THEN 'divulgacion'
+        ELSE 'literatura'
+    END) AS macro_nuevo
+    FROM funes_libros
+)
+UPDATE funes_libros f SET macro = d.macro_nuevo
+FROM derivado d
+WHERE d.id = f.id AND f.macro IS DISTINCT FROM d.macro_nuevo;
+
+-- Bitacora de "Funes Chat": una fila por conversacion. No reusa `eventos`
+-- porque esa tabla cuelga de una libreria (libreria_id NOT NULL con FK) y Funes
+-- no pertenece a ninguna: es un recomendador propio, con su propio catalogo.
+--
+-- Se guarda la conversacion entera, incluida la voz que genero el LLM: sin ese
+-- texto no se puede reconstruir que leyo la persona cuando dio su veredicto, y
+-- el veredicto queda sin contexto. El id lo genera el servidor (uuid4) y oficia
+-- de capacidad, igual que librerias.token_panel: quien lo tiene puede escribir
+-- esa sesion, y nadie la puede adivinar.
+CREATE TABLE IF NOT EXISTS funes_sesiones (
+    id              TEXT PRIMARY KEY,              -- uuid4 del servidor, nunca el que manda el cliente
+    origen          TEXT NOT NULL DEFAULT 'link',  -- qr|amigo|flyer|link, del ?src= de GET /funes-chat
+    macro           TEXT,                          -- q0: literatura|historia|divulgacion (filtro duro)
+    q1              TEXT NOT NULL DEFAULT '',
+    q2              TEXT NOT NULL DEFAULT '',      -- corto|intermedio|largo; define la banda de paginas
+    q3              TEXT NOT NULL DEFAULT '',
+    q4              TEXT NOT NULL DEFAULT '',      -- texto libre del lector
+    profundas       JSONB NOT NULL DEFAULT '[]'::jsonb,  -- [{pregunta, respuesta}] generadas por el LLM
+    pool_inicial    INTEGER,                       -- libros que sobrevivieron los filtros duros
+    filtro_aflojado TEXT,                          -- 'paginas' si hubo que aflojar por el piso de pool
+    creado_en       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ultima_act      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Una fila por recomendacion mostrada (hasta 3 por sesion). `orden` habilita el
+-- test pareado 1ra vs 2da: la 2da nace de motivo_rechazo, el texto libre con el
+-- que el lector explico por que la 1ra no le cerro.
+--
+-- libro_id va sin FK a funes_libros a proposito: si un libro sale del catalogo,
+-- la bitacora de lo que efectivamente se recomendo tiene que sobrevivir. Por
+-- eso tambien se copian titulo y autor.
+CREATE TABLE IF NOT EXISTS funes_recomendaciones (
+    id                 BIGSERIAL PRIMARY KEY,
+    sesion_id          TEXT NOT NULL REFERENCES funes_sesiones(id) ON DELETE CASCADE,
+    orden              INTEGER NOT NULL,           -- 1, 2, 3
+    libro_id           TEXT NOT NULL,
+    titulo             TEXT NOT NULL DEFAULT '',
+    autor              TEXT NOT NULL DEFAULT '',
+    voz                TEXT NOT NULL DEFAULT '',   -- la burbuja tal cual la leyo el lector
+    candidatos         JSONB NOT NULL DEFAULT '[]'::jsonb,  -- [{id, titulo, coseno}], el top-K entero
+    texto_consulta     TEXT NOT NULL DEFAULT '',   -- lo que se embebio para sacar el top-K
+    texto_afinado      TEXT NOT NULL DEFAULT '',   -- lo que se embebio para elegir dentro del top-K
+    motivo_rechazo     TEXT,                       -- por que NO convencio la anterior; NULL en la 1ra
+    motivo_reformulado TEXT,                       -- el rechazo reescrito en positivo, que es lo que se embebe
+    veredicto          TEXT CHECK (veredicto IN ('no_me_interesa', 'puede_ser', 'me_la_llevo')),
+    justificacion      TEXT,                       -- por que ese veredicto, texto libre
+    creado_en          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (sesion_id, orden)
+);
+
+-- Credenciales de MercadoLibre. Una sola fila (CHECK id = 1): la app usa la
+-- cuenta ML del proyecto, no la de cada lector.
+--
+-- El refresh_token NO puede vivir en una variable de entorno: ML lo rota en
+-- cada refresco y es de un solo uso, asi que el valor cambia cada 6 horas y el
+-- anterior queda muerto. Guardarlo aca es lo que permite que el server se
+-- auto-refresque sin intervencion. client_id/client_secret siguen viniendo del
+-- entorno (ver app/config.py): son secretos estables.
+CREATE TABLE IF NOT EXISTS funes_ml_credenciales (
+    id             INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    access_token   TEXT NOT NULL,
+    refresh_token  TEXT NOT NULL,
+    expira_en      TIMESTAMPTZ NOT NULL,           -- now() + expires_in (21600s = 6h)
+    user_id        TEXT,                           -- la cuenta ML que autorizo
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Cache de precios de MercadoLibre por libro. Tabla propia y no columnas en
+-- funes_libros porque es dato de un tercero, con TTL y con fallas propias:
+-- mezclarlo con el catalogo obligaria a distinguir "no lo consultamos nunca" de
+-- "lo consultamos y ML no tenia nada".
+--
+-- El TTL evita pegarle a ML en cada recomendacion. url_busqueda se guarda
+-- siempre, aunque no haya precio: el deep link no depende de la API y es lo que
+-- el lector ve cuando ML no responde.
+CREATE TABLE IF NOT EXISTS funes_precios_ml (
+    libro_id        TEXT PRIMARY KEY,              -- sin FK: la cache sobrevive a un libro borrado
+    precio          INTEGER,                       -- mediana en pesos enteros; NULL = sin resultados utiles
+    moneda          TEXT NOT NULL DEFAULT 'ARS',
+    condicion       TEXT,                          -- 'used'|'new'|'mixto', de que muestra salio la mediana
+    cant_resultados INTEGER NOT NULL DEFAULT 0,
+    url_busqueda    TEXT NOT NULL DEFAULT '',
+    consultado_en   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    error           TEXT                           -- ultimo motivo de fallo; NULL si salio bien
+);
+
 -- Excepcion por-libreria: alguna libreria cataloga CDs de musica, no libros,
 -- pero reusa el mismo pipeline (foto -> vision -> revision -> catalogo
 -- publico). tipo_catalogo decide que prompt usa vision.py y que palabras
@@ -171,3 +286,12 @@ CREATE INDEX IF NOT EXISTS idx_lotes_libreria ON lotes(libreria_id);
 CREATE INDEX IF NOT EXISTS idx_catalogos_libreria ON catalogos(libreria_id);
 CREATE INDEX IF NOT EXISTS idx_catalogos_padre ON catalogos(padre_id);
 CREATE INDEX IF NOT EXISTS idx_libros_catalogo ON libros(catalogo_id);
+-- El clic en "¿donde lo consigo?" es la metrica que decide si el negocio
+-- existe: un veredicto alto es una opinion, esto es un movimiento hacia
+-- conseguir el libro. Va como timestamp y no como boolean para saber cuanto
+-- tardo en decidirse desde que vio la recomendacion.
+ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS clic_conseguir_en TIMESTAMPTZ;
+
+CREATE INDEX IF NOT EXISTS idx_funes_libros_macro ON funes_libros(macro) WHERE embedding IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_funes_sesiones_fecha ON funes_sesiones(creado_en);
+CREATE INDEX IF NOT EXISTS idx_funes_recomendaciones_sesion ON funes_recomendaciones(sesion_id, orden);

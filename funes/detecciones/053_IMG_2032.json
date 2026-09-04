@@ -1,0 +1,24 @@
+{
+  "foto": "053_IMG_2032",
+  "lomos_ilegibles": 10,
+  "libros": [
+    {"titulo_detectado": "El país de las últimas cosas", "autor_detectado": "Auster",
+     "titulo_corregido": "El país de las últimas cosas", "autor_corregido": "Paul Auster",
+     "confianza": 0.94},
+    {"titulo_detectado": "CREÍA QUE MI PADRE ERA DIOS", "autor_detectado": "PAUL AUSTER",
+     "titulo_corregido": "Creía que mi padre era Dios", "autor_corregido": "Paul Auster",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL PAÍS DE LAS ÚLTIMAS COSAS", "autor_detectado": "PAUL AUSTER",
+     "titulo_corregido": "El país de las últimas cosas", "autor_corregido": "Paul Auster",
+     "confianza": 0.94},
+    {"titulo_detectado": "EL PAÍS DE LAS ÚLTIMAS COSAS", "autor_detectado": "PAUL AUSTER",
+     "titulo_corregido": "El país de las últimas cosas", "autor_corregido": "Paul Auster",
+     "confianza": 0.94},
+    {"titulo_detectado": "Leviatán", "autor_detectado": "Auster",
+     "titulo_corregido": "Leviatán", "autor_corregido": "Paul Auster",
+     "confianza": 0.93},
+    {"titulo_detectado": "...el Mío Cid", "autor_detectado": "Anónimo",
+     "titulo_corregido": "...el Mío Cid", "autor_corregido": "Anónimo",
+     "confianza": 0.4}
+  ]
+}

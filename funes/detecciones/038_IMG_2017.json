@@ -1,0 +1,15 @@
+{
+  "foto": "038_IMG_2017",
+  "lomos_ilegibles": 4,
+  "libros": [
+    {"titulo_detectado": "GENESIS", "autor_detectado": "W. A. Harbinson",
+     "titulo_corregido": "Genesis", "autor_corregido": "W. A. Harbinson",
+     "confianza": 0.92},
+    {"titulo_detectado": "EL CAMPEON ETERNO", "autor_detectado": "Michael Moorcock",
+     "titulo_corregido": "El campeón eterno", "autor_corregido": "Michael Moorcock",
+     "confianza": 0.93},
+    {"titulo_detectado": "LOS MEJORES RELATOS DE FANTASIA II", "autor_detectado": "Ellen Kushner",
+     "titulo_corregido": "Los mejores relatos de fantasía II", "autor_corregido": "Ellen Kushner",
+     "confianza": 0.75}
+  ]
+}

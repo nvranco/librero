@@ -1,0 +1,21 @@
+{
+  "foto": "063_IMG_2042",
+  "lomos_ilegibles": 40,
+  "libros": [
+    {"titulo_detectado": "CUENTOS PERVERSOS", "autor_detectado": "",
+     "titulo_corregido": "Cuentos perversos", "autor_corregido": "",
+     "confianza": 0.4},
+    {"titulo_detectado": "El último mohicano", "autor_detectado": "James Fenimore Cooper",
+     "titulo_corregido": "El último mohicano", "autor_corregido": "James Fenimore Cooper",
+     "confianza": 0.95},
+    {"titulo_detectado": "Las altas montañas de Portugal", "autor_detectado": "Yann Martel",
+     "titulo_corregido": "Las altas montañas de Portugal", "autor_corregido": "Yann Martel",
+     "confianza": 0.95},
+    {"titulo_detectado": "El hereje", "autor_detectado": "Miguel Delibes",
+     "titulo_corregido": "El hereje", "autor_corregido": "Miguel Delibes",
+     "confianza": 0.95},
+    {"titulo_detectado": "FAUSTO", "autor_detectado": "",
+     "titulo_corregido": "FAUSTO", "autor_corregido": "",
+     "confianza": 0.35}
+  ]
+}

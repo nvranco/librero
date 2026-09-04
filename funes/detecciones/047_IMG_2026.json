@@ -1,0 +1,21 @@
+{
+  "foto": "047_IMG_2026",
+  "lomos_ilegibles": 8,
+  "libros": [
+    {"titulo_detectado": "RELATO DE UN NÁUFRAGO", "autor_detectado": "GABRIEL GARCÍA MÁRQUEZ",
+     "titulo_corregido": "Relato de un náufrago", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.94},
+    {"titulo_detectado": "LA HOJARASCA", "autor_detectado": "GABRIEL GARCÍA MÁRQUEZ",
+     "titulo_corregido": "La hojarasca", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.92},
+    {"titulo_detectado": "Relato de un náufrago", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Relato de un náufrago", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95},
+    {"titulo_detectado": "La mala hora", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "La mala hora", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.92},
+    {"titulo_detectado": "Los funerales de la mamá grande", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Los funerales de la mamá grande", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.94}
+  ]
+}

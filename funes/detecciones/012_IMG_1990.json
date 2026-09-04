@@ -1,0 +1,33 @@
+{
+  "foto": "012_IMG_1990",
+  "lomos_ilegibles": 16,
+  "libros": [
+    {"titulo_detectado": "Voraz como el mar", "autor_detectado": "W. Smith",
+     "titulo_corregido": "Voraz como el mar", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL CANTO DEL ELEFANTE", "autor_detectado": "Wilbur Smith",
+     "titulo_corregido": "El canto del elefante", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.93},
+    {"titulo_detectado": "El ojo del tigre", "autor_detectado": "Wilbur Smith",
+     "titulo_corregido": "El ojo del tigre", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL JURAMENTO", "autor_detectado": "WILBUR SMITH",
+     "titulo_corregido": "El juramento", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.93},
+    {"titulo_detectado": "HORIZONTE AZUL", "autor_detectado": "WILBUR SMITH",
+     "titulo_corregido": "Horizonte azul", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.93},
+    {"titulo_detectado": "EL MONZÓN", "autor_detectado": "Wilbur Smith",
+     "titulo_corregido": "El monzón", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.95},
+    {"titulo_detectado": "Río sagrado", "autor_detectado": "Wilbur Smith",
+     "titulo_corregido": "Río sagrado", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.93},
+    {"titulo_detectado": "VORAZ COMO EL MAR", "autor_detectado": "WILBUR SMITH",
+     "titulo_corregido": "Voraz como el mar", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.95},
+    {"titulo_detectado": "TENTAR AL DIABLO", "autor_detectado": "WILBUR SMITH",
+     "titulo_corregido": "Tentar al diablo", "autor_corregido": "Wilbur Smith",
+     "confianza": 0.93}
+  ]
+}

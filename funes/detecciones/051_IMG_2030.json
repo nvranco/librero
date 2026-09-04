@@ -1,0 +1,12 @@
+{
+  "foto": "051_IMG_2030",
+  "lomos_ilegibles": 7,
+  "libros": [
+    {"titulo_detectado": "NOTAS DE PRENSA II - OBRA PERIODÍSTICA (1961-1984)", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Notas de prensa II (Obra periodística 1961-1984)", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.92},
+    {"titulo_detectado": "Vivir para contarla", "autor_detectado": "GABRIEL GARCÍA MÁRQUEZ",
+     "titulo_corregido": "Vivir para contarla", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.95}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "foto": "056_IMG_2035",
+  "lomos_ilegibles": 35,
+  "libros": [
+    {"titulo_detectado": "El nombre de la rosa", "autor_detectado": "UMBERTO ECO",
+     "titulo_corregido": "El nombre de la rosa", "autor_corregido": "Umberto Eco",
+     "confianza": 0.95},
+    {"titulo_detectado": "Rey Jesús", "autor_detectado": "ROBERT GRAVES",
+     "titulo_corregido": "Rey Jesús", "autor_corregido": "Robert Graves",
+     "confianza": 0.95},
+    {"titulo_detectado": "Odisea", "autor_detectado": "Homero",
+     "titulo_corregido": "Odisea", "autor_corregido": "Homero",
+     "confianza": 0.95},
+    {"titulo_detectado": "EL TU... ACCID...", "autor_detectado": "Anne ...",
+     "titulo_corregido": "El turista accidental", "autor_corregido": "Anne Tyler",
+     "confianza": 0.8}
+  ]
+}

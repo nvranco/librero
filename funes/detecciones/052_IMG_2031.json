@@ -1,0 +1,12 @@
+{
+  "foto": "052_IMG_2031",
+  "lomos_ilegibles": 8,
+  "libros": [
+    {"titulo_detectado": "NOTAS DE PRENSA I - OBRA PERIODÍSTICA (1961-1984)", "autor_detectado": "Gabriel García Márquez",
+     "titulo_corregido": "Notas de prensa I (Obra periodística 1961-1984)", "autor_corregido": "Gabriel García Márquez",
+     "confianza": 0.9},
+    {"titulo_detectado": "La otra o...", "autor_detectado": "PHILIP J. F...",
+     "titulo_corregido": "La otra oportunidad", "autor_corregido": "Philip José Farmer",
+     "confianza": 0.6}
+  ]
+}
