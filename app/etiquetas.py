@@ -11,10 +11,12 @@ _ETIQUETAS = {
     "libros": {
         "libro": "libro", "Libro": "Libro", "libros": "libros", "Libros": "Libros",
         "autor": "autor", "Autor": "Autor", "autores": "autores", "Autores": "Autores",
+        "accion_cargar": "Cargar estante",
     },
     "cds": {
         "libro": "CD", "Libro": "CD", "libros": "CDs", "Libros": "CDs",
         "autor": "artista", "Autor": "Artista", "autores": "artistas", "Autores": "Artistas",
+        "accion_cargar": "Cargar CDs",
     },
 }
 

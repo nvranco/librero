@@ -106,16 +106,18 @@
     <div class="space-y-2">
       <button id="btn-cargar" type="button"
         class="tap btn-primario w-full rounded-xl2 font-bold text-lg flex items-center justify-center gap-1 border-2 border-celeste">
-        Cargar estante 📷
+        {{ et.accion_cargar }} 📷
       </button>
       <a href="{{ url_vender }}"
         class="tap btn-primario w-full rounded-xl2 font-bold text-lg flex items-center justify-center gap-1 border-2 border-ambar">
         Marcar vendidos 💰
       </a>
     </div>
+    {% if libreria.tipo_catalogo != 'cds' %}
     <p class="text-center text-xs text-gris mt-2">
       <a href="{{ url_guia }}" class="text-celeste font-medium underline underline-offset-2">Cómo sacar una buena foto</a>
     </p>
+    {% endif %}
   </div>
 </div>
 
@@ -126,6 +128,10 @@
   const ET_AUTORES = "{{ et.autores }}";
   const API_LOTES = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}/lotes`;
   const URL_GUIA = "{{ url_guia }}";
+  // Libreria que cataloga CDs: siempre carga fotos unitarias (nunca un
+  // estante con varios lomos), asi que la guia de "2 pasos" no le sirve —
+  // el boton abre la camara/galeria directo, sin pasar nunca por ahi.
+  const SALTAR_GUIA_SIEMPRE = {{ 'true' if libreria.tipo_catalogo == 'cds' else 'false' }};
 
   function animarContadores() {
     document.querySelectorAll('[data-contador]').forEach((el) => {
@@ -170,7 +176,7 @@
   }
 
   btnCargar.addEventListener('click', () => {
-    if (yaVioLaGuiaHoy()) {
+    if (SALTAR_GUIA_SIEMPRE || yaVioLaGuiaHoy()) {
       abrirSelectorFotos();
     } else {
       window.location.href = URL_GUIA;

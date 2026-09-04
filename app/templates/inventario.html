@@ -188,18 +188,22 @@
 
     lista.innerHTML = filtrados.map((libro) => `
       <div class="bg-papel border border-borde rounded-xl2 p-3" data-id="${libro.id}">
-        <button type="button" data-rol="expandir" class="tap w-full text-left flex items-center justify-between gap-2">
-          <span class="min-w-0 flex items-center gap-2">
-            ${libro.imagen_url ? `<img src="${libro.imagen_url}" alt="" class="w-10 h-12 object-cover rounded border border-borde shrink-0">` : ''}
+        <div class="w-full flex items-center gap-2">
+          ${libro.imagen_url ? `
+            <a href="${libro.imagen_url}" target="_blank" rel="noopener" class="tap shrink-0">
+              <img src="${libro.imagen_url}" alt="" class="w-10 h-12 object-cover rounded border border-borde">
+            </a>
+          ` : ''}
+          <button type="button" data-rol="expandir" class="tap flex-1 min-w-0 text-left flex items-center justify-between gap-2">
             <span class="min-w-0">
               <p class="font-medium truncate">${escaparHtml(libro.titulo)}</p>
               <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || `${ET_AUTOR_CAP} no detectado`)}</p>
             </span>
-          </span>
-          ${libro.estado === 'vendido'
-            ? '<span class="shrink-0 text-xs font-medium text-gris bg-borde rounded-full px-2 py-1">Vendido</span>'
-            : ''}
-        </button>
+            ${libro.estado === 'vendido'
+              ? '<span class="shrink-0 text-xs font-medium text-gris bg-borde rounded-full px-2 py-1">Vendido</span>'
+              : ''}
+          </button>
+        </div>
         <div class="mt-2">${badgeCatalogo(libro)}</div>
         <div data-rol="detalle" class="hidden mt-3 pt-3 border-t border-borde space-y-2">
           <div data-rol="vista" class="flex gap-2">
