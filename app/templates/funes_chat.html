@@ -508,11 +508,21 @@ async function mostrarBotonesRecomendacion() {
     btnConseguir.target = "_blank";
     btnConseguir.rel = "noopener noreferrer";
     btnConseguir.className = "btn-primario border-celeste tap rounded-xl2 px-4 py-3 w-full text-sm font-semibold text-center block";
-    btnConseguir.textContent = precio.precio
-      ? `¿Dónde lo consigo? · cerca de $${precio.precio.toLocaleString("es-AR")}`
-      : "¿Dónde lo consigo?";
+    btnConseguir.textContent = "¿Dónde lo consigo?";
     btnConseguir.addEventListener("click", registrarClicConseguir);
     cont.appendChild(btnConseguir);
+
+    // El precio va DEBAJO del boton y con la fuente a la vista, no adentro del
+    // boton. Es una referencia del mercado argentino, no una cotizacion de
+    // MercadoLibre: meterlo en el boton que linkea a ML seria prometer un
+    // precio que no tenemos. Con la fuente, el lector puede verificarlo.
+    if (precio.precio) {
+      const nota = document.createElement("p");
+      nota.className = "text-xs text-gris text-center";
+      nota.textContent = `Suele estar cerca de $${precio.precio.toLocaleString("es-AR")}`
+        + (precio.fuente ? ` · ${precio.fuente}` : "");
+      cont.appendChild(nota);
+    }
   }
 
   const btnInfo = document.createElement("button");

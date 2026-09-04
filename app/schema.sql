@@ -235,24 +235,40 @@ CREATE TABLE IF NOT EXISTS funes_ml_credenciales (
     actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Cache de precios de MercadoLibre por libro. Tabla propia y no columnas en
--- funes_libros porque es dato de un tercero, con TTL y con fallas propias:
--- mezclarlo con el catalogo obligaria a distinguir "no lo consultamos nunca" de
--- "lo consultamos y ML no tenia nada".
+-- Cache del precio de referencia por libro. Tabla propia y no columnas en
+-- funes_libros porque es dato de afuera, con TTL y con fallas propias: mezclarlo
+-- con el catalogo obligaria a distinguir "no lo consultamos nunca" de "lo
+-- consultamos y no habia nada".
 --
--- El TTL evita pegarle a ML en cada recomendacion. url_busqueda se guarda
--- siempre, aunque no haya precio: el deep link no depende de la API y es lo que
--- el lector ve cuando ML no responde.
-CREATE TABLE IF NOT EXISTS funes_precios_ml (
+-- Se llamaba funes_precios_ml cuando el precio salia de la API de MercadoLibre.
+-- ML cerro /sites/MLA/search para aplicaciones de terceros (403 con token
+-- valido, verificado), asi que ahora el precio es una referencia del mercado
+-- argentino y el nombre con _ml quedaba mintiendo. Se renombra en vez de
+-- recrear para no perder lo cacheado.
+DO $$ BEGIN
+    IF to_regclass('public.funes_precios_ml') IS NOT NULL
+       AND to_regclass('public.funes_precios') IS NULL THEN
+        ALTER TABLE funes_precios_ml RENAME TO funes_precios;
+    END IF;
+END $$;
+
+-- El TTL evita salir a buscar en cada recomendacion. url_busqueda se guarda
+-- siempre, aunque no haya precio: el link no depende de nadie y es lo que el
+-- lector ve igual.
+CREATE TABLE IF NOT EXISTS funes_precios (
     libro_id        TEXT PRIMARY KEY,              -- sin FK: la cache sobrevive a un libro borrado
-    precio          INTEGER,                       -- mediana en pesos enteros; NULL = sin resultados utiles
+    precio          INTEGER,                       -- pesos enteros; NULL = consultado y sin dato confiable
     moneda          TEXT NOT NULL DEFAULT 'ARS',
-    condicion       TEXT,                          -- 'used'|'new'|'mixto', de que muestra salio la mediana
+    condicion       TEXT,                          -- 'nuevo' | 'usado' | NULL
     cant_resultados INTEGER NOT NULL DEFAULT 0,
     url_busqueda    TEXT NOT NULL DEFAULT '',
     consultado_en   TIMESTAMPTZ NOT NULL DEFAULT now(),
     error           TEXT                           -- ultimo motivo de fallo; NULL si salio bien
 );
+
+-- De donde salio el precio. Se muestra al lector: un precio sin fuente es una
+-- afirmacion nuestra, uno con fuente es una referencia que puede verificar.
+ALTER TABLE funes_precios ADD COLUMN IF NOT EXISTS fuente TEXT;
 
 -- Excepcion por-libreria: alguna libreria cataloga CDs de musica, no libros,
 -- pero reusa el mismo pipeline (foto -> vision -> revision -> catalogo
