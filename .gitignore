@@ -15,3 +15,8 @@ app/funes_chat/muestra.json
 .DS_Store
 .idea/
 .vscode/
+
+# Datos crudos de los scrapers de catalogo (Yenny/Cuspide): bases SQLite de
+# 1-2 GB, sitemaps y logs. Son insumo local de la curacion, no del repo.
+# `*.sqlite3` no alcanza: WAL deja tambien -wal y -shm al lado.
+funes/_scraping/
