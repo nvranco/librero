@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app import db
+from app.catalogos import ordenar_jerarquico
 from app.colores import PALETA_CATALOGOS, color_catalogo
 from app.etiquetas import etiquetas
 from app.metricas import calcular_metricas
@@ -41,13 +42,17 @@ async def panel_home(request: Request, slug: str, token: str):
     )
     # Catalogos "publicados" = con al menos un libro publicado adentro (los
     # vacios no cuentan, mismo criterio que usa el catalogo publico para
-    # decidir que catalogos mostrar).
+    # decidir que catalogos mostrar). Un padre sin libros propios pero con
+    # subcatalogos cargados cuenta igual: tiene pagina publica y libros
+    # visibles. Padres e hijos cuentan por separado (cada uno tiene su URL,
+    # su QR y su color).
     cant_catalogos = await db.pool().fetchval(
         """
         SELECT COUNT(*) FROM catalogos c
         WHERE c.libreria_id = $1 AND EXISTS (
             SELECT 1 FROM libros li
-            WHERE li.catalogo_id = c.id AND li.estado = 'publicado' AND li.archivado_en IS NULL
+            WHERE (li.catalogo_id = c.id OR li.catalogo_id IN (SELECT h.id FROM catalogos h WHERE h.padre_id = c.id))
+              AND li.estado = 'publicado' AND li.archivado_en IS NULL
         )
         """,
         libreria["id"],
@@ -230,10 +235,10 @@ async def panel_lote_catalogo(request: Request, slug: str, token: str, lote_id: 
         "SELECT COUNT(*) FROM libros WHERE lote_id = $1 AND estado = 'publicado'", lote_id
     )
     catalogos = await db.pool().fetch(
-        "SELECT id, nombre FROM catalogos WHERE libreria_id = $1 ORDER BY creado_en DESC",
+        "SELECT id, nombre, padre_id FROM catalogos WHERE libreria_id = $1 ORDER BY creado_en DESC",
         libreria["id"],
     )
-    catalogos_json = json.dumps([dict(c) for c in catalogos]).replace("</", "<\\/")
+    catalogos_json = json.dumps(ordenar_jerarquico([dict(c) for c in catalogos])).replace("</", "<\\/")
     paleta_json = json.dumps(PALETA_CATALOGOS).replace("</", "<\\/")
 
     return templates.TemplateResponse(
@@ -284,7 +289,7 @@ async def panel_metricas(request: Request, slug: str, token: str):
         libreria["id"],
     )
     filas_catalogos = await db.pool().fetch(
-        "SELECT id, nombre, color FROM catalogos WHERE libreria_id = $1", libreria["id"]
+        "SELECT id, nombre, color, padre_id FROM catalogos WHERE libreria_id = $1", libreria["id"]
     )
 
     metricas = calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
@@ -319,10 +324,12 @@ async def panel_libro_catalogo(
 
     filas = await db.pool().fetch(
         """
-        SELECT c.id, c.nombre, c.descripcion,
+        SELECT c.id, c.nombre, c.descripcion, c.padre_id,
                COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) AS cant_libros
         FROM catalogos c
-        LEFT JOIN libros li ON li.catalogo_id = c.id
+        LEFT JOIN libros li
+               ON li.catalogo_id = c.id
+               OR li.catalogo_id IN (SELECT h.id FROM catalogos h WHERE h.padre_id = c.id)
         WHERE c.libreria_id = $1
         GROUP BY c.id
         ORDER BY c.creado_en DESC
@@ -341,7 +348,7 @@ async def panel_libro_catalogo(
             "libreria": libreria,
             "et": etiquetas(libreria["tipo_catalogo"]),
             "libro": libro,
-            "catalogos": [dict(f) for f in filas],
+            "catalogos": ordenar_jerarquico([dict(f) for f in filas]),
             "volver": volver,
         },
     )
@@ -373,11 +380,14 @@ async def panel_inventario(request: Request, slug: str, token: str):
     ).replace("</", "<\\/")
 
     filas_catalogos = await db.pool().fetch(
-        "SELECT id, nombre, color FROM catalogos WHERE libreria_id = $1", libreria["id"]
+        "SELECT id, nombre, color, padre_id FROM catalogos WHERE libreria_id = $1", libreria["id"]
     )
     catalogos_json = json.dumps(
         [
-            {"id": c["id"], "nombre": c["nombre"], "color": color_catalogo(c["id"], c["color"])}
+            {
+                "id": c["id"], "nombre": c["nombre"], "padre_id": c["padre_id"],
+                "color": color_catalogo(c["id"], c["color"]),
+            }
             for c in filas_catalogos
         ]
     ).replace("</", "<\\/")
@@ -405,11 +415,13 @@ async def panel_catalogos(request: Request, slug: str, token: str):
 
     filas = await db.pool().fetch(
         """
-        SELECT c.id, c.slug, c.nombre, c.descripcion, c.color,
+        SELECT c.id, c.slug, c.nombre, c.descripcion, c.color, c.padre_id,
                COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) AS cant_libros,
                GREATEST(MAX(li.publicado_en), MAX(li.vendido_en), MAX(li.archivado_en)) AS ultima_actualizacion
         FROM catalogos c
-        LEFT JOIN libros li ON li.catalogo_id = c.id
+        LEFT JOIN libros li
+               ON li.catalogo_id = c.id
+               OR li.catalogo_id IN (SELECT h.id FROM catalogos h WHERE h.padre_id = c.id)
         WHERE c.libreria_id = $1
         GROUP BY c.id
         ORDER BY c.creado_en DESC
@@ -428,6 +440,18 @@ async def panel_catalogos(request: Request, slug: str, token: str):
         }
         for f in filas
     ]
+    catalogos = ordenar_jerarquico(catalogos)
+    # Solo catalogos de primer nivel pueden recibir un subcatalogo (2 niveles
+    # fijos) — es la opcion "Dentro de:" del form de edicion/creacion.
+    catalogos_padres = [{"id": c["id"], "nombre": c["nombre"]} for c in catalogos if c["padre_id"] is None]
+    # Para el copy de "Borrar" (los libros quedan en el padre) y para ocultar
+    # el select "Dentro de:" en un catalogo que ya tiene hijos propios (2
+    # niveles fijos: no se puede anidar un catalogo que ya es padre).
+    nombres_por_id = {c["id"]: c["nombre"] for c in catalogos}
+    ids_con_hijos = {c["padre_id"] for c in catalogos if c["padre_id"] is not None}
+    for c in catalogos:
+        c["padre_nombre"] = nombres_por_id.get(c["padre_id"]) if c["padre_id"] else None
+        c["tiene_hijos"] = c["id"] in ids_con_hijos
 
     return templates.TemplateResponse(
         request,
@@ -436,6 +460,7 @@ async def panel_catalogos(request: Request, slug: str, token: str):
             "libreria": libreria,
             "et": etiquetas(libreria["tipo_catalogo"]),
             "catalogos": catalogos,
+            "catalogos_padres": catalogos_padres,
             "url_publica": f"{base}/{slug}",
             "url_qr": f"/api/{slug}/{token}/qr.png",
             "paleta": PALETA_CATALOGOS,

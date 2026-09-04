@@ -48,8 +48,22 @@ class DatosCatalogo(BaseModel):
     color: str | None = None
 
 
+class DatosCatalogoNuevo(DatosCatalogo):
+    """Solo para POST /catalogos: a diferencia de editar, acá padre_id no es
+    ambiguo (no hay "no lo cambies" que preservar)."""
+    padre_id: int | None = None
+
+
 class AsignarCatalogo(BaseModel):
     catalogo_id: int | None = None
+
+
+class AsignarPadre(BaseModel):
+    """Endpoint separado de editar_catalogo a proposito: en color, None
+    significa "no lo cambies" (de ahi el COALESCE); en padre_id, None es un
+    valor con significado propio ("sacalo de su padre"), y Pydantic no
+    distingue "no vino en el body" de "vino en null"."""
+    padre_id: int | None = None
 
 
 async def _libreria_por_slug_y_token(slug: str, token: str):
@@ -577,10 +591,12 @@ async def listar_catalogos(slug: str, token: str):
     libreria = await _libreria_por_slug_y_token(slug, token)
     filas = await db.pool().fetch(
         """
-        SELECT c.id, c.slug, c.nombre, c.descripcion,
+        SELECT c.id, c.slug, c.nombre, c.descripcion, c.padre_id,
                COUNT(li.id) FILTER (WHERE li.archivado_en IS NULL) AS cant_libros
         FROM catalogos c
-        LEFT JOIN libros li ON li.catalogo_id = c.id
+        LEFT JOIN libros li
+               ON li.catalogo_id = c.id
+               OR li.catalogo_id IN (SELECT h.id FROM catalogos h WHERE h.padre_id = c.id)
         WHERE c.libreria_id = $1
         GROUP BY c.id
         ORDER BY c.creado_en DESC
@@ -591,7 +607,7 @@ async def listar_catalogos(slug: str, token: str):
 
 
 @router.post("/api/{slug}/{token}/catalogos")
-async def crear_catalogo(slug: str, token: str, datos: DatosCatalogo):
+async def crear_catalogo(slug: str, token: str, datos: DatosCatalogoNuevo):
     libreria = await _libreria_por_slug_y_token(slug, token)
     nombre = datos.nombre.strip()
     if not nombre:
@@ -599,14 +615,29 @@ async def crear_catalogo(slug: str, token: str, datos: DatosCatalogo):
 
     color = datos.color if datos.color in _CLAVES_COLOR_VALIDAS else None
 
+    # Subcatalogos: exactamente 2 niveles. El padre tiene que ser de la misma
+    # libreria (la FK no lo verifica) y no puede ser el ya un subcatalogo.
+    if datos.padre_id is not None:
+        padre = await db.pool().fetchrow(
+            "SELECT id, nombre, padre_id FROM catalogos WHERE id = $1 AND libreria_id = $2",
+            datos.padre_id, libreria["id"],
+        )
+        if padre is None:
+            raise HTTPException(status_code=404, detail="Ese catálogo no existe.")
+        if padre["padre_id"] is not None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"«{padre['nombre']}» ya es un subcatálogo: no puede tener subcatálogos adentro.",
+            )
+
     base_slug = slugify(nombre)
     for intento in range(20):
         slug_final = base_slug if intento == 0 else f"{base_slug}-{intento + 1}"
         try:
             catalogo_id = await db.pool().fetchval(
-                "INSERT INTO catalogos (libreria_id, slug, nombre, descripcion, color) "
-                "VALUES ($1, $2, $3, $4, $5) RETURNING id",
-                libreria["id"], slug_final, nombre, datos.descripcion.strip(), color,
+                "INSERT INTO catalogos (libreria_id, slug, nombre, descripcion, color, padre_id) "
+                "VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+                libreria["id"], slug_final, nombre, datos.descripcion.strip(), color, datos.padre_id,
             )
             break
         except asyncpg.UniqueViolationError:
@@ -616,12 +647,12 @@ async def crear_catalogo(slug: str, token: str, datos: DatosCatalogo):
 
     await db.pool().execute(
         "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'catalogo_creado', $2::jsonb)",
-        libreria["id"], json.dumps({"catalogo_id": catalogo_id, "nombre": nombre}),
+        libreria["id"], json.dumps({"catalogo_id": catalogo_id, "nombre": nombre, "padre_id": datos.padre_id}),
     )
-    logger.info("catalogo_creado libreria_id=%s catalogo_id=%s", libreria["id"], catalogo_id)
+    logger.info("catalogo_creado libreria_id=%s catalogo_id=%s padre_id=%s", libreria["id"], catalogo_id, datos.padre_id)
     return {
         "id": catalogo_id, "slug": slug_final, "nombre": nombre,
-        "descripcion": datos.descripcion.strip(), "color": color,
+        "descripcion": datos.descripcion.strip(), "color": color, "padre_id": datos.padre_id,
     }
 
 
@@ -650,12 +681,85 @@ async def editar_catalogo(slug: str, token: str, catalogo_id: int, datos: DatosC
     return {"ok": True}
 
 
+@router.patch("/api/{slug}/{token}/catalogos/{catalogo_id}/padre")
+async def mover_catalogo(slug: str, token: str, catalogo_id: int, datos: AsignarPadre):
+    """Anida o desanida un catalogo. Separado de editar_catalogo porque acá
+    None ("sacalo de su padre") es un valor valido, no un "no lo cambies".
+    Los guards de la regla de 2 niveles van tambien dentro del UPDATE (no solo
+    en los pre-checks) para que dos PATCH simultaneos no puedan dejar 3
+    niveles ni un ciclo."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+
+    hijo = await db.pool().fetchrow(
+        "SELECT id, nombre FROM catalogos WHERE id = $1 AND libreria_id = $2",
+        catalogo_id, libreria["id"],
+    )
+    if hijo is None:
+        raise HTTPException(status_code=404)
+
+    if datos.padre_id is not None:
+        cant_hijos = await db.pool().fetchval(
+            "SELECT COUNT(*) FROM catalogos WHERE padre_id = $1", catalogo_id
+        )
+        if cant_hijos:
+            raise HTTPException(
+                status_code=400,
+                detail=f"«{hijo['nombre']}» tiene {cant_hijos} subcatálogo{'s' if cant_hijos != 1 else ''} adentro. "
+                       "Sacálos primero para poder meterlo dentro de otro catálogo.",
+            )
+        padre = await db.pool().fetchrow(
+            "SELECT id, nombre, padre_id FROM catalogos WHERE id = $1 AND libreria_id = $2",
+            datos.padre_id, libreria["id"],
+        )
+        if padre is None:
+            raise HTTPException(status_code=404, detail="Ese catálogo no existe.")
+        if padre["padre_id"] is not None:
+            raise HTTPException(status_code=400, detail=f"«{padre['nombre']}» ya es un subcatálogo.")
+
+    resultado = await db.pool().execute(
+        """
+        UPDATE catalogos c SET padre_id = $1
+        WHERE c.id = $2 AND c.libreria_id = $3
+          AND ($1::int IS NULL OR (
+                c.id <> $1
+            AND NOT EXISTS (SELECT 1 FROM catalogos h WHERE h.padre_id = c.id)
+            AND EXISTS (SELECT 1 FROM catalogos p
+                         WHERE p.id = $1 AND p.libreria_id = $3 AND p.padre_id IS NULL)
+          ))
+        """,
+        datos.padre_id, catalogo_id, libreria["id"],
+    )
+    if resultado == "UPDATE 0":
+        raise HTTPException(status_code=400, detail="No se pudo mover el catálogo.")
+
+    await db.pool().execute(
+        "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'catalogo_movido', $2::jsonb)",
+        libreria["id"], json.dumps({"catalogo_id": catalogo_id, "padre_id": datos.padre_id}),
+    )
+    logger.info("catalogo_movido libreria_id=%s catalogo_id=%s padre_id=%s", libreria["id"], catalogo_id, datos.padre_id)
+    return {"ok": True}
+
+
 @router.delete("/api/{slug}/{token}/catalogos/{catalogo_id}")
 async def borrar_catalogo(slug: str, token: str, catalogo_id: int):
-    """Borrado duro: los libros que tenia asignados no se tocan, solo pierden
-    la referencia (ON DELETE SET NULL en libros.catalogo_id), asi que vuelven
-    a verse solo en el catalogo general."""
+    """Borrado duro. Si el catalogo tenia libros propios, antes de borrar se
+    reasignan a su padre (o al catalogo general si era de primer nivel, via
+    el propio padre_id que en ese caso ya es NULL) — asi borrar un
+    subcatalogo no saca sus libros del catalogo padre, que es la regla
+    central de la feature de subcatalogos. Los que ya no tenian padre siguen
+    el comportamiento de siempre (ON DELETE SET NULL en libros.catalogo_id)."""
     libreria = await _libreria_por_slug_y_token(slug, token)
+
+    await db.pool().execute(
+        """
+        UPDATE libros SET catalogo_id = (
+            SELECT padre_id FROM catalogos WHERE id = $1 AND libreria_id = $2
+        )
+        WHERE catalogo_id = $1 AND libreria_id = $2
+        """,
+        catalogo_id, libreria["id"],
+    )
+
     resultado = await db.pool().execute(
         "DELETE FROM catalogos WHERE id = $1 AND libreria_id = $2", catalogo_id, libreria["id"]
     )

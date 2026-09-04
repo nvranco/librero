@@ -155,7 +155,10 @@
     const href = `/${LIBRERO_SLUG}/panel/${LIBRERO_TOKEN}/libros/${libro.id}/catalogo?volver=${volver}`;
     const c = (libro.catalogo_id !== null && libro.catalogo_id !== undefined) ? catalogosPorId[libro.catalogo_id] : null;
     const clases = c ? `${c.color.bg} border ${c.color.borde}` : 'bg-crema border border-borde';
-    const nombre = c ? escaparHtml(c.nombre) : 'Catálogo general';
+    // Si es un subcatalogo, mostrar "Padre · Hijo" para que se entienda donde
+    // vive sin tener que entrar a la pantalla de reasignar.
+    const padre = c && c.padre_id !== null ? catalogosPorId[c.padre_id] : null;
+    const nombre = c ? escaparHtml(padre ? `${padre.nombre} · ${c.nombre}` : c.nombre) : 'Catálogo general';
     return `<a href="${href}" class="tap inline-flex items-center text-xs ${clases} rounded-full px-2 py-1 font-medium">📁 ${nombre} ›</a>`;
   }
 
@@ -163,7 +166,8 @@
     const q = normalizar(buscador.value);
     const filtrados = libros.filter((l) =>
       (!q || normalizar(l.titulo).includes(q) || normalizar(l.autor).includes(q)) &&
-      (filtroCatalogoId === null || l.catalogo_id === filtroCatalogoId)
+      (filtroCatalogoId === null || l.catalogo_id === filtroCatalogoId ||
+       (catalogosPorId[l.catalogo_id] || {}).padre_id === filtroCatalogoId)
     );
 
     const catalogoFiltro = filtroCatalogoId !== null ? catalogosPorId[filtroCatalogoId] : null;

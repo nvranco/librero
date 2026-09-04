@@ -18,8 +18,8 @@
 
     {% for c in catalogos %}
     <button type="button" data-catalogo-id="{{ c.id }}"
-      class="tap w-full text-left bg-papel rounded-xl2 p-3 {{ 'border-2 border-celeste' if libro.catalogo_id == c.id else 'border border-borde' }}">
-      <p class="font-medium">📁 {{ c.nombre }}</p>
+      class="tap {{ 'w-[calc(100%-1rem)] ml-4' if c.nivel == 1 else 'w-full' }} text-left bg-papel rounded-xl2 p-3 {{ 'border-2 border-celeste' if libro.catalogo_id == c.id else 'border border-borde' }}">
+      <p class="font-medium">📁 {{ '↳ ' if c.nivel == 1 else '' }}{{ c.nombre }}</p>
       {% if c.descripcion %}<p class="text-sm text-gris mt-1">{{ c.descripcion }}</p>{% endif %}
       <p class="text-xs text-gris mt-1">{{ c.cant_libros }} {{ et.libro if c.cant_libros == 1 else et.libros }}</p>
     </button>

@@ -23,16 +23,21 @@ def _js_string(valor: str) -> str:
 
 
 async def _catalogos_con_libros(libreria_id: int):
-    """Catalogos no vacios de la libreria, con conteo y ultima actualizacion
-    calculada al vuelo (sin columna updated_at, sin triggers)."""
+    """Catalogos de PRIMER NIVEL no vacios de la libreria (los subcatalogos
+    no se listan acá: se navega a ellos desde el chip dentro del padre), con
+    conteo y ultima actualizacion calculada al vuelo (sin columna updated_at,
+    sin triggers). El conteo de un padre incluye los libros de sus
+    subcatalogos: son los mismos libros que el visitante ve al entrar."""
     filas = await db.pool().fetch(
         """
         SELECT c.id, c.slug, c.nombre, c.descripcion, c.color,
                COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) AS cant_libros,
                GREATEST(MAX(li.publicado_en), MAX(li.vendido_en), MAX(li.archivado_en)) AS ultima_actualizacion
         FROM catalogos c
-        LEFT JOIN libros li ON li.catalogo_id = c.id
-        WHERE c.libreria_id = $1
+        LEFT JOIN libros li
+               ON li.catalogo_id = c.id
+               OR li.catalogo_id IN (SELECT h.id FROM catalogos h WHERE h.padre_id = c.id)
+        WHERE c.libreria_id = $1 AND c.padre_id IS NULL
         GROUP BY c.id
         HAVING COUNT(li.id) FILTER (WHERE li.estado = 'publicado' AND li.archivado_en IS NULL) > 0
         ORDER BY c.creado_en DESC
@@ -45,6 +50,30 @@ async def _catalogos_con_libros(libreria_id: int):
     ]
 
 
+async def _mapa_catalogos(libreria_id: int) -> dict:
+    """Catalogos con al menos un libro publicado, para que el front resuelva
+    el chip de subcatalogo y la expansion padre->hijos sin pegarle a la API
+    de nuevo. Solo los que tienen libros: no hace falta publicar en el HTML
+    el nombre/slug de un catalogo vacio."""
+    filas = await db.pool().fetch(
+        """
+        SELECT c.id, c.slug, c.nombre, c.padre_id, c.color
+        FROM catalogos c
+        WHERE c.libreria_id = $1
+          AND EXISTS (SELECT 1 FROM libros li
+                      WHERE li.catalogo_id = c.id AND li.estado = 'publicado' AND li.archivado_en IS NULL)
+        """,
+        libreria_id,
+    )
+    return {
+        f["id"]: {
+            "nombre": f["nombre"], "slug": f["slug"], "padre_id": f["padre_id"],
+            "color": color_catalogo(f["id"], f["color"]),
+        }
+        for f in filas
+    }
+
+
 async def _render_catalogo(request: Request, slug: str, catalogo_slug: str | None):
     libreria = await db.pool().fetchrow(
         "SELECT * FROM librerias WHERE slug = $1 AND activa", slug
@@ -54,6 +83,7 @@ async def _render_catalogo(request: Request, slug: str, catalogo_slug: str | Non
 
     catalogo = None
     catalogos = []
+    padre = None
     if catalogo_slug is None:
         catalogos = await _catalogos_con_libros(libreria["id"])
         cant_publicados = await db.pool().fetchval(
@@ -70,13 +100,23 @@ async def _render_catalogo(request: Request, slug: str, catalogo_slug: str | Non
         if fila_catalogo is None:
             raise HTTPException(status_code=404)
         catalogo = {**dict(fila_catalogo), "color": color_catalogo(fila_catalogo["id"], fila_catalogo["color"])}
+        # Un catalogo padre "contiene" los libros de sus subcatalogos: el
+        # conteo que ve el visitante tiene que incluirlos.
         cant_publicados = await db.pool().fetchval(
             """
             SELECT COUNT(*) FROM libros
-            WHERE libreria_id = $1 AND catalogo_id = $2 AND estado = 'publicado' AND archivado_en IS NULL
+            WHERE libreria_id = $1 AND estado = 'publicado' AND archivado_en IS NULL
+              AND (catalogo_id = $2 OR catalogo_id IN (SELECT h.id FROM catalogos h WHERE h.padre_id = $2))
             """,
             libreria["id"], fila_catalogo["id"],
         )
+        if fila_catalogo["padre_id"] is not None:
+            padre = await db.pool().fetchrow(
+                "SELECT slug, nombre FROM catalogos WHERE id = $1 AND libreria_id = $2",
+                fila_catalogo["padre_id"], libreria["id"],
+            )
+
+    catalogos_map_js = json.dumps(await _mapa_catalogos(libreria["id"])).replace("</", "<\\/")
 
     fecha_hoy = datetime.now(timezone.utc).astimezone().strftime("%d/%m")
     origen = request.query_params.get("src", "link")
@@ -95,6 +135,8 @@ async def _render_catalogo(request: Request, slug: str, catalogo_slug: str | Non
             "mensaje_wa_template_js": _js_string(libreria["mensaje_wa_template"]),
             "catalogos": catalogos,
             "catalogo": catalogo,
+            "padre": padre,
+            "catalogos_map_js": catalogos_map_js,
             "catalogo_id_js": str(catalogo["id"]) if catalogo else "null",
             "catalogo_nombre_js": _js_string(catalogo["nombre"]) if catalogo else "null",
             "origen_catalogo_js": _js_string(origen_catalogo),

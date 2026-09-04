@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS libros (
 CREATE TABLE IF NOT EXISTS eventos (
     id              BIGSERIAL PRIMARY KEY,
     libreria_id     INTEGER NOT NULL REFERENCES librerias(id) ON DELETE CASCADE,
-    tipo            TEXT NOT NULL,              -- vista|busqueda|clic_whatsapp|scan_qr|lote_publicado|libro_editado|inventario_reiniciado|ventas_confirmadas|catalogo_creado|catalogo_editado|catalogo_borrado|lote_catalogo_asignado
+    tipo            TEXT NOT NULL,              -- vista|busqueda|clic_whatsapp|scan_qr|lote_publicado|libro_editado|inventario_reiniciado|ventas_confirmadas|catalogo_creado|catalogo_editado|catalogo_borrado|catalogo_movido|lote_catalogo_asignado
     payload         JSONB NOT NULL DEFAULT '{}'::jsonb,
     session_id      TEXT,
     creado_en       TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -150,6 +150,18 @@ ALTER TABLE funes_libros DROP COLUMN IF EXISTS editorial;
 ALTER TABLE librerias ADD COLUMN IF NOT EXISTS tipo_catalogo TEXT NOT NULL DEFAULT 'libros'
     CHECK (tipo_catalogo IN ('libros', 'cds'));
 
+-- Subcatalogos: exactamente 2 niveles (catalogo -> subcatalogo). padre_id NULL
+-- = catalogo de primer nivel. La pertenencia al padre NO se materializa: un
+-- libro sigue apuntando al catalogo mas especifico (libros.catalogo_id) y la
+-- expansion padre->hijos se resuelve en cada query, asi mover un subcatalogo
+-- de padre es un UPDATE de una fila y nunca hay que migrar libros.
+-- ON DELETE SET NULL: borrar un padre sube sus hijos a primer nivel (no los
+-- borra) conservandoles slug y color, asi los QR ya impresos siguen andando.
+-- La regla de los 2 niveles se valida en la app (un CHECK no puede llevar
+-- subquery); la autoreferencia es imposible por construccion (en el INSERT el
+-- id todavia no existe, y el UPDATE que mueve de padre la excluye en su WHERE).
+ALTER TABLE catalogos ADD COLUMN IF NOT EXISTS padre_id INTEGER REFERENCES catalogos(id) ON DELETE SET NULL;
+
 CREATE INDEX IF NOT EXISTS idx_librerias_slug ON librerias(slug);
 CREATE INDEX IF NOT EXISTS idx_libros_activos ON libros(libreria_id, estado) WHERE archivado_en IS NULL;
 CREATE INDEX IF NOT EXISTS idx_libros_libreria_estado ON libros(libreria_id, estado);
@@ -157,4 +169,5 @@ CREATE INDEX IF NOT EXISTS idx_libros_lote ON libros(lote_id);
 CREATE INDEX IF NOT EXISTS idx_eventos_libreria_fecha ON eventos(libreria_id, creado_en);
 CREATE INDEX IF NOT EXISTS idx_lotes_libreria ON lotes(libreria_id);
 CREATE INDEX IF NOT EXISTS idx_catalogos_libreria ON catalogos(libreria_id);
+CREATE INDEX IF NOT EXISTS idx_catalogos_padre ON catalogos(padre_id);
 CREATE INDEX IF NOT EXISTS idx_libros_catalogo ON libros(catalogo_id);

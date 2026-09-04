@@ -54,13 +54,18 @@ def calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
         grupo = por_catalogo.setdefault(cid, {
             "nombre": e["payload"].get("catalogo_nombre") or "?",
             "color": color_catalogo(cid),
-            "vistas": 0, "vistas_directas": 0, "vistas_desde_card": 0,
+            "vistas": 0, "vistas_directas": 0, "vistas_desde_card": 0, "vistas_desde_chip": 0,
             "clics": 0, "busquedas": 0,
         })
         if e["tipo"] == "vista":
             grupo["vistas"] += 1
-            if e["payload"].get("origen") == "card":
+            origen = e["payload"].get("origen")
+            if origen == "card":
                 grupo["vistas_desde_card"] += 1
+            elif origen == "chip":
+                # Vino del chip de subcatalogo dentro de la pagina del padre
+                # (ver publico.html): es la señal de si esa navegacion se usa.
+                grupo["vistas_desde_chip"] += 1
             else:
                 grupo["vistas_directas"] += 1
         elif e["tipo"] == "clic_whatsapp":
@@ -69,10 +74,18 @@ def calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
             grupo["busquedas"] += 1
 
     # El nombre y color actuales pisan el snapshot del payload, por si el
-    # catalogo se renombro/recoloreo despues de emitidos esos eventos.
+    # catalogo se renombro/recoloreo despues de emitidos esos eventos. Un
+    # subcatalogo se identifica en el ranking como "Padre · Hijo" (las
+    # vistas nunca se suman al padre: ocurrieron en una pagina concreta).
+    nombres_por_id = {c["id"]: c["nombre"] for c in filas_catalogos}
     for c in filas_catalogos:
         if c["id"] in por_catalogo:
-            por_catalogo[c["id"]]["nombre"] = c["nombre"]
+            nombre = c["nombre"]
+            if c.get("padre_id") is not None:
+                nombre_padre = nombres_por_id.get(c["padre_id"])
+                if nombre_padre:
+                    nombre = f"{nombre_padre} · {nombre}"
+            por_catalogo[c["id"]]["nombre"] = nombre
             por_catalogo[c["id"]]["color"] = color_catalogo(c["id"], c.get("color"))
 
     return {

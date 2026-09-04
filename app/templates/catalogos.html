@@ -23,7 +23,13 @@
     </div>
 
     {% for c in catalogos %}
-    <div id="catalogo-{{ c.id }}" class="{{ c.color.bg }} border {{ c.color.borde }} rounded-lg p-2.5">
+    {# Los subcatalogos (nivel 1) se pintan como hermanos indentados, NUNCA
+       anidados en el DOM dentro de la tarjeta del padre: el JS de abajo hace
+       querySelectorAll('[id^="catalogo-"]') + tarjeta.querySelector(...) por
+       tarjeta, y anidar en el DOM haria que esos querySelector del padre
+       pudieran matchear elementos del hijo. #}
+    <div id="catalogo-{{ c.id }}" data-nivel="{{ c.nivel }}" data-padre-nombre="{{ c.padre_nombre or '' }}"
+      class="{{ c.color.bg }} border {{ c.color.borde }} rounded-lg p-2.5 {{ 'ml-4 border-l-4' if c.nivel == 1 else '' }}">
       <div data-rol="vista">
         <p class="font-medium">{{ c.nombre }}</p>
         {% if c.descripcion %}<p class="text-sm text-gris leading-snug">{{ c.descripcion }}</p>{% endif %}
@@ -45,7 +51,12 @@
           <button type="button" data-rol="borrar"
             class="tap rounded-lg px-3 py-2 text-sm font-medium border-2 border-terracota text-terracota">Borrar 🗑️</button>
         </div>
+        {% if c.nivel == 0 %}
+        <button type="button" data-rol="nuevo-sub"
+          class="tap btn-secundario w-full rounded-lg px-3 py-2 text-sm font-medium mt-1.5">+ Subcatálogo</button>
+        {% endif %}
       </div>
+
       <div data-rol="edicion" class="hidden space-y-2">
         <input data-campo="nombre" value="{{ c.nombre }}" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
         <textarea data-campo="descripcion" rows="3"
@@ -57,14 +68,48 @@
             style="background:{{ op.bg }}; border:2px solid {{ op.borde }};"></button>
           {% endfor %}
         </div>
+        {% if not c.tiene_hijos %}
+        <div>
+          <label class="text-xs text-gris">Dentro de:</label>
+          <select data-campo="padre" class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm bg-papel">
+            <option value="">Ninguno (catálogo principal)</option>
+            {% for p in catalogos_padres %}
+            {% if p.id != c.id %}
+            <option value="{{ p.id }}" {{ 'selected' if p.id == c.padre_id else '' }}>{{ p.nombre }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
         <div class="flex gap-2">
           <button type="button" data-rol="guardar" class="tap btn-primario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Guardar</button>
           <button type="button" data-rol="cancelar" class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Cancelar</button>
         </div>
       </div>
+
+      {% if c.nivel == 0 %}
+      <div data-rol="form-subcatalogo" class="hidden mt-2 pt-2 border-t border-tinta/10 space-y-2">
+        <input data-campo="nombre-sub" placeholder="Nombre del subcatálogo"
+          class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm bg-papel">
+        <div data-rol="paleta-sub" class="flex flex-wrap gap-2 py-1">
+          {% for op in paleta %}
+          <button type="button" data-clave="{{ op.clave }}" aria-label="{{ op.nombre }}"
+            class="tap w-9 h-9 rounded-full shrink-0"
+            style="background:{{ op.bg }}; border:2px solid {{ op.borde }};"></button>
+          {% endfor %}
+        </div>
+        <div class="flex gap-2">
+          <button type="button" data-rol="crear-sub" class="tap btn-primario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Crear</button>
+          <button type="button" data-rol="cancelar-sub" class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Cancelar</button>
+        </div>
+      </div>
+      {% endif %}
     </div>
     {% else %}
-    <p class="text-center text-gris text-sm mt-6">Todavía no creaste ningún catálogo. Se crean al publicar un lote nuevo.</p>
+    <p class="text-center text-gris text-sm mt-6">
+      Todavía no creaste ningún catálogo. Los catálogos principales se crean al publicar un lote nuevo;
+      los subcatálogos se agregan desde adentro de un catálogo ya creado.
+    </p>
     {% endfor %}
   </main>
 </div>
@@ -74,6 +119,7 @@
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
   const ET_LIBROS = "{{ et.libros }}";
   const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
+  const PALETA = {{ paleta | tojson }};
 
   function copiar(texto, btn) {
     navigator.clipboard.writeText(texto).then(function () {
@@ -89,9 +135,12 @@
 
   document.querySelectorAll('[id^="catalogo-"]').forEach((tarjeta) => {
     const catalogoId = tarjeta.id.replace('catalogo-', '');
+    const esNivel0 = tarjeta.dataset.nivel === '0';
+    const padreNombre = tarjeta.dataset.padreNombre;
     const vista = tarjeta.querySelector('[data-rol="vista"]');
     const edicion = tarjeta.querySelector('[data-rol="edicion"]');
     const paleta = tarjeta.querySelector('[data-rol="paleta"]');
+    const selectPadre = tarjeta.querySelector('[data-campo="padre"]');
     let colorSeleccionado = paleta.querySelector('.ring-tinta')?.dataset.clave || null;
 
     paleta.querySelectorAll('[data-clave]').forEach((sw) => {
@@ -122,13 +171,85 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, descripcion, color: colorSeleccionado }),
       });
+      // El select "Dentro de:" solo existe si el catalogo no tiene hijos
+      // propios (2 niveles fijos) — si esta pantalla no lo mostro, no hay
+      // nada que mover.
+      if (selectPadre) {
+        const padreId = selectPadre.value ? Number(selectPadre.value) : null;
+        await fetch(`${API_BASE}/catalogos/${catalogoId}/padre`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ padre_id: padreId }),
+        });
+      }
       window.location.reload();
     });
 
     tarjeta.querySelector('[data-rol="borrar"]').addEventListener('click', async () => {
-      if (!confirm(`¿Borrar este catálogo? Los ${ET_LIBROS} no se borran, solo dejan de estar agrupados.`)) return;
+      const mensaje = (!esNivel0 && padreNombre)
+        ? `¿Borrar este subcatálogo? Los ${ET_LIBROS} quedan en «${padreNombre}».`
+        : `¿Borrar este catálogo? Los ${ET_LIBROS} no se borran, solo dejan de estar agrupados.`;
+      if (!confirm(mensaje)) return;
       await fetch(`${API_BASE}/catalogos/${catalogoId}`, { method: 'DELETE' });
-      tarjeta.remove();
+      // No alcanza con sacar solo esta tarjeta del DOM: borrar un padre
+      // promueve a sus hijos a primer nivel (siguen estando, pero cambia su
+      // indentacion y su boton "+ Subcatalogo"), asi que se recarga entera.
+      window.location.reload();
+    });
+
+    // --- Alta de subcatalogo (solo en tarjetas de nivel 0) ---
+    if (!esNivel0) return;
+
+    const btnNuevoSub = tarjeta.querySelector('[data-rol="nuevo-sub"]');
+    const formSub = tarjeta.querySelector('[data-rol="form-subcatalogo"]');
+    const inputNombreSub = formSub.querySelector('[data-campo="nombre-sub"]');
+    const paletaSub = formSub.querySelector('[data-rol="paleta-sub"]');
+    const colorPadre = paleta.querySelector('.ring-tinta')?.dataset.clave || null;
+    // Preseleccionar un color distinto al del padre: si coinciden, el chip
+    // del subcatalogo queda invisible sobre el header del catalogo padre.
+    let colorSub = (PALETA.find((op) => op.clave !== colorPadre) || PALETA[0]).clave;
+
+    function pintarSeleccionSub() {
+      paletaSub.querySelectorAll('[data-clave]').forEach((s) => {
+        const activo = s.dataset.clave === colorSub;
+        s.classList.toggle('ring-2', activo);
+        s.classList.toggle('ring-offset-2', activo);
+        s.classList.toggle('ring-tinta', activo);
+      });
+    }
+    pintarSeleccionSub();
+
+    paletaSub.querySelectorAll('[data-clave]').forEach((sw) => {
+      sw.addEventListener('click', () => {
+        colorSub = sw.dataset.clave;
+        pintarSeleccionSub();
+      });
+    });
+
+    btnNuevoSub.addEventListener('click', () => {
+      vista.classList.add('hidden');
+      formSub.classList.remove('hidden');
+    });
+
+    formSub.querySelector('[data-rol="cancelar-sub"]').addEventListener('click', () => {
+      formSub.classList.add('hidden');
+      vista.classList.remove('hidden');
+    });
+
+    formSub.querySelector('[data-rol="crear-sub"]').addEventListener('click', async () => {
+      const nombre = inputNombreSub.value.trim();
+      if (!nombre) { alert('El subcatálogo necesita un nombre.'); return; }
+      const resp = await fetch(`${API_BASE}/catalogos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, descripcion: '', color: colorSub, padre_id: Number(catalogoId) }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        alert(err.detail || 'No se pudo crear el subcatálogo. Probá de nuevo.');
+        return;
+      }
+      window.location.reload();
     });
   });
 </script>

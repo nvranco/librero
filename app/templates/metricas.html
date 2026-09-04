@@ -89,6 +89,7 @@
         <p class="font-bold truncate">{{ c.nombre }}</p>
         <p class="text-xs text-gris mt-0.5">
           👀 {{ c.vistas }} vista{{ 's' if c.vistas != 1 else '' }} · 💬 {{ c.clics }} consulta{{ 's' if c.clics != 1 else '' }}
+          {%- if c.vistas_desde_chip %} · 🔗 {{ c.vistas_desde_chip }} por chip{% endif %}
         </p>
       </div>
     </div>

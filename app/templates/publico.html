@@ -7,7 +7,11 @@
     <h1 class="text-2xl font-bold text-tinta leading-tight">{{ libreria.nombre }}</h1>
     {% if catalogo %}
     <p class="text-base font-medium text-tinta mt-1">{{ catalogo.nombre }}</p>
+    {% if padre %}
+    <a href="/{{ libreria.slug }}/c/{{ padre.slug }}" class="text-xs text-tinta/70 underline">← Volver a {{ padre.nombre }}</a>
+    {% else %}
     <a href="/{{ libreria.slug }}" class="text-xs text-tinta/70 underline">← Ver catálogo general</a>
+    {% endif %}
     {% endif %}
     <p class="mt-2 text-sm text-tinta/80 leading-snug">
       Este catálogo es una foto del estante al {{ fecha_hoy }}.
@@ -81,6 +85,11 @@
   const CATALOGO_NOMBRE = {{ catalogo_nombre_js | safe }};
   const ORIGEN_CATALOGO = {{ origen_catalogo_js | safe }};
   const HAY_CATALOGOS = {{ 'true' if catalogos else 'false' }};
+  // Catalogos con al menos un libro, para resolver el chip de subcatalogo y
+  // la expansion padre->hijos sin pegarle a la API de nuevo. Cacheado 60s en
+  // catalogo.json pero renderizado fresco acá: por un rato puede faltar un
+  // id reciente, por eso todo lookup contra este mapa usa "?.".
+  const CATALOGOS = {{ catalogos_map_js | safe }};
 
   function sessionId() {
     let id = sessionStorage.getItem('librero_sid');
@@ -177,7 +186,30 @@
   let catalogoListo = false;
 
   function subsetCatalogo() {
-    return CATALOGO_ID === null ? catalogo : catalogo.filter((l) => l.catalogo_id === CATALOGO_ID);
+    if (CATALOGO_ID === null) return catalogo;
+    // Un catalogo padre incluye los libros de sus subcatalogos: es la regla
+    // central de la feature (todo lo que hay en un subcatalogo tambien se ve
+    // en su padre).
+    return catalogo.filter((l) =>
+      l.catalogo_id === CATALOGO_ID || CATALOGOS[l.catalogo_id]?.padre_id === CATALOGO_ID
+    );
+  }
+
+  // Chip de subcatalogo debajo del autor, solo cuando el catalogo propio del
+  // libro es un subcatalogo y no es la pagina en la que ya estamos (ahi el
+  // header ya dice donde estamos, repetirlo en cada card es ruido).
+  // Ojo: comparar directamente "padre_id === CATALOGO_ID" pintaria un chip en
+  // CADA libro de la raiz, porque ahi CATALOGO_ID tambien es null (null ===
+  // null da true) — el ancla real es "el catalogo del libro es un subcatalogo".
+  function chipSubcatalogo(libro) {
+    const c = CATALOGOS[libro.catalogo_id];
+    if (!c || c.padre_id === null || libro.catalogo_id === CATALOGO_ID) return '';
+    return `
+      <a href="/${SLUG}/c/${c.slug}?origen=chip"
+        class="inline-flex items-center self-start text-xs rounded-full px-2 py-1 mt-1 font-medium ${c.color.bg} border ${c.color.borde}">
+        ${escaparHtml(c.nombre)}
+      </a>
+    `;
   }
 
   fetch(`/api/${SLUG}/catalogo.json`)
@@ -286,6 +318,7 @@
         <div class="min-w-0 flex-1 p-3 flex flex-col">
           <p class="font-medium">${escaparHtml(libro.titulo)}</p>
           <p class="text-sm text-gris">${escaparHtml(libro.autor || `${ET_AUTOR_CAP} no disponible`)}</p>
+          ${chipSubcatalogo(libro)}
           <div class="flex justify-end mt-auto pt-2">
             <a data-rol="whatsapp" target="_blank" rel="noopener"
               class="tap inline-flex items-center justify-center gap-2 rounded-xl2 font-medium px-4 border-2 border-whatsapp text-whatsapp">

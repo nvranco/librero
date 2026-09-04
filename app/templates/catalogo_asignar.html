@@ -78,8 +78,8 @@
     const opciones = [{ id: null, nombre: 'Catálogo general (sin catálogo)' }, ...catalogos];
     listaCatalogos.innerHTML = opciones.map((c) => `
       <button type="button" data-id="${c.id === null ? '' : c.id}"
-        class="tap w-full text-left rounded-xl2 p-3 font-medium ${chipClases(!creandoNuevo && seleccionado === c.id)}">
-        ${c.nombre}
+        class="tap ${c.nivel === 1 ? 'w-[calc(100%-1rem)] ml-4' : 'w-full'} text-left rounded-xl2 p-3 font-medium ${chipClases(!creandoNuevo && seleccionado === c.id)}">
+        ${c.nivel === 1 ? '↳ ' : ''}${c.nombre}
       </button>
     `).join('');
 
