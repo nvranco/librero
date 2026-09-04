@@ -34,6 +34,19 @@ def _js(valor) -> str:
     return json.dumps(valor).replace("</", "<\\/")
 
 
+def _base_absoluta(request: Request) -> str:
+    """URL absoluta del sitio, para las etiquetas Open Graph.
+
+    og:image tiene que ser absoluta y por https: WhatsApp la baja desde sus
+    propios servidores, no desde el navegador de quien recibe el link. Detras
+    del proxy de Railway el esquema puede llegar como http, asi que se fuerza
+    https salvo en local."""
+    base = str(request.base_url).rstrip("/")
+    if not base.startswith(("http://localhost", "http://127.")):
+        base = base.replace("http://", "https://", 1)
+    return base
+
+
 class Profunda(BaseModel):
     pregunta: str = Field("", max_length=600)
     respuesta: str = Field("", max_length=600)
@@ -121,7 +134,11 @@ async def pagina(request: Request):
     return templates.TemplateResponse(
         request,
         "funes_chat.html",
-        {"preguntas_js": _js(nucleo.PREGUNTAS), "origen_js": _js(origen)},
+        {
+            "preguntas_js": _js(nucleo.PREGUNTAS),
+            "origen_js": _js(origen),
+            "base_url": _base_absoluta(request),
+        },
     )
 
 

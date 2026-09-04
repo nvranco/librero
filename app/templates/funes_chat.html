@@ -1,6 +1,23 @@
 {% extends "base.html" %}
 {% block titulo %}Funes — recomendador{% endblock %}
 {% block head %}
+{# Open Graph: es lo que hace que el link mandado por WhatsApp llegue con
+   tarjeta en vez de pelado. En un piloto que se reparte por WhatsApp y por QR,
+   un link sin preview pierde la mitad de su fuerza antes de que lo abran.
+   og:image tiene que ser absoluta y por https (WhatsApp la descarga desde sus
+   servidores) y pesar poco: 1200x630 y 68 KB, bien debajo del limite. #}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Funes">
+<meta property="og:title" content="Funes — te dice qué leer">
+<meta property="og:description" content="Contame cómo querés leer hoy y te digo qué libro te toca. Una conversación corta, sin buscar por género.">
+<meta property="og:url" content="{{ base_url }}/funes-chat">
+<meta property="og:image" content="{{ base_url }}/static/funes-og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Funes, un recomendador de libros">
+<meta property="og:locale" content="es_AR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Contame cómo querés leer hoy y te digo qué libro te toca.">
 <style>
   .puntito {
     display: inline-block; width: 6px; height: 6px; border-radius: 50%;
