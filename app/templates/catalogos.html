@@ -22,6 +22,29 @@
       </div>
     </div>
 
+    <button type="button" id="btn-nuevo-catalogo"
+      class="tap w-full text-left rounded-xl2 border-2 border-dashed border-borde p-3 text-gris font-medium">
+      + Crear catálogo
+    </button>
+
+    <div id="form-nuevo-catalogo" class="hidden bg-papel border border-borde rounded-xl2 p-3 space-y-2">
+      <input data-campo="nombre" placeholder="Nombre del catálogo (ej: Psicología)"
+        class="tap w-full rounded-lg border border-borde px-3 py-2 text-sm">
+      <textarea data-campo="descripcion" rows="2" placeholder="Descripción breve (opcional)"
+        class="w-full rounded-lg border border-borde px-3 py-2 text-sm resize-none"></textarea>
+      <div data-rol="paleta" class="flex flex-wrap gap-2 py-1">
+        {% for op in paleta %}
+        <button type="button" data-clave="{{ op.clave }}" aria-label="{{ op.nombre }}"
+          class="tap w-9 h-9 rounded-full shrink-0 {{ 'ring-2 ring-offset-2 ring-tinta' if loop.first else '' }}"
+          style="background:{{ op.bg }}; border:2px solid {{ op.borde }};"></button>
+        {% endfor %}
+      </div>
+      <div class="flex gap-2">
+        <button type="button" data-rol="crear" class="tap btn-primario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Crear</button>
+        <button type="button" data-rol="cancelar" class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Cancelar</button>
+      </div>
+    </div>
+
     {% for c in catalogos %}
     {# Los subcatalogos (nivel 1) se pintan como hermanos indentados, NUNCA
        anidados en el DOM dentro de la tarjeta del padre: el JS de abajo hace
@@ -107,8 +130,8 @@
     </div>
     {% else %}
     <p class="text-center text-gris text-sm mt-6">
-      Todavía no creaste ningún catálogo. Los catálogos principales se crean al publicar un lote nuevo;
-      los subcatálogos se agregan desde adentro de un catálogo ya creado.
+      Todavía no creaste ningún catálogo. Creá uno con el botón de arriba,
+      o esperá a publicar un lote nuevo — ahí también vas a poder elegir uno.
     </p>
     {% endfor %}
   </main>
@@ -131,6 +154,53 @@
 
   document.querySelectorAll('[data-rol="copiar"]').forEach((btn) => {
     btn.addEventListener('click', () => copiar(btn.dataset.link, btn));
+  });
+
+  // --- Alta de catalogo de primer nivel (fuera del loop por-tarjeta: no
+  // pertenece a ningun catalogo existente, es un control aparte) ---
+  const btnNuevoCatalogo = document.getElementById('btn-nuevo-catalogo');
+  const formNuevoCatalogo = document.getElementById('form-nuevo-catalogo');
+  const inputNuevoNombre = formNuevoCatalogo.querySelector('[data-campo="nombre"]');
+  const inputNuevoDescripcion = formNuevoCatalogo.querySelector('[data-campo="descripcion"]');
+  const paletaNueva = formNuevoCatalogo.querySelector('[data-rol="paleta"]');
+  let colorNuevo = paletaNueva.querySelector('.ring-tinta')?.dataset.clave || null;
+
+  paletaNueva.querySelectorAll('[data-clave]').forEach((sw) => {
+    sw.addEventListener('click', () => {
+      colorNuevo = sw.dataset.clave;
+      paletaNueva.querySelectorAll('[data-clave]').forEach((s) => {
+        s.classList.toggle('ring-2', s === sw);
+        s.classList.toggle('ring-offset-2', s === sw);
+        s.classList.toggle('ring-tinta', s === sw);
+      });
+    });
+  });
+
+  btnNuevoCatalogo.addEventListener('click', () => {
+    btnNuevoCatalogo.classList.add('hidden');
+    formNuevoCatalogo.classList.remove('hidden');
+    inputNuevoNombre.focus();
+  });
+
+  formNuevoCatalogo.querySelector('[data-rol="cancelar"]').addEventListener('click', () => {
+    formNuevoCatalogo.classList.add('hidden');
+    btnNuevoCatalogo.classList.remove('hidden');
+  });
+
+  formNuevoCatalogo.querySelector('[data-rol="crear"]').addEventListener('click', async () => {
+    const nombre = inputNuevoNombre.value.trim();
+    if (!nombre) { alert('El catálogo necesita un nombre.'); return; }
+    const resp = await fetch(`${API_BASE}/catalogos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, descripcion: inputNuevoDescripcion.value.trim(), color: colorNuevo }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      alert(err.detail || 'No se pudo crear el catálogo. Probá de nuevo.');
+      return;
+    }
+    window.location.reload();
   });
 
   document.querySelectorAll('[id^="catalogo-"]').forEach((tarjeta) => {
