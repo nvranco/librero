@@ -11,7 +11,7 @@
   <main class="flex-1 px-5 py-5 space-y-2 pb-10">
     <div class="bg-papel border border-borde rounded-xl2 p-3">
       <p class="font-medium">Catálogo general</p>
-      <p class="text-xs text-gris mt-1">Todos tus libros publicados</p>
+      <p class="text-xs text-gris mt-1">Todos tus {{ et.libros }} publicados</p>
       <div class="flex gap-2 mt-2">
         <button type="button" data-rol="copiar" data-link="{{ url_publica }}"
           class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
@@ -28,7 +28,7 @@
         <p class="font-medium">{{ c.nombre }}</p>
         {% if c.descripcion %}<p class="text-sm text-gris leading-snug">{{ c.descripcion }}</p>{% endif %}
         <p class="text-xs text-gris mt-1">
-          {{ c.cant_libros }} libro{{ 's' if c.cant_libros != 1 else '' }}
+          {{ c.cant_libros }} {{ et.libro if c.cant_libros == 1 else et.libros }}
           {% if c.ultima_actualizacion %} · actualizado {{ c.ultima_actualizacion.strftime('%d/%m') }}{% endif %}
         </p>
         <div class="grid grid-cols-2 gap-1.5 mt-2">
@@ -39,7 +39,7 @@
           <a href="{{ c.url_qr }}" download="qr-{{ libreria.slug }}-{{ c.slug }}.png"
             class="tap btn-secundario flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">QR 🏷️</a>
           <a href="{{ c.url_libros }}"
-            class="tap btn-secundario flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ver libros 📖</a>
+            class="tap btn-secundario flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium">Ver {{ et.libros }} 📖</a>
           <button type="button" data-rol="editar"
             class="tap btn-secundario rounded-lg px-3 py-2 text-sm font-medium">Editar ✏️</button>
           <button type="button" data-rol="borrar"
@@ -72,6 +72,7 @@
 <script>
   const LIBRERO_SLUG = "{{ libreria.slug }}";
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const ET_LIBROS = "{{ et.libros }}";
   const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
 
   function copiar(texto, btn) {
@@ -125,7 +126,7 @@
     });
 
     tarjeta.querySelector('[data-rol="borrar"]').addEventListener('click', async () => {
-      if (!confirm('¿Borrar este catálogo? Los libros no se borran, solo dejan de estar agrupados.')) return;
+      if (!confirm(`¿Borrar este catálogo? Los ${ET_LIBROS} no se borran, solo dejan de estar agrupados.`)) return;
       await fetch(`${API_BASE}/catalogos/${catalogoId}`, { method: 'DELETE' });
       tarjeta.remove();
     });

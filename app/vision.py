@@ -102,6 +102,77 @@ _PROMPT = (
     "\"autor_corregido\":\"...\",\"confianza\":0.0}]}"
 )
 
+# Variante para librerias con tipo_catalogo='cds' (excepcion por-libreria,
+# ver schema.sql): mismo contrato JSON y misma clave "libros" (interno, nunca
+# se muestra), pero titulo/autor pasan a significar album/artista. Espejo
+# parrafo a parrafo de _PROMPT: "lomo -> tapa/estuche", "coleccion editorial
+# -> sello discografico", mismas reglas anti-alucinacion.
+_PROMPT_CDS = (
+    "Sos un asistente que cataloga CDs de musica a partir de fotos de "
+    "estantes o pilas de CDs. Devolve UNICAMENTE un JSON valido con la clave "
+    "\"libros\", sin texto adicional, sin explicaciones y sin markdown.\n\n"
+    "Para cada tapa o lomo de CD legible, primero anota exactamente lo que "
+    "ves escrito (titulo_detectado = nombre del album, autor_detectado = "
+    "nombre del artista o banda), letra por letra, sin corregir nada "
+    "todavia. Si un CD es parcialmente ilegible, incluilo igual con "
+    "confianza baja. Si no distinguis el artista, deja autor_detectado "
+    "vacio. No inventes CDs que no esten en la imagen — esta regla no tiene "
+    "excepciones.\n\n"
+    "Una tapa o estuche fisico es UN SOLO CD, sin importar cuantos textos "
+    "distintos tenga escritos encima (nombre del sello discografico, "
+    "\"Edicion Remasterizada\", numero de disco en un box set, año de "
+    "reedicion, etc). Eso NUNCA son CDs distintos — es un unico CD, y tiene "
+    "que aparecer una sola vez en \"libros\". Nunca generes mas de una "
+    "entrada por cada tapa o estuche fisico distinto que veas en la foto. "
+    "Cuando una tapa tenga varios textos asi superpuestos, elegi como "
+    "titulo_detectado el mas especifico (el nombre real del album, no el "
+    "sello ni el numero de disco solo) — los demas textos se descartan, no "
+    "se reportan como CDs aparte.\n\n"
+    "Muchos CDs muestran ademas el nombre de un SELLO DISCOGRAFICO o "
+    "distribuidora (ej: \"Sony Music\", \"Universal\", \"EMI\", \"Warner\", "
+    "un sello independiente), ademas del titulo del album y el artista. Un "
+    "sello discografico NO es un titulo ni un artista — es una marca "
+    "comercial que se repite en muchos discos distintos. Si el texto mas "
+    "grande o llamativo de la tapa es el nombre de un sello, igual anotalo "
+    "tal cual en titulo_detectado (es lo que se ve), pero no lo confundas "
+    "con el titulo real al buscar la correccion. El artista SIEMPRE es el "
+    "nombre de una persona, banda o interprete — nunca pongas el nombre de "
+    "un sello discografico en autor_detectado ni en autor_corregido.\n\n"
+    "Despues, para cada CD que detectaste (solo esos, ninguno mas), completa "
+    "titulo_corregido/autor_corregido: normalizando mayusculas/minusculas al "
+    "uso estandar del idioma, corrigiendo errores de OCR evidentes (letras "
+    "confundidas, palabras cortadas), y expandiendo el artista si la tapa "
+    "mostraba una parte de su nombre real (ej. apellido solo, nombre "
+    "abreviado) y podes completarlo sin ambiguedad.\n\n"
+    "REGLA CRITICA sobre autor_corregido, sin excepciones: NUNCA completes "
+    "autor_corregido con el nombre de un artista si autor_detectado esta "
+    "vacio o es el nombre de un sello discografico (es decir, si no hay "
+    "NINGUN nombre de artista, ni siquiera parcial, visible en la foto). En "
+    "ese caso dejá autor_corregido igual a autor_detectado (vacio o el "
+    "sello) y bajá confianza a 0.4 o menos. No importa si conoces un artista "
+    "probable para ese album o ese sello: sin un nombre real visible en la "
+    "foto como punto de partida, completar el artista es adivinar, no "
+    "corregir, y un artista inventado con confianza alta es el peor "
+    "resultado posible de este sistema — peor que dejarlo vacio.\n\n"
+    "Lo mismo aplica al titulo: si lo unico visible es el nombre de un sello "
+    "discografico sin ningun otro texto identificable del album puntual, "
+    "dejá titulo_corregido igual al nombre del sello detectado y bajá "
+    "confianza a 0.4 o menos, en vez de adivinar cual album es. En general: "
+    "si no encontras una coincidencia confiable y verificable, copia el "
+    "valor detectado tal cual en el campo corregido y bajá la confianza — "
+    "nunca elijas la opcion que te parezca mas probable como si fuera un "
+    "hecho confirmado.\n\n"
+    "Si no hay ningun CD visible en la imagen, devolve exactamente "
+    '{"libros": []}.\n\n'
+    "Formato exacto: {\"libros\":[{\"titulo_detectado\":\"...\","
+    "\"autor_detectado\":\"...\",\"titulo_corregido\":\"...\","
+    "\"autor_corregido\":\"...\",\"confianza\":0.0}]}"
+)
+
+
+def _prompt_para(tipo_catalogo: str) -> str:
+    return _PROMPT_CDS if tipo_catalogo == "cds" else _PROMPT
+
 
 class ErrorVision(Exception):
     pass
@@ -208,7 +279,7 @@ def _parsear_respuesta(texto: str) -> dict:
     return datos
 
 
-async def _llamar_openrouter(foto_bytes_resized: bytes) -> tuple[str, dict]:
+async def _llamar_openrouter(foto_bytes_resized: bytes, tipo_catalogo: str = "libros") -> tuple[str, dict]:
     data_uri = "data:image/jpeg;base64," + base64.b64encode(foto_bytes_resized).decode("ascii")
     body = {
         "model": OPENROUTER_MODEL,
@@ -217,7 +288,7 @@ async def _llamar_openrouter(foto_bytes_resized: bytes) -> tuple[str, dict]:
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": _PROMPT},
+                    {"type": "text", "text": _prompt_para(tipo_catalogo)},
                     {"type": "image_url", "image_url": {"url": data_uri}},
                 ],
             }
@@ -238,9 +309,13 @@ async def _llamar_openrouter(foto_bytes_resized: bytes) -> tuple[str, dict]:
     return texto, payload.get("usage", {})
 
 
-async def analizar_foto(foto_bytes: bytes) -> list[dict]:
+async def analizar_foto(foto_bytes: bytes, tipo_catalogo: str = "libros") -> list[dict]:
     """Devuelve [{"titulo_detectado", "autor_detectado", "titulo_corregido",
-    "autor_corregido", "confianza"}, ...]. 1 reintento ante fallo."""
+    "autor_corregido", "confianza"}, ...]. 1 reintento ante fallo.
+
+    tipo_catalogo ('libros' | 'cds') solo decide que prompt se manda — el
+    contrato de salida (clave "libros", nombres de campo) es siempre el
+    mismo, para no tocar el parseo/DB por una excepcion de una sola libreria."""
     if not OPENROUTER_API_KEY:
         raise ErrorVision("OPENROUTER_API_KEY no configurada.")
 
@@ -250,7 +325,7 @@ async def analizar_foto(foto_bytes: bytes) -> list[dict]:
     for intento in (1, 2):
         inicio = time.monotonic()
         try:
-            texto_crudo, uso = await _llamar_openrouter(foto_resized)
+            texto_crudo, uso = await _llamar_openrouter(foto_resized, tipo_catalogo)
             datos = _parsear_respuesta(texto_crudo)
             latencia_ms = round((time.monotonic() - inicio) * 1000)
             logger.info(

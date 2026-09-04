@@ -11,7 +11,7 @@
   <main class="flex-1 px-5 -mt-3 pb-10">
     <div class="bg-papel border border-borde rounded-xl2 p-3">
       <p class="font-medium">Catálogo general</p>
-      <p class="text-xs text-gris mt-1">Todos tus libros publicados</p>
+      <p class="text-xs text-gris mt-1">Todos tus {{ et.libros }} publicados</p>
       <div class="flex gap-2 mt-2">
         <button type="button" id="btn-copiar-general" data-link="{{ url_publica }}"
           class="tap btn-secundario flex-1 rounded-lg px-3 py-2 text-sm font-medium">Copiar link 📋</button>
@@ -26,7 +26,7 @@
       id="buscador"
       type="search"
       inputmode="search"
-      placeholder="Buscar un libro puntual…"
+      placeholder="Buscar un {{ et.libro }} puntual…"
       class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris mt-4"
     >
 
@@ -39,7 +39,7 @@
 
     <div id="estado-vacio" class="hidden mt-14 text-center text-gris px-4">
       <p class="text-4xl mb-3">📚</p>
-      <p>Todavía no tenés libros publicados. Cargá y publicá un estante primero.</p>
+      <p>Todavía no tenés {{ et.libros }} publicados. Cargá y publicá un estante primero.</p>
     </div>
 
     {% if cant_libros %}
@@ -53,7 +53,7 @@
         <p class="font-bold">¿Vaciar todo el catálogo?</p>
         <p class="text-sm text-gris mt-1">
           Se van a sacar
-          <strong>{{ cant_libros }} libro{{ 's' if cant_libros != 1 else '' }}</strong>
+          <strong>{{ cant_libros }} {{ et.libro if cant_libros == 1 else et.libros }}</strong>
           de tu catálogo público y vas a arrancar de cero. Las fotos y los lotes que
           cargaste quedan guardados, pero no vuelven a aparecer acá.
         </p>
@@ -78,6 +78,8 @@
 <script>
   const LIBRERO_SLUG = "{{ libreria.slug }}";
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const ET_LIBROS = "{{ et.libros }}";
+  const ET_AUTOR_CAP = "{{ et.Autor }}";
   const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
 
   const libros = {{ libros_json | safe }};
@@ -179,7 +181,7 @@
 
     if (filtrados.length === 0) {
       lista.innerHTML = catalogoFiltro
-        ? '<p class="text-center text-gris py-8">Este catálogo todavía no tiene libros.</p>'
+        ? `<p class="text-center text-gris py-8">Este catálogo todavía no tiene ${ET_LIBROS}.</p>`
         : '<p class="text-center text-gris py-8">Nada coincide con esa búsqueda.</p>';
       return;
     }
@@ -191,7 +193,7 @@
             ${libro.imagen_url ? `<img src="${libro.imagen_url}" alt="" class="w-10 h-12 object-cover rounded border border-borde shrink-0">` : ''}
             <span class="min-w-0">
               <p class="font-medium truncate">${escaparHtml(libro.titulo)}</p>
-              <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+              <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || `${ET_AUTOR_CAP} no detectado`)}</p>
             </span>
           </span>
           ${libro.estado === 'vendido'

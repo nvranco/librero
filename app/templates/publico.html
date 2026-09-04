@@ -23,7 +23,7 @@
         type="search"
         autofocus
         inputmode="search"
-        placeholder="Buscar por título o autor…"
+        placeholder="Buscar por título o {{ et.autor }}…"
         class="tap w-full rounded-xl2 border-2 border-tinta bg-papel pl-11 pr-4 py-2 text-lg outline-none placeholder:text-gris"
       >
     </div>
@@ -36,7 +36,7 @@
         <p class="font-medium">{{ c.nombre }}</p>
         {% if c.descripcion %}<p class="text-sm text-gris">{{ c.descripcion }}</p>{% endif %}
         <p class="text-xs text-gris mt-1">
-          {{ c.cant_libros }} libro{{ 's' if c.cant_libros != 1 else '' }}
+          {{ c.cant_libros }} {{ et.libro if c.cant_libros == 1 else et.libros }}
           {% if c.ultima_actualizacion %} · actualizado {{ c.ultima_actualizacion.strftime('%d/%m') }}{% endif %}
         </p>
       </a>
@@ -49,7 +49,7 @@
     <div id="estado-vacio" class="mt-14 text-center text-gris px-4">
       <p id="mensaje-vacio" class="text-base">
         {% if hay_libros %}
-          Escribí un título o autor para empezar a buscar.
+          Escribí un título o {{ et.autor }} para empezar a buscar.
         {% else %}
           Esta librería todavía está cargando su catálogo. Volvé a pasar más tarde.
         {% endif %}
@@ -72,6 +72,8 @@
 
 <script>
   const SLUG = "{{ libreria.slug }}";
+  const ET_LIBRO = "{{ et.libro }}", ET_LIBROS = "{{ et.libros }}";
+  const ET_AUTOR = "{{ et.autor }}", ET_AUTOR_CAP = "{{ et.Autor }}";
   const WHATSAPP = {{ whatsapp_js | safe }};
   const MENSAJE_TEMPLATE = {{ mensaje_wa_template_js | safe }};
   const ORIGEN = {{ origen_js | safe }};
@@ -149,7 +151,7 @@
   function mostrarBotonGenerico(q) {
     const mensaje = q
       ? `Hola! Busqué "${q}" en tu catálogo y no lo encontré. ¿Lo tenés igual o me avisás si lo conseguís?`
-      : 'Hola! Quería consultarte por un libro que no encontré en tu catálogo.';
+      : `Hola! Quería consultarte por un ${ET_LIBRO} que no encontré en tu catálogo.`;
     btnWhatsappGenerico.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
     btnWhatsappGenerico.onclick = () => {
       registrarEvento('clic_whatsapp', payloadCatalogo({ libro_id: null, generico: true, q: q || '' }));
@@ -214,7 +216,7 @@
       ocultarBotonGenerico();
       ocultarPistaOtroCatalogo();
       mensajeVacio.textContent = catalogo.length > 0
-        ? 'Escribí un título o autor para empezar a buscar.'
+        ? `Escribí un título o ${ET_AUTOR} para empezar a buscar.`
         : 'Esta librería todavía está cargando su catálogo. Volvé a pasar más tarde.';
       return;
     }
@@ -256,7 +258,7 @@
       estadoVacio.classList.remove('hidden');
       const q = buscador.value.trim();
       if (q) {
-        mensajeVacio.textContent = 'No encontramos ningún libro con ese título o autor.';
+        mensajeVacio.textContent = `No encontramos ningún ${ET_LIBRO} con ese título o ${ET_AUTOR}.`;
         mostrarBotonGenerico(q);
         if (CATALOGO_ID !== null && filtrar(q).length > 0) {
           mostrarPistaOtroCatalogo(q);
@@ -265,8 +267,8 @@
         }
       } else {
         mensajeVacio.textContent = CATALOGO_ID !== null
-          ? 'Este catálogo todavía no tiene libros.'
-          : 'Escribí un título o autor para empezar a buscar.';
+          ? `Este catálogo todavía no tiene ${ET_LIBROS}.`
+          : `Escribí un título o ${ET_AUTOR} para empezar a buscar.`;
         ocultarBotonGenerico();
         ocultarPistaOtroCatalogo();
       }
@@ -283,7 +285,7 @@
         ` : ''}
         <div class="min-w-0 flex-1 p-3 flex flex-col">
           <p class="font-medium">${escaparHtml(libro.titulo)}</p>
-          <p class="text-sm text-gris">${escaparHtml(libro.autor || 'Autor no disponible')}</p>
+          <p class="text-sm text-gris">${escaparHtml(libro.autor || `${ET_AUTOR_CAP} no disponible`)}</p>
           <div class="flex justify-end mt-auto pt-2">
             <a data-rol="whatsapp" target="_blank" rel="noopener"
               class="tap inline-flex items-center justify-center gap-2 rounded-xl2 font-medium px-4 border-2 border-whatsapp text-whatsapp">

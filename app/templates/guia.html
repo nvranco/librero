@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block titulo %}Cómo cargar tus libros — {{ libreria.nombre }}{% endblock %}
+{% block titulo %}Cómo cargar tus {{ et.libros }} — {{ libreria.nombre }}{% endblock %}
 {% block contenido %}
 <div class="min-h-screen flex flex-col">
 
   <header class="bg-celeste px-5 pt-8 pb-6">
     <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}" class="text-tinta text-sm font-medium">← Volver</a>
-    <h1 class="text-2xl font-bold text-tinta leading-tight mt-1">Cómo cargar tus libros</h1>
+    <h1 class="text-2xl font-bold text-tinta leading-tight mt-1">Cómo cargar tus {{ et.libros }}</h1>
     <p class="text-sm text-tinta/80 mt-1">
       Librero digitaliza tu catálogo de 2 formas — podés usar las dos, incluso mezcladas en una misma carga.
     </p>
@@ -15,7 +15,7 @@
 
     <div id="paso-1">
       <p class="text-xs font-bold text-gris uppercase tracking-wide mb-1">Paso 1 de 2 · Digitalización masiva</p>
-      <h2 class="text-xl font-bold leading-tight">Estante completo, varios libros a la vez</h2>
+      <h2 class="text-xl font-bold leading-tight">Estante completo, varios {{ et.libros }} a la vez</h2>
       <p class="text-sm text-gris mt-1">
         Le sacás una foto a toda la estantería y Librero lee todos los lomos que entran en la foto.
       </p>
@@ -31,11 +31,11 @@
         </li>
         <li class="flex gap-3">
           <span class="tap shrink-0 w-7 h-7 rounded-full bg-tinta text-crema font-bold text-sm flex items-center justify-center">2</span>
-          <span><strong>Acercate hasta que se lea el lomo.</strong> Título y autor tienen que verse nítidos.</span>
+          <span><strong>Acercate hasta que se lea el lomo.</strong> Título y {{ et.autor }} tienen que verse nítidos.</span>
         </li>
         <li class="flex gap-3">
           <span class="tap shrink-0 w-7 h-7 rounded-full bg-tinta text-crema font-bold text-sm flex items-center justify-center">3</span>
-          <span><strong>Estante derecho, sin ángulo forzado.</strong> Se leen mejor los lomos y quedan menos libros con "autor no detectado" para corregir a mano.</span>
+          <span><strong>Estante derecho, sin ángulo forzado.</strong> Se leen mejor los lomos y quedan menos {{ et.libros }} con "{{ et.autor }} no detectado" para corregir a mano.</span>
         </li>
       </ol>
 
@@ -44,19 +44,19 @@
       </p>
 
       <button id="btn-paso-siguiente" type="button" class="tap btn-primario w-full rounded-xl2 font-bold mt-5">
-        Siguiente: cargar un libro particular →
+        Siguiente: cargar un {{ et.libro }} particular →
       </button>
     </div>
 
     <div id="paso-2" class="hidden">
       <p class="text-xs font-bold text-gris uppercase tracking-wide mb-1">Paso 2 de 2 · Digitalización particular</p>
-      <h2 class="text-xl font-bold leading-tight">Un libro particular, con su tapa</h2>
+      <h2 class="text-xl font-bold leading-tight">Un {{ et.libro }} particular, con su tapa</h2>
       <p class="text-sm text-gris mt-1">
-        Le sacás una foto de cerca a la TAPA de un solo libro (no al lomo). Librero la reconoce como una foto
-        individual y esa misma foto queda como la tapa de ese libro en tu catálogo público.
+        Le sacás una foto de cerca a la TAPA de un solo {{ et.libro }} (no al lomo). Librero la reconoce como una foto
+        individual y esa misma foto queda como la tapa de ese {{ et.libro }} en tu catálogo público.
       </p>
 
-      <img src="/static/guia-foto-tapa-ejemplo.jpg" alt="Foto de ejemplo: tapa de un solo libro, de cerca"
+      <img src="/static/guia-foto-tapa-ejemplo.jpg" alt="Foto de ejemplo: tapa de cerca"
         class="w-48 mx-auto block rounded-xl2 border border-borde mt-4">
       <p class="text-xs text-gris text-center mt-1">Así se ve una foto de tapa.</p>
 
@@ -110,6 +110,8 @@
 <script>
   const LIBRERO_SLUG = "{{ libreria.slug }}";
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const ET_LIBRO = "{{ et.libro }}", ET_LIBROS = "{{ et.libros }}";
+  const ET_AUTORES = "{{ et.autores }}";
   const API_LOTES = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}/lotes`;
 
   const paso1 = document.getElementById('paso-1');
@@ -167,7 +169,7 @@
   // nombra la etapa real del pipeline, así el librero entiende qué está pasando.
   const MENSAJES_PROCESO = [
     'Mirando las fotos…',
-    'Leyendo títulos y autores…',
+    `Leyendo títulos y ${ET_AUTORES}…`,
     'Corrigiendo mayúsculas y acentos…',
     'Comparando con tu catálogo…',
     'Descartando repetidos…',
@@ -262,7 +264,7 @@
       const dups = datos.duplicados || 0;
       if (cantLibros > 0 || dups > 0) {
         cargaContador.classList.remove('hidden');
-        let texto = `📚 ${cantLibros} libro${cantLibros === 1 ? '' : 's'} nuevo${cantLibros === 1 ? '' : 's'} hasta ahora`;
+        let texto = `📚 ${cantLibros} ${cantLibros === 1 ? ET_LIBRO : ET_LIBROS} nuevo${cantLibros === 1 ? '' : 's'} hasta ahora`;
         if (dups > 0) texto += ` · 🔁 ${dups} que ya tenías`;
         cargaContador.textContent = texto;
       }
@@ -276,20 +278,20 @@
       cargaBarra.style.width = '100%';
 
       if (cantLibros === 0 && dups === 0) {
-        cargaMensaje.textContent = 'No se detectó ningún libro legible en esas fotos.';
+        cargaMensaje.textContent = `No se detectó ningún ${ET_LIBRO} legible en esas fotos.`;
         cargaDetalle.textContent = 'Probá con más luz o acercándote un poco.';
         reactivarBoton();
         return;
       }
 
       if (cantLibros === 0) {
-        cargaMensaje.textContent = 'Esos libros ya los tenías cargados';
-        cargaDetalle.textContent = `Los ${dups} libros de estas fotos ya están en tu catálogo.`;
+        cargaMensaje.textContent = `Esos ${ET_LIBROS} ya los tenías cargados`;
+        cargaDetalle.textContent = `Los ${dups} ${ET_LIBROS} de estas fotos ya están en tu catálogo.`;
         reactivarBoton();
         return;
       }
 
-      cargaMensaje.textContent = `Listo: ${cantLibros} libro${cantLibros === 1 ? '' : 's'}`;
+      cargaMensaje.textContent = `Listo: ${cantLibros} ${cantLibros === 1 ? ET_LIBRO : ET_LIBROS}`;
       cargaDetalle.textContent = 'Abriendo la revisión…';
       // Pequeño delay para que se alcance a ver la barra llena y el mensaje
       // final antes de saltar a la pantalla de revisión.

@@ -92,7 +92,7 @@ async def crear_lote(
         )
         fila_fotos.append((foto_id, path))
 
-    background_tasks.add_task(_procesar_lote, libreria["id"], lote_id, fila_fotos)
+    background_tasks.add_task(_procesar_lote, libreria["id"], lote_id, fila_fotos, libreria["tipo_catalogo"])
 
     return {"lote_id": lote_id}
 
@@ -135,11 +135,11 @@ async def estado_lote(slug: str, token: str, lote_id: int):
     )
 
 
-async def _analizar_una(foto_id: int, path: Path, lote_id: int):
+async def _analizar_una(foto_id: int, path: Path, lote_id: int, tipo_catalogo: str = "libros"):
     """Envuelve el analisis de una foto para poder correr todas en paralelo
     sin que una fallida tumbe al resto (requisito §7: nunca tirar el lote)."""
     try:
-        return foto_id, await vision.analizar_foto(path.read_bytes())
+        return foto_id, await vision.analizar_foto(path.read_bytes(), tipo_catalogo)
     except Exception as exc:  # noqa: BLE001
         logger.error("foto_fallida lote_id=%s foto_id=%s error=%s", lote_id, foto_id, exc)
         return foto_id, []
@@ -214,7 +214,7 @@ def _buscar_duplicado(indice, titulo: str, autor: str) -> int | None:
     return None
 
 
-async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, Path]]):
+async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, Path]], tipo_catalogo: str = "libros"):
     """Corre en background: resize -> OpenRouter -> parse -> dedupe -> insert.
 
     Las fotos se analizan EN PARALELO (una llamada al modelo por foto): 6 fotos
@@ -239,7 +239,7 @@ async def _procesar_lote(libreria_id: int, lote_id: int, fotos: list[tuple[int, 
     cant_nuevos = cant_duplicados = 0
     paths_por_foto = dict(fotos)
 
-    tareas = [_analizar_una(foto_id, path, lote_id) for foto_id, path in fotos]
+    tareas = [_analizar_una(foto_id, path, lote_id, tipo_catalogo) for foto_id, path in fotos]
 
     for completada in asyncio.as_completed(tareas):
         foto_id, libros_detectados = await completada
@@ -524,7 +524,7 @@ async def detectar_vendidos(slug: str, token: str, fotos: list[UploadFile]):
 
     async def _analizar(contenido: bytes):
         try:
-            return await vision.analizar_foto(contenido)
+            return await vision.analizar_foto(contenido, libreria["tipo_catalogo"])
         except Exception as exc:  # noqa: BLE001
             logger.error("foto_venta_fallida libreria_id=%s error=%s", libreria["id"], exc)
             return []

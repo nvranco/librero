@@ -12,14 +12,14 @@
     {% if not tiene_libros and not cant_duplicados %}
     <div class="text-center text-gris px-4 py-10">
       <p class="text-4xl mb-3">🤷</p>
-      <p>No se detectó ningún libro legible en este lote. Podés descartarlo desde el botón de abajo.</p>
+      <p>No se detectó ningún {{ et.libro }} legible en este lote. Podés descartarlo desde el botón de abajo.</p>
     </div>
     {% endif %}
 
     {% if cant_duplicados %}
     <div class="bg-celeste-claro/40 border border-celeste rounded-xl2 p-3 text-sm">
       <p class="font-medium">
-        {{ cant_duplicados }} libro{{ 's' if cant_duplicados != 1 else '' }}
+        {{ cant_duplicados }} {{ et.libro if cant_duplicados == 1 else et.libros }}
         de estas fotos ya {{ 'estaban' if cant_duplicados != 1 else 'estaba' }} en tu catálogo 🔁
       </p>
       <p class="text-gris mt-0.5">No se van a repetir. Los marcamos abajo para que sepas por qué no aparecen.</p>
@@ -53,6 +53,8 @@
 <script>
   const LIBRERO_SLUG = "{{ libreria.slug }}";
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const ET_LIBRO = "{{ et.libro }}", ET_LIBROS = "{{ et.libros }}";
+  const ET_AUTOR_CAP = "{{ et.Autor }}";
   const LOTE_ID = {{ lote.id }};
   const UMBRAL_CONFIANZA = 0.7;
   const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
@@ -86,7 +88,7 @@
       return;
     }
     const aprobados = estado.filter((l) => l.aprobado).length;
-    btnPublicar.textContent = `Publicar ${aprobados} libro${aprobados === 1 ? '' : 's'}`;
+    btnPublicar.textContent = `Publicar ${aprobados} ${aprobados === 1 ? ET_LIBRO : ET_LIBROS}`;
     btnPublicar.disabled = aprobados === 0;
     btnPublicar.classList.toggle('opacity-60', aprobados === 0);
   }
@@ -100,7 +102,7 @@
     fila.innerHTML = `
       <div class="flex-1 min-w-0">
         <p class="font-medium truncate line-through decoration-1">${escaparHtml(libro.titulo)}</p>
-        <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+        <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || `${ET_AUTOR_CAP} no detectado`)}</p>
       </div>
       <span class="shrink-0 text-xs font-medium text-celeste whitespace-nowrap">Ya lo tenías 🔁</span>
     `;
@@ -145,7 +147,7 @@
           <div class="min-w-0 flex-1 p-3">
             <div class="cursor-text" data-rol="texto">
               <p class="font-medium truncate" data-campo="titulo">${escaparHtml(libro.titulo)}</p>
-              <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+              <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || `${ET_AUTOR_CAP} no detectado`)}</p>
             </div>
             ${notaCorregido}
           </div>
@@ -164,7 +166,7 @@
         <div class="flex-1 min-w-0">
           <div class="cursor-text" data-rol="texto">
             <p class="font-medium truncate" data-campo="titulo">${escaparHtml(libro.titulo)}</p>
-            <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || 'Autor no detectado')}</p>
+            <p class="text-sm text-gris truncate" data-campo="autor">${escaparHtml(libro.autor || `${ET_AUTOR_CAP} no detectado`)}</p>
           </div>
           ${notaCorregido}
         </div>
@@ -292,7 +294,7 @@
   });
 
   btnDescartar.addEventListener('click', async () => {
-    if (!confirm('¿Descartar todo el lote? No se va a publicar ningún libro de estas fotos.')) return;
+    if (!confirm(`¿Descartar todo el lote? No se va a publicar ningún ${ET_LIBRO} de estas fotos.`)) return;
     btnPublicar.disabled = true;
     btnDescartar.disabled = true;
     btnDescartar.textContent = 'Descartando…';

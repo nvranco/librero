@@ -12,6 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from app import db
 from app.colores import color_catalogo
+from app.etiquetas import etiquetas
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -86,6 +87,7 @@ async def _render_catalogo(request: Request, slug: str, catalogo_slug: str | Non
         "publico.html",
         {
             "libreria": libreria,
+            "et": etiquetas(libreria["tipo_catalogo"]),
             "hay_libros": cant_publicados > 0,
             "fecha_hoy": fecha_hoy,
             "origen_js": _js_string(origen),

@@ -11,6 +11,7 @@ from fastapi.templating import Jinja2Templates
 
 from app import db
 from app.colores import PALETA_CATALOGOS, color_catalogo
+from app.etiquetas import etiquetas
 from app.metricas import calcular_metricas
 
 router = APIRouter()
@@ -111,6 +112,7 @@ async def panel_home(request: Request, slug: str, token: str):
         "panel.html",
         {
             "libreria": libreria,
+            "et": etiquetas(libreria["tipo_catalogo"]),
             "cant_libros": cant_libros,
             "cant_catalogos": cant_catalogos,
             "vistas_ciclo": vistas_ciclo,
@@ -134,7 +136,9 @@ async def panel_guia(request: Request, slug: str, token: str):
     """P2b — guia de carga en 2 pasos (estante completo / libro particular),
     pantalla propia que termina abriendo el selector de fotos."""
     libreria = await _libreria_por_slug_y_token(slug, token)
-    return templates.TemplateResponse(request, "guia.html", {"libreria": libreria})
+    return templates.TemplateResponse(
+        request, "guia.html", {"libreria": libreria, "et": etiquetas(libreria["tipo_catalogo"])}
+    )
 
 
 @router.get("/{slug}/panel/{token}/lote/{lote_id}", response_class=HTMLResponse)
@@ -179,6 +183,7 @@ async def panel_revision(request: Request, slug: str, token: str, lote_id: int):
         "revision.html",
         {
             "libreria": libreria,
+            "et": etiquetas(libreria["tipo_catalogo"]),
             "lote": lote,
             "fotos": fotos,
             "libros_json": a_json(libros),
@@ -202,7 +207,9 @@ async def panel_vender(request: Request, slug: str, token: str):
     )
     libros_json = json.dumps([dict(l) for l in libros]).replace("</", "<\\/")
     return templates.TemplateResponse(
-        request, "vender.html", {"libreria": libreria, "libros_json": libros_json}
+        request,
+        "vender.html",
+        {"libreria": libreria, "et": etiquetas(libreria["tipo_catalogo"]), "libros_json": libros_json},
     )
 
 
@@ -234,6 +241,7 @@ async def panel_lote_catalogo(request: Request, slug: str, token: str, lote_id: 
         "catalogo_asignar.html",
         {
             "libreria": libreria,
+            "et": etiquetas(libreria["tipo_catalogo"]),
             "lote_id": lote_id,
             "cant_libros": cant_libros,
             "catalogos_json": catalogos_json,
@@ -331,6 +339,7 @@ async def panel_libro_catalogo(
         "libro_catalogo.html",
         {
             "libreria": libreria,
+            "et": etiquetas(libreria["tipo_catalogo"]),
             "libro": libro,
             "catalogos": [dict(f) for f in filas],
             "volver": volver,
@@ -379,6 +388,7 @@ async def panel_inventario(request: Request, slug: str, token: str):
         "inventario.html",
         {
             "libreria": libreria,
+            "et": etiquetas(libreria["tipo_catalogo"]),
             "libros_json": libros_json,
             "cant_libros": len(libros),
             "catalogos_json": catalogos_json,
@@ -424,6 +434,7 @@ async def panel_catalogos(request: Request, slug: str, token: str):
         "catalogos.html",
         {
             "libreria": libreria,
+            "et": etiquetas(libreria["tipo_catalogo"]),
             "catalogos": catalogos,
             "url_publica": f"{base}/{slug}",
             "url_qr": f"/api/{slug}/{token}/qr.png",

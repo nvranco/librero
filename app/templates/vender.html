@@ -12,7 +12,7 @@
 
     <div id="paso-intro">
       <div id="tarjeta-fotos" class="bg-papel border border-borde rounded-xl2 p-3">
-        <p class="font-medium">¿Vendiste varios libros?</p>
+        <p class="font-medium">¿Vendiste varios {{ et.libros }}?</p>
         <p class="text-sm text-gris mt-1">
           Cargá una foto con los lomos hacia la cámara y los detectamos para que confirmes.
         </p>
@@ -26,7 +26,7 @@
         id="buscador"
         type="search"
         inputmode="search"
-        placeholder="O buscá un libro puntual…"
+        placeholder="O buscá un {{ et.libro }} puntual…"
         class="tap w-full rounded-xl2 border-2 border-tinta bg-papel px-4 py-2 text-lg outline-none placeholder:text-gris mt-4"
       >
 
@@ -76,6 +76,8 @@
 <script>
   const LIBRERO_SLUG = "{{ libreria.slug }}";
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const ET_LIBRO = "{{ et.libro }}", ET_LIBROS = "{{ et.libros }}";
+  const ET_AUTOR_CAP = "{{ et.Autor }}", ET_AUTORES = "{{ et.autores }}";
   const API_BASE = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}`;
 
   let libros = {{ libros_json | safe }};
@@ -133,7 +135,7 @@
       <div class="bg-papel border border-borde rounded-xl2 p-3 flex items-center justify-between gap-3" data-id="${libro.id}">
         <div class="min-w-0">
           <p class="font-medium truncate">${escaparHtml(libro.titulo)}</p>
-          <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || 'Autor no disponible')}</p>
+          <p class="text-sm text-gris truncate">${escaparHtml(libro.autor || `${ET_AUTOR_CAP} no disponible`)}</p>
         </div>
         <button type="button" data-accion="vendido" class="tap btn-secundario shrink-0 rounded-lg px-3 text-sm font-medium">
           Marcar vendido
@@ -176,9 +178,9 @@
   // de en que paso real esta el backend.
   const MENSAJES_VENTA = [
     'Mirando los lomos…',
-    'Leyendo títulos y autores…',
+    `Leyendo títulos y ${ET_AUTORES}…`,
     'Comparando con tu catálogo…',
-    'Buscando cada libro entre lo publicado…',
+    `Buscando cada ${ET_LIBRO} entre lo publicado…`,
     'Armando la lista para que confirmes…',
   ];
   let rotacionMensajes = null;
@@ -276,7 +278,7 @@
     fila.innerHTML = `
       <div class="min-w-0">
         <p class="font-medium truncate">${escaparHtml(item.titulo)}</p>
-        <p class="text-sm text-gris truncate">${escaparHtml(item.autor || 'Autor no disponible')}</p>
+        <p class="text-sm text-gris truncate">${escaparHtml(item.autor || `${ET_AUTOR_CAP} no disponible`)}</p>
       </div>
       <button type="button" data-rol="toggle" class="tap shrink-0 rounded-lg font-bold text-lg px-3"></button>
     `;
@@ -300,7 +302,7 @@
 
   function actualizarBotonConfirmar() {
     const cant = encontrados.filter((i) => i.incluido).length;
-    btnConfirmarVentas.textContent = cant > 0 ? `Confirmar venta de ${cant} libro${cant === 1 ? '' : 's'}` : 'Confirmar venta';
+    btnConfirmarVentas.textContent = cant > 0 ? `Confirmar venta de ${cant} ${cant === 1 ? ET_LIBRO : ET_LIBROS}` : 'Confirmar venta';
     btnConfirmarVentas.disabled = cant === 0;
     btnConfirmarVentas.classList.toggle('opacity-60', cant === 0);
   }
@@ -313,8 +315,8 @@
     if (encontrados.length === 0) {
       pasoVacio.classList.remove('hidden');
       mensajeVacioVenta.textContent = noEncontrados.length > 0
-        ? 'Detectamos libros en la foto, pero ninguno está en tu catálogo publicado ahora mismo.'
-        : 'No se detectó ningún libro legible en esas fotos.';
+        ? `Detectamos ${ET_LIBROS} en la foto, pero ninguno está en tu catálogo publicado ahora mismo.`
+        : `No se detectó ningún ${ET_LIBRO} legible en esas fotos.`;
       listaNoEncontradosVacio.innerHTML = noEncontrados.map((l) =>
         `<p class="text-sm">• ${escaparHtml(l.titulo)}${l.autor ? ' — ' + escaparHtml(l.autor) : ''}</p>`
       ).join('');
@@ -357,7 +359,7 @@
       libros = libros.filter((l) => !idsConfirmados.includes(l.id));
       pasoConfirmar.classList.add('hidden');
       pasoVacio.classList.remove('hidden');
-      mensajeVacioVenta.textContent = `¡Listo! Marcamos ${resultado.vendidos} libro${resultado.vendidos === 1 ? '' : 's'} como vendido${resultado.vendidos === 1 ? '' : 's'}.`;
+      mensajeVacioVenta.textContent = `¡Listo! Marcamos ${resultado.vendidos} ${resultado.vendidos === 1 ? ET_LIBRO : ET_LIBROS} como vendido${resultado.vendidos === 1 ? '' : 's'}.`;
       listaNoEncontradosVacio.innerHTML = '';
       btnReintentar.textContent = 'Volver al panel';
     } catch (err) {

@@ -21,7 +21,7 @@
       class="tap w-full text-left bg-papel rounded-xl2 p-3 {{ 'border-2 border-celeste' if libro.catalogo_id == c.id else 'border border-borde' }}">
       <p class="font-medium">📁 {{ c.nombre }}</p>
       {% if c.descripcion %}<p class="text-sm text-gris mt-1">{{ c.descripcion }}</p>{% endif %}
-      <p class="text-xs text-gris mt-1">{{ c.cant_libros }} libro{{ 's' if c.cant_libros != 1 else '' }}</p>
+      <p class="text-xs text-gris mt-1">{{ c.cant_libros }} {{ et.libro if c.cant_libros == 1 else et.libros }}</p>
     </button>
     {% else %}
     <p class="text-center text-gris text-sm mt-6">Todavía no creaste ningún catálogo.</p>

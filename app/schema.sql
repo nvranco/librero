@@ -110,6 +110,46 @@ UPDATE fotos SET libreria_id = (SELECT l.libreria_id FROM lotes l WHERE l.id = f
     WHERE libreria_id IS NULL;
 ALTER TABLE fotos ALTER COLUMN lote_id DROP NOT NULL;
 
+-- Catalogo del recomendador "Funes Chat": independiente del catalogo de
+-- donaciones (tabla `libros`), no pertenece a ninguna libreria. isbn/
+-- fecha_publicacion/categoria/genero/subgenero/nro_paginas quedan NULL para
+-- los libros que no vinieron de una fuente con esos datos (se completan
+-- despues, via investigacion, en otra tanda de trabajo). No hay columna
+-- editorial: un libro tiene multiples ediciones/editoriales, no es un dato
+-- estable "del libro".
+CREATE TABLE IF NOT EXISTS funes_libros (
+    id                  TEXT PRIMARY KEY,   -- slugify(titulo), con sufijo de autor si colisiona
+    titulo              TEXT NOT NULL,
+    autor               TEXT NOT NULL DEFAULT '',
+    abstracto           TEXT NOT NULL DEFAULT '',
+    embedding           REAL[],              -- 1536 dims; NULL hasta vectorizar
+    isbn                TEXT,
+    fecha_publicacion   TEXT,                -- tal cual la trae la fuente ("MM/YYYY"); no inventamos dia
+    categoria           TEXT,
+    genero              TEXT,
+    subgenero           TEXT,
+    nro_paginas         INTEGER,
+    confianza_abstracto TEXT,                -- 'alta' | 'baja'
+    nota                TEXT,                -- notas de investigacion (confianza baja, dato no verificado, etc)
+    fuente              TEXT NOT NULL DEFAULT 'manual',  -- 'manual' | 'ateneo-kaggle' | futuras fuentes
+    creado_en           TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- editorial no es un dato estable del libro (cada edicion tiene la suya):
+-- se descarta de funes_libros, no se vuelve a completar.
+ALTER TABLE funes_libros DROP COLUMN IF EXISTS editorial;
+
+-- Excepcion por-libreria: alguna libreria cataloga CDs de musica, no libros,
+-- pero reusa el mismo pipeline (foto -> vision -> revision -> catalogo
+-- publico). tipo_catalogo decide que prompt usa vision.py y que palabras
+-- ("libro"/"CD", "autor"/"artista") se muestran en panel/revision/catalogo
+-- publico (ver app/etiquetas.py). TEXT en vez de BOOLEAN: si aparece un
+-- tercer tipo de catalogo el dia de mañana, no hace falta tocar el schema.
+-- Sin UI de edicion todavia (como con mensaje_wa_template): se setea a mano
+-- por SQL para la libreria puntual que lo necesita.
+ALTER TABLE librerias ADD COLUMN IF NOT EXISTS tipo_catalogo TEXT NOT NULL DEFAULT 'libros'
+    CHECK (tipo_catalogo IN ('libros', 'cds'));
+
 CREATE INDEX IF NOT EXISTS idx_librerias_slug ON librerias(slug);
 CREATE INDEX IF NOT EXISTS idx_libros_activos ON libros(libreria_id, estado) WHERE archivado_en IS NULL;
 CREATE INDEX IF NOT EXISTS idx_libros_libreria_estado ON libros(libreria_id, estado);

@@ -75,7 +75,7 @@
         <a href="/{{ libreria.slug }}/panel/{{ libreria.token_panel }}/lote/{{ lote.id }}"
           class="tap flex items-center justify-between bg-papel border border-ambar rounded-xl2 p-3">
           <span class="font-medium">Lote de {{ lote.cant_fotos }} foto{{ 's' if lote.cant_fotos != 1 else '' }}</span>
-          <span class="text-sm text-ambar font-medium">{{ lote.cant_libros }} libros por revisar →</span>
+          <span class="text-sm text-ambar font-medium">{{ lote.cant_libros }} {{ et.libros }} por revisar →</span>
         </a>
         {% endfor %}
       </div>
@@ -122,6 +122,8 @@
 <script>
   const LIBRERO_SLUG = "{{ libreria.slug }}";
   const LIBRERO_TOKEN = "{{ libreria.token_panel }}";
+  const ET_LIBRO = "{{ et.libro }}", ET_LIBROS = "{{ et.libros }}";
+  const ET_AUTORES = "{{ et.autores }}";
   const API_LOTES = `/api/${LIBRERO_SLUG}/${LIBRERO_TOKEN}/lotes`;
   const URL_GUIA = "{{ url_guia }}";
 
@@ -194,7 +196,7 @@
   // nombra la etapa real del pipeline, así el librero entiende qué está pasando.
   const MENSAJES_PROCESO = [
     'Mirando las fotos…',
-    'Leyendo títulos y autores…',
+    `Leyendo títulos y ${ET_AUTORES}…`,
     'Corrigiendo mayúsculas y acentos…',
     'Comparando con tu catálogo…',
     'Descartando repetidos…',
@@ -289,7 +291,7 @@
       const dups = datos.duplicados || 0;
       if (cantLibros > 0 || dups > 0) {
         cargaContador.classList.remove('hidden');
-        let texto = `📚 ${cantLibros} libro${cantLibros === 1 ? '' : 's'} nuevo${cantLibros === 1 ? '' : 's'} hasta ahora`;
+        let texto = `📚 ${cantLibros} ${cantLibros === 1 ? ET_LIBRO : ET_LIBROS} nuevo${cantLibros === 1 ? '' : 's'} hasta ahora`;
         if (dups > 0) texto += ` · 🔁 ${dups} que ya tenías`;
         cargaContador.textContent = texto;
       }
@@ -303,20 +305,20 @@
       cargaBarra.style.width = '100%';
 
       if (cantLibros === 0 && dups === 0) {
-        cargaMensaje.textContent = 'No se detectó ningún libro legible en esas fotos.';
+        cargaMensaje.textContent = `No se detectó ningún ${ET_LIBRO} legible en esas fotos.`;
         cargaDetalle.textContent = 'Probá con más luz o acercándote un poco.';
         reactivarBoton();
         return;
       }
 
       if (cantLibros === 0) {
-        cargaMensaje.textContent = 'Esos libros ya los tenías cargados';
-        cargaDetalle.textContent = `Los ${dups} libros de estas fotos ya están en tu catálogo.`;
+        cargaMensaje.textContent = `Esos ${ET_LIBROS} ya los tenías cargados`;
+        cargaDetalle.textContent = `Los ${dups} ${ET_LIBROS} de estas fotos ya están en tu catálogo.`;
         reactivarBoton();
         return;
       }
 
-      cargaMensaje.textContent = `Listo: ${cantLibros} libro${cantLibros === 1 ? '' : 's'}`;
+      cargaMensaje.textContent = `Listo: ${cantLibros} ${cantLibros === 1 ? ET_LIBRO : ET_LIBROS}`;
       cargaDetalle.textContent = 'Abriendo la revisión…';
       // Pequeño delay para que se alcance a ver la barra llena y el mensaje
       // final antes de saltar a la pantalla de revisión.
