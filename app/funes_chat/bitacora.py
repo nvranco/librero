@@ -99,6 +99,9 @@ async def guardar_recomendacion(
     texto_afinado: str,
     motivo_rechazo: str | None = None,
     motivo_reformulado: str | None = None,
+    texto_perfil: str = "",
+    ancla: dict | None = None,
+    peso_ancla: float | None = None,
 ) -> int | None:
     """Guarda una recomendacion mostrada y devuelve su id.
 
@@ -108,22 +111,38 @@ async def guardar_recomendacion(
     un "no me interesa" sobre un libro mal elegido, y desde el veredicto solo no
     se distinguen.
 
-    `candidatos` guarda el top-K entero con su coseno: es lo que despues permite
-    ver si el motor esta degenerado (si siempre gana el mismo punado de libros)
-    y si el segundo candidato estaba pegado o lejos del primero."""
+    `candidatos` guarda el top-K entero con su coseno PARTIDO EN DOS: cuanto se
+    parecio al perfil que la persona describio y cuanto a la lectura que puso de
+    referencia. Es lo que despues permite ver si el motor esta degenerado (si
+    siempre gana el mismo punado de libros), si el segundo candidato estaba
+    pegado o lejos del primero, y sobre todo por que lado entro cada uno.
+
+    `ancla` trae el parrafo que el LLM escribio sobre la referencia. Se guarda
+    porque es la mitad del vector que eligio a estos candidatos: sin el, la
+    recomendacion no se puede explicar despues, ni siquiera con todo lo demas
+    delante."""
     if not sesion_id:
         return None
-    resumen = [
-        {"id": c["id"], "titulo": c["titulo"], "coseno": round(puntajes.get(c["id"], 0.0), 6)}
-        for c in candidatos
-    ]
+    resumen = []
+    for c in candidatos:
+        p = puntajes.get(c["id"]) or {}
+        resumen.append({
+            "id": c["id"],
+            "titulo": c["titulo"],
+            "autor": c.get("autor", ""),
+            "coseno": p.get("mezcla"),
+            "coseno_perfil": p.get("perfil"),
+            "coseno_ancla": p.get("ancla"),
+        })
     try:
         return await db.pool().fetchval(
             """
             INSERT INTO funes_recomendaciones
                 (sesion_id, orden, libro_id, titulo, autor, voz, candidatos,
-                 texto_consulta, texto_afinado, motivo_rechazo, motivo_reformulado)
-            VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10, $11)
+                 texto_consulta, texto_afinado, motivo_rechazo, motivo_reformulado,
+                 texto_perfil, ancla_texto, ancla_expandida, ancla_conocida, peso_ancla)
+            VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10, $11,
+                    $12, $13, $14, $15, $16)
             ON CONFLICT (sesion_id, orden) DO UPDATE
                 SET libro_id = EXCLUDED.libro_id, titulo = EXCLUDED.titulo,
                     autor = EXCLUDED.autor, voz = EXCLUDED.voz,
@@ -131,12 +150,22 @@ async def guardar_recomendacion(
                     texto_consulta = EXCLUDED.texto_consulta,
                     texto_afinado = EXCLUDED.texto_afinado,
                     motivo_rechazo = EXCLUDED.motivo_rechazo,
-                    motivo_reformulado = EXCLUDED.motivo_reformulado
+                    motivo_reformulado = EXCLUDED.motivo_reformulado,
+                    texto_perfil = EXCLUDED.texto_perfil,
+                    ancla_texto = EXCLUDED.ancla_texto,
+                    ancla_expandida = EXCLUDED.ancla_expandida,
+                    ancla_conocida = EXCLUDED.ancla_conocida,
+                    peso_ancla = EXCLUDED.peso_ancla
             RETURNING id
             """,
             sesion_id, orden, libro["id"], libro["titulo"], libro["autor"], voz,
             json.dumps(resumen, ensure_ascii=False),
             texto_consulta, texto_afinado, motivo_rechazo or None, motivo_reformulado or None,
+            texto_perfil or None,
+            (ancla or {}).get("texto") or None,
+            (ancla or {}).get("expandida") or None,
+            (ancla or {}).get("conocida") if ancla else None,
+            peso_ancla if ancla else None,
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning(

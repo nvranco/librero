@@ -15,7 +15,9 @@ import asyncio
 import heapq
 import json
 import logging
+import re
 import time
+import unicodedata
 
 import httpx
 
@@ -28,7 +30,28 @@ logger = logging.getLogger("librero.funes_chat")
 _MODELO_EMBEDDING = "openai/text-embedding-3-small"
 _MODELO_VOZ = "google/gemini-2.5-flash"
 _MAX_RECOMENDACIONES = 3
+# Tope absoluto de recomendaciones por conversacion. Es mayor que
+# _MAX_RECOMENDACIONES porque el lector puede volver a empezar desde q1 cuando
+# se le agotaron las 3: esa vuelta nueva conserva `ya_mostrados` para no
+# repetirle un libro que ya rechazo, asi que necesita lugar para mas ids. El
+# limite por ciclo lo lleva el cliente; este es el que acota el gasto real.
+_MAX_TOTAL_RECOMENDACIONES = 6
 _TOP_K_CANDIDATOS = 8
+# Cuanto pesa el ancla de similitud (q4) frente al perfil (q1-q3) al rankear.
+# Medido en bench/ancla_peso.py sobre cuatro anclas de nichos opuestos dentro
+# del mismo estante: con 0,5 el solapamiento entre sus top-8 baja de 6,0/8 a
+# 4,0/8 y se pierde solo 1 libro de 8 en fidelidad al tema. De 0,65 para arriba
+# el ancla empieza a pisar la macro que la persona eligio en q0, que es
+# justamente lo que q0 esta para impedir.
+_PESO_ANCLA = 0.5
+_MODELO_ANCLA_WEB = "google/gemini-2.5-flash:online"
+# El vector del ancla se cachea en memoria porque _candidatos() corre hasta 5
+# veces por conversacion (2 preguntas profundas + 3 recomendaciones) y sin esto
+# cada una pagaria de nuevo la expansion: 5 llamadas al LLM y 5 embeddings, y
+# unos 2 segundos de latencia cada vez. La clave es el texto crudo, asi que dos
+# lectores que escriben "Borges" comparten la entrada.
+_TTL_CACHE_ANCLA = 3600
+_MAX_CACHE_ANCLAS = 500
 _CANT_PREGUNTAS_PROFUNDAS = 2
 
 # Bandas de paginas por respuesta de q2, deliberadamente SOLAPADAS: un libro de
@@ -71,13 +94,78 @@ PREGUNTAS = {
         "en_consulta": False,
     },
     "q1": {
-        "titulo": "El Estado Exploratorio",
-        "pregunta": "¿Qué buscás en tu próxima lectura?",
-        "opciones": {
-            "ideas": "Quiero explorar ideas nuevas o entender cómo funciona una dinámica social o personal.",
-            "narrativa": "Busco una narrativa que me atrape y me haga perder la noción del tiempo.",
-            "introspectivo": "Me interesa algo introspectivo, para reflexionar sobre mi entorno o mi rutina.",
-            "distraccion": "Quiero un espacio de distracción pura, sin demasiada fricción.",
+        # La unica pregunta con variantes. El eje que ordena el estante es
+        # distinto en cada macro, y forzar el mismo para las tres deja
+        # preguntas rotas: a quien eligio divulgacion, "una narrativa que me
+        # atrape y me haga perder la nocion del tiempo" no le dice nada. El
+        # catalogo lo confirma. Los 187 abstractos de divulgacion se separan
+        # por tema (mente 94, seres vivos 54, cuerpo 51, universo 35) y no por
+        # estado de animo; los 368 de historia se parten al medio por recorte
+        # geografico (argentina 169 / el resto 199) y no por subgenero, que
+        # ahi es casi inutil (historia economica: 3 libros, historiografia: 4).
+        #
+        # Ojo con leer los numeros de mas: estas opciones ORIENTAN el vector,
+        # NO filtran. El unico filtro duro por tema es q0. Por eso una opcion
+        # con pocos libros atras es viable, porque solo inclina el coseno; si
+        # alguna vez pasaran a filtrar habria que medirlas contra _PISO_POOL.
+        "variantes": {
+            "literatura": {
+                "titulo": "El Estado Exploratorio",
+                "pregunta": "¿Qué buscás en tu próxima lectura?",
+                "opciones": {
+                    "ideas": "Quiero explorar ideas nuevas o entender cómo funciona una dinámica social o personal.",
+                    "narrativa": "Busco una narrativa que me atrape y me haga perder la noción del tiempo.",
+                    "introspectivo": "Me interesa algo introspectivo, para reflexionar sobre mi entorno o mi rutina.",
+                    "distraccion": "Quiero un espacio de distracción pura, sin demasiada fricción.",
+                },
+                # "ideas" en voz de lector traia manuales de psicopedagogia:
+                # "explorar ideas nuevas" se parece mas a un manual que a una
+                # novela. Nombrar la forma del libro (novela, relato) es lo que
+                # lo devuelve al estante correcto.
+                "consultas": {
+                    "ideas": "Una novela o un ensayo literario que explora ideas y pone en juego una dinámica social o personal, y que deja pensando.",
+                    "narrativa": "Una novela absorbente, de trama sostenida y ritmo parejo, de las que se leen de un tirón.",
+                    "introspectivo": "Una novela o un relato introspectivo, de tono íntimo, sobre la vida cotidiana y el mundo interior de sus personajes.",
+                    "distraccion": "Una novela entretenida y de lectura liviana, de tono ameno, sin exigencia ni densidad.",
+                },
+            },
+            "historia": {
+                "titulo": "El Recorte Historico",
+                # Los 28 libros de historia americana y pueblos originarios no
+                # tienen opcion propia a proposito: sin tiron explicito quedan
+                # mas cerca de "mundial", que es donde caen mejor, y una
+                # tercera opcion con 28 libros atras alargaria la lista sin
+                # agregar decision.
+                "pregunta": "¿Y qué parte de la historia te interesa?",
+                "opciones": {
+                    "argentina": "Historia argentina, las distintas perspectivas sobre cómo llegamos a ser esto.",
+                    "mundial": "Historia mundial, otras épocas y otros países, de la antigüedad al siglo XX.",
+                },
+                "consultas": {
+                    "argentina": "Un libro de historia argentina sobre el país, su política y sus conflictos, leído desde distintas perspectivas.",
+                    "mundial": "Un libro de historia universal sobre otras épocas y otros países, de la antigüedad al siglo XX.",
+                },
+            },
+            "divulgacion": {
+                "titulo": "La Curiosidad",
+                "pregunta": "¿Qué te da curiosidad?",
+                "opciones": {
+                    "mente": "La mente: por qué hacemos lo que hacemos.",
+                    "vida": "Los seres vivos: plantas, bichos, ecosistemas.",
+                    "tecno": "La tecnología: los datos, la inteligencia artificial, las pantallas.",
+                    "universo": "El universo y las leyes que lo rigen.",
+                },
+                # Medido: la etiqueta corta de "vida" daba coseno 0,443 y traia
+                # psicologia; esta redaccion da 0,600 y trae libros de bichos y
+                # plantas. Una opcion corta se diluye cuando se concatena con
+                # las respuestas largas de q2 y q3.
+                "consultas": {
+                    "mente": "Un libro de divulgación sobre la mente, el cerebro y la conducta: por qué las personas hacen lo que hacen.",
+                    "vida": "Un libro sobre la vida en la Tierra, los animales, las plantas y cómo funcionan los ecosistemas.",
+                    "tecno": "Un libro de divulgación sobre la tecnología y sus efectos: los datos, la inteligencia artificial, las pantallas y cómo nos cambian.",
+                    "universo": "Un libro de divulgación sobre el universo, la física y las leyes que rigen la materia.",
+                },
+            },
         },
     },
     "q2": {
@@ -87,6 +175,11 @@ PREGUNTAS = {
             "corto": "Algo corto y conciso, directo al punto",
             "intermedio": "Algo intermedio, un desarrollo moderado",
             "largo": "Algo largo y profundo, inmersión total",
+        },
+        "consultas": {
+            "corto": "Un libro breve y conciso, de lectura rápida y directa.",
+            "intermedio": "Un libro de extensión media, con un desarrollo moderado.",
+            "largo": "Un libro extenso y profundo, de lectura inmersiva y exigente.",
         },
         # Esta pregunta ya preguntaba por extension, asi que ademas de ser
         # senal semantica define la banda de paginas (_BANDAS_PAGINAS). No se
@@ -103,6 +196,35 @@ PREGUNTAS = {
             "trama": "En la trama y el ritmo, que la historia avance y me mantenga enfocado.",
             "prosa": "En la prosa y el estilo, la estética de cómo está escrito.",
         },
+        "consultas": {
+            "ideas": "Un libro de ideas y conceptos, que discute lo establecido y hace pensar.",
+            "personajes": "Un libro centrado en la psicología de sus personajes, en sus motivaciones y contradicciones.",
+            "trama": "Un libro de trama sostenida y buen ritmo, donde la historia avanza.",
+            "prosa": "Un libro de prosa cuidada y estilo notable, donde importa cómo está escrito.",
+        },
+        # Solo divulgacion tiene variante. Literatura e historia comparten el
+        # juego de arriba porque ahi funciona: en historia, "personajes" trae
+        # biografias y "prosa" trae a Galeano, con 0-2/5 de solapamiento. En
+        # divulgacion no: "la trama y el ritmo" no significa nada para un libro
+        # de botanica (era la opcion de peor coseno de todo el catalogo, 0,44)
+        # y "la psicologia de los personajes" enganchaba psicoanalisis por
+        # accidente, o sea que quien valora los personajes se llevaba a Freud.
+        "variantes": {
+            "divulgacion": {
+                "opciones": {
+                    "explicacion": "En cómo lo explica: que me haga entender algo difícil sin bajarme el nivel.",
+                    "ideas": "En las ideas: que me cambie la forma de ver algo.",
+                    "historias": "En las historias reales: los descubrimientos y la gente que los hizo.",
+                    "asombro": "En el asombro: que me deje pensando en lo raro que es todo.",
+                },
+                "consultas": {
+                    "explicacion": "Un libro de divulgación claro y didáctico, que explica con precisión un tema complejo y lo hace entendible sin perder rigor.",
+                    "ideas": "Un libro de ideas que discute lo establecido y cambia la manera de ver un tema.",
+                    "historias": "Un libro de divulgación narrativa que cuenta la historia de los descubrimientos y de los científicos que los hicieron, con anécdotas.",
+                    "asombro": "Un libro que transmite asombro y curiosidad, con datos sorprendentes y maravillas de la naturaleza y el universo.",
+                },
+            },
+        },
     },
     "q4": {
         "titulo": "El Ancla de Similitud",
@@ -114,6 +236,65 @@ PREGUNTAS = {
         "opciones": {},
     },
 }
+
+# La macro con la que se resuelven las variantes cuando todavia no hay q0 (o
+# llego una invalida). Es la mas grande del catalogo y aquella para la que se
+# escribieron las preguntas originales, asi que es el fallback menos raro.
+_MACRO_POR_DEFECTO = "literatura"
+
+
+def _sin_consultas(pregunta: dict) -> dict:
+    limpia = {k: v for k, v in pregunta.items() if k != "consultas"}
+    if "variantes" in limpia:
+        limpia["variantes"] = {m: _sin_consultas(v) for m, v in limpia["variantes"].items()}
+    return limpia
+
+
+def preguntas_publicas() -> dict:
+    """PREGUNTAS sin los textos de busqueda, que es lo que se inyecta al HTML.
+
+    Al cliente solo le sirven las etiquetas. Las consultas estan redactadas
+    como resumenes de catalogo, asi que dejarlas en el fuente de la pagina
+    mostraria justo lo que la voz de Funes tiene prohibido admitir: que atras
+    hay un formulario y una busqueda."""
+    return {clave: _sin_consultas(p) for clave, p in PREGUNTAS.items()}
+
+
+def resolver(clave: str, respuestas: dict) -> dict:
+    """La pregunta efectiva para `clave`, con la variante por macro ya elegida.
+
+    Las preguntas sin variantes se devuelven tal cual, asi que quien llame no
+    necesita saber cuales las tienen. La variante se mergea sobre la pregunta
+    base para no perder las claves que viven afuera (`filtro`, `en_consulta`)."""
+    pregunta = PREGUNTAS[clave]
+    variantes = pregunta.get("variantes")
+    if not variantes:
+        return pregunta
+    macro = str(respuestas.get("q0") or "").strip()
+    # Una macro sin variante propia se queda con la pregunta base. Eso permite
+    # que q3 declare SOLO la variante de divulgacion en vez de repetir el mismo
+    # juego de opciones tres veces: literatura e historia la comparten porque
+    # ahi funciona (medido en bench/opciones_por_macro.py). El merge es
+    # superficial a proposito: la variante reemplaza "opciones" entera, nunca
+    # mezcla claves de dos juegos distintos.
+    variante = variantes.get(macro) or variantes.get(_MACRO_POR_DEFECTO) or {}
+    return {**pregunta, **variante}
+
+
+_SYSTEM_ANCLA = (
+    "Sos un bibliotecario. Te dan uno o mas autores u obras que un lector "
+    "menciona como referencia de lo que quiere leer.\n\n"
+    "Devolves SOLO un JSON con esta forma:\n"
+    '{"conocido": true, "descripcion": "..."}\n\n'
+    '"conocido": true si reconoces con certeza al autor o la obra; false si no '
+    "estas seguro o si el texto es demasiado vago para identificarla.\n"
+    '"descripcion": UN parrafo de 40 a 60 palabras, en tercera persona y en el '
+    "idioma de una ficha de catalogo, sobre de que tratan esas obras: el tema "
+    "especifico, el enfoque y el tono. Nunca opines, nunca te dirijas al lector "
+    "y nunca menciones que hay un lector o una referencia. Si no reconoces la "
+    "obra, describi lo que el texto sugiere sin inventar datos."
+)
+
 
 _SYSTEM_VOZ = (
     "Sos Funes, un analista teorico que recomienda libros. Nunca decis que "
@@ -281,6 +462,47 @@ def _coseno_con_norma(vector: list[float], norma_vector: float, libro: dict) -> 
     return sum(x * y for x, y in zip(vector, libro["embedding"])) / (norma_vector * norma_libro)
 
 
+# Largo minimo que tiene que tener un titulo normalizado para buscarlo dentro
+# de q4. Debajo de esto son palabras demasiado comunes y el riesgo de sacar un
+# libro por casualidad supera al de recomendarselo a quien ya lo leyo.
+_LARGO_MINIMO_TITULO = 5
+
+
+def _normalizar_texto(texto: str) -> str:
+    """Minusculas, sin acentos y con todo lo que no sea letra o numero vuelto un
+    espacio simple. Asi "¿Que hace un boson...?" y "que hace un boson" son lo
+    mismo, y los limites de palabra quedan siendo espacios de verdad."""
+    plano = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", " ", plano.lower()).strip()
+
+
+def _claves_de_titulo(titulo: str) -> list[str]:
+    """Las formas del titulo que vale la pena buscar en lo que escribio el lector.
+
+    El titulo entero, y ademas su primer tramo cuando el resto es un subtitulo:
+    nadie tipea "El mejor amigo del perro. Breve historia de una amistad", tipea
+    la primera mitad. Ese primer tramo solo cuenta si tiene dos palabras o mas
+    — con una sola, titulos como "Argentina. Historia minima" sacarian del pool
+    a cualquiera que escriba "argentina" en q4, que es medio catalogo."""
+    claves = []
+    entero = _normalizar_texto(titulo)
+    if len(entero) >= _LARGO_MINIMO_TITULO:
+        claves.append(entero)
+    primero = _normalizar_texto(re.split(r"[.:(\[]", titulo)[0])
+    if primero != entero and len(primero.split()) >= 2 and len(primero) >= _LARGO_MINIMO_TITULO:
+        claves.append(primero)
+    return claves
+
+
+def _menciono_el_libro(titulo: str, q4_normalizada: str) -> bool:
+    """True si el lector nombro este libro como referencia en q4.
+
+    q4_normalizada viene con un espacio a cada punta, asi que buscar " clave "
+    equivale a exigir limites de palabra sin necesidad de una expresion regular
+    por libro (esto corre sobre cientos de libros en cada request)."""
+    return any(f" {c} " in q4_normalizada for c in _claves_de_titulo(titulo))
+
+
 def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict], int, str | None]:
     """Aplica los filtros duros antes del coseno y devuelve
     (libros, tamano_del_pool, filtro_aflojado).
@@ -296,6 +518,25 @@ def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict],
     macro = str(respuestas.get("q0") or "").strip()
     if macro in PREGUNTAS["q0"]["opciones"]:
         libros = [l for l in libros if l["macro"] == macro]
+
+    # Fuera el libro que el lector puso como referencia. q4 pide "una lectura
+    # que te dio una experiencia parecida a la que queres replicar", o sea que
+    # por definicion ya lo leyo, y devolverselo es el peor resultado posible.
+    # Se volvio urgente cuando el ancla paso a tener vector y peso propios: el
+    # libro nombrado se convirtio en el match mas obvio del catalogo.
+    # Solo por titulo, nunca por autor: quien nombra un autor suele estar
+    # pidiendo mas de ese autor.
+    q4 = str(respuestas.get("q4") or "").strip()
+    if q4:
+        q4_norm = f" {_normalizar_texto(q4)} "
+        nombrados = [l for l in libros if _menciono_el_libro(l["titulo"], q4_norm)]
+        if nombrados:
+            logger.info(
+                "funes_chat_ancla_excluye libros=%s",
+                [l["id"] for l in nombrados],
+            )
+            excluidos = {l["id"] for l in nombrados}
+            libros = [l for l in libros if l["id"] not in excluidos]
 
     banda = _BANDAS_PAGINAS.get(str(respuestas.get("q2") or "").strip())
     if not banda:
@@ -313,7 +554,7 @@ def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict],
     return con_banda, len(con_banda), None
 
 
-def _construir_texto_consulta(respuestas: dict) -> str:
+def _construir_texto_perfil(respuestas: dict) -> str:
     partes = []
     for clave, pregunta in PREGUNTAS.items():
         # Las preguntas que solo sirven para recortar el catalogo (q0) no
@@ -321,13 +562,36 @@ def _construir_texto_consulta(respuestas: dict) -> str:
         if not pregunta.get("en_consulta", True):
             continue
         opcion = respuestas.get(clave, "")
-        etiqueta = pregunta["opciones"].get(opcion)
+        # resolver() y no pregunta["opciones"]: q1 tiene un juego de opciones
+        # distinto por macro y el de la macro equivocada no matchearia nada,
+        # asi que la respuesta se caeria del vector sin ningun error visible.
+        efectiva = resolver(clave, respuestas)
+        # "consultas" antes que "opciones": la etiqueta esta escrita para que
+        # se lea de un vistazo en un boton, y el catalogo esta escrito en
+        # abstractos que describen libros. Comparar una contra otro funciona a
+        # medias, y una etiqueta corta ademas se diluye al concatenarse con las
+        # respuestas largas de las otras preguntas. La consulta dice lo mismo
+        # en el idioma del catalogo, y no la ve nadie.
+        etiqueta = (
+            efectiva.get("consultas", {}).get(opcion)
+            or efectiva["opciones"].get(opcion)
+        )
         if etiqueta:
             partes.append(etiqueta)
+    return " ".join(partes)
+
+
+def _construir_texto_consulta(respuestas: dict) -> str:
+    """El perfil mas el ancla en texto plano.
+
+    Ya NO se embebe: sirve para los prompts del LLM —que si se benefician de
+    leer la referencia tal como la escribio la persona— y para la bitacora, que
+    tiene que guardar lo que el lector realmente dijo."""
+    partes = [_construir_texto_perfil(respuestas)]
     q4 = str(respuestas.get("q4") or "").strip()
     if q4:
         partes.append(f"Lectura de referencia con una experiencia parecida: {q4}.")
-    return " ".join(partes)
+    return " ".join(x for x in partes if x)
 
 
 def _construir_texto_afinado(
@@ -343,7 +607,9 @@ def _construir_texto_afinado(
     reciente y no la suma de todos: dos correcciones sucesivas suelen apuntar a
     lados opuestos ("muy denso", despues "muy liviano") y acumularlas deja un
     vector que no pide nada en particular."""
-    partes = [_construir_texto_consulta(respuestas)]
+    # Perfil y no consulta: este texto SI se embebe, y el ancla ya entra al
+    # ranking por su propio vector. Meterla tambien aca la contaria dos veces.
+    partes = [_construir_texto_perfil(respuestas)]
     for p in profundas:
         respuesta = str(p.get("respuesta") or "").strip()
         if respuesta:
@@ -390,16 +656,159 @@ async def _embeber(texto: str) -> list[float]:
     raise ErrorFunesChat(f"Fallo el embedding tras 2 intentos: {ultimo_error}")
 
 
-async def _candidatos(respuestas: dict) -> tuple[list[dict], dict[str, float], int, str | None]:
+_CACHE_ANCLAS: dict[str, tuple[dict, float]] = {}
+
+
+def _limpiar_citas(texto: str) -> str:
+    """Saca las citas que mete la busqueda web.
+
+    Con el sufijo `:online` el modelo intercala `[dominio.com](https://...)` en
+    medio de la prosa. Eso despues se embebe, y nombres de dominio dentro del
+    vector solo agregan ruido: ningun resumen del catalogo habla de emory.edu."""
+    texto = re.sub(r"\[[^\]]*\]\([^)]*\)", "", texto)
+    texto = re.sub(r"\[[^\]]*\.[a-z]{2,}[^\]]*\]", "", texto)
+    texto = re.sub(r"\s+([,.;:])", r"\1", texto)
+    return re.sub(r"\s{2,}", " ", texto).strip()
+
+
+async def _pedir_ancla(modelo: str, texto: str) -> dict:
+    async with httpx.AsyncClient(timeout=60) as client:
+        resp = await client.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": modelo,
+                "messages": [
+                    {"role": "system", "content": _SYSTEM_ANCLA},
+                    {"role": "user", "content": texto},
+                ],
+            },
+        )
+    resp.raise_for_status()
+    return _parsear_json_llm(resp.json()["choices"][0]["message"]["content"])
+
+
+async def _expandir_ancla(texto: str) -> tuple[str, bool]:
+    """Convierte lo que el lector escribio en q4 en una ficha de catalogo.
+
+    "Frans de Waal" son tres palabras que el catalogo no dice en ningun lado; su
+    descripcion —primates, empatia, continuidad evolutiva— si se parece a como
+    estan escritos los resumenes, que es contra lo que se compara.
+
+    Primero se pregunta sin buscar en internet. Solo si el modelo admite no
+    reconocer la referencia se reintenta con busqueda web, porque ahi esta el
+    costo: medido, `:online` sale US$ 0,0080 contra US$ 0,0002 del modelo pelado
+    (59 veces mas) y tarda casi el doble.
+
+    Devuelve (descripcion, la_reconocio). Si falla, ("", False) y el llamador usa
+    el texto crudo: es una mejora, nunca un requisito. `la_reconocio` va a la
+    bitacora porque es la senal de cuando hubo que pagar la busqueda web."""
+    if not texto or not OPENROUTER_API_KEY:
+        return "", False
+    inicio = time.monotonic()
+    for modelo in (_MODELO_VOZ, _MODELO_ANCLA_WEB):
+        try:
+            datos = await _pedir_ancla(modelo, texto)
+            descripcion = _limpiar_citas(str(datos.get("descripcion") or ""))
+            conocido = bool(datos.get("conocido"))
+            if descripcion and (conocido or modelo == _MODELO_ANCLA_WEB):
+                logger.info(
+                    "funes_chat_ancla_ok modelo=%s conocido=%s latencia_ms=%s palabras=%s",
+                    modelo, conocido, round((time.monotonic() - inicio) * 1000),
+                    len(descripcion.split()),
+                )
+                return descripcion, conocido
+            # No la reconocio: se cae al modelo con busqueda web.
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "funes_chat_ancla_fallo modelo=%s latencia_ms=%s error=%s",
+                modelo, round((time.monotonic() - inicio) * 1000), exc,
+            )
+    return "", False
+
+
+async def _ancla(respuestas: dict) -> dict | None:
+    """El ancla de similitud lista para puntuar, o None si no contesto q4.
+
+    Devuelve el vector y su norma, y ademas lo que hizo falta para poder
+    auditarla despues: el texto crudo, el parrafo que escribio el LLM y si lo
+    reconocio sin buscar en la web. Ese parrafo es la mitad del vector que elige
+    los candidatos, asi que sin guardarlo una recomendacion no se puede explicar.
+
+    El vector se cachea por el texto crudo: _candidatos() corre hasta 5 veces por
+    conversacion y sin cache cada una repetiria la expansion y el embedding."""
+    texto = str(respuestas.get("q4") or "").strip()
+    if not texto:
+        return None
+    clave = texto.lower()
+    guardado = _CACHE_ANCLAS.get(clave)
+    if guardado is not None and time.monotonic() - guardado[1] < _TTL_CACHE_ANCLA:
+        return guardado[0]
+
+    descripcion, conocida = await _expandir_ancla(texto)
+    vector = await _embeber(descripcion or texto)
+    norma = sum(x * x for x in vector) ** 0.5
+    if norma == 0:
+        return None
+    ancla = {
+        "vector": array.array("f", vector),
+        "norma": norma,
+        "texto": texto,
+        "expandida": descripcion,
+        "conocida": conocida,
+    }
+    if len(_CACHE_ANCLAS) >= _MAX_CACHE_ANCLAS:
+        _CACHE_ANCLAS.pop(min(_CACHE_ANCLAS, key=lambda k: _CACHE_ANCLAS[k][1]), None)
+    _CACHE_ANCLAS[clave] = (ancla, time.monotonic())
+    return ancla
+
+
+def _puntaje(vector, norma: float, ancla, libro: dict) -> float:
+    """Coseno contra el perfil, mezclado con el coseno contra el ancla.
+
+    Sin ancla es el coseno de siempre, asi que el comportamiento para quien deja
+    q4 en blanco no cambia en nada."""
+    puntaje = _coseno_con_norma(vector, norma, libro)
+    if ancla is None:
+        return puntaje
+    return (1 - _PESO_ANCLA) * puntaje + _PESO_ANCLA * _coseno_con_norma(
+        ancla["vector"], ancla["norma"], libro)
+
+
+def _puntaje_detalle(vector, norma: float, ancla, libro: dict) -> dict:
+    """Las dos mitades del puntaje, por separado, para la bitacora.
+
+    Guardar solo la mezcla esconde justo lo que hay que poder revisar: si un
+    libro entro por parecerse a lo que la persona describio o por parecerse a la
+    lectura que puso de referencia. Se calcula solo sobre los K candidatos, no
+    sobre el pool entero."""
+    perfil = _coseno_con_norma(vector, norma, libro)
+    if ancla is None:
+        return {"perfil": round(perfil, 6), "ancla": None, "mezcla": round(perfil, 6)}
+    suyo = _coseno_con_norma(ancla["vector"], ancla["norma"], libro)
+    return {
+        "perfil": round(perfil, 6),
+        "ancla": round(suyo, 6),
+        "mezcla": round((1 - _PESO_ANCLA) * perfil + _PESO_ANCLA * suyo, 6),
+    }
+
+
+async def _candidatos(
+    respuestas: dict,
+) -> tuple[list[dict], dict[str, float], int, str | None, tuple | None]:
     """Los _TOP_K_CANDIDATOS libros mas afines a las respuestas fijas (Q1-Q4),
     DENTRO del recorte que dejaron los filtros duros (Q0 y la banda de paginas
     de Q2), antes de que las 2 preguntas profundas terminen de decidir cuales 3
     se muestran. Deterministico: mismas respuestas, mismo resultado, asi que se
     puede recalcular en cada request sin guardar estado en el servidor.
 
-    Devuelve (candidatos, puntajes, tamano_del_pool, filtro_aflojado). Todo
-    menos los candidatos es diagnostico que va a la bitacora; nada de esto se le
-    muestra al lector (el prompt de las preguntas profundas tiene prohibido
+    Devuelve (candidatos, puntajes, tamano_del_pool, filtro_aflojado, ancla).
+    El ancla se devuelve ya calculada para que recomendar() la reuse al
+    re-rankear y no pague dos veces la expansion. Todo menos los candidatos es
+    diagnostico que va a la bitacora; nada de esto se le muestra al lector (el prompt de las preguntas profundas tiene prohibido
     siquiera insinuar que existe una lista de candidatos).
 
     El filtro va aca porque este es el UNICO punto por el que el catalogo entra
@@ -407,22 +816,29 @@ async def _candidatos(respuestas: dict) -> tuple[list[dict], dict[str, float], i
     un solo lugar alcanza para que las preguntas profundas tambien se generen
     sobre candidatos ya recortados, que es lo que las hace pertinentes."""
     libros, pool, aflojado = _filtrar_catalogo(await _libros(), respuestas)
-    vector = await _embeber(_construir_texto_consulta(respuestas))
+    # El perfil y el ancla van en vectores separados y se mezclan con un peso
+    # explicito (_PESO_ANCLA). Concatenados, el ancla quedaba diluida en
+    # proporcion a su largo —unas 9 palabras sobre 56— y era practicamente
+    # inerte: cuatro referencias de nichos opuestos devolvian 6 de 8 libros
+    # iguales, con el mismo libro en el puesto 1.
+    vector = await _embeber(_construir_texto_perfil(respuestas))
     norma = sum(x * x for x in vector) ** 0.5
+    ancla = await _ancla(respuestas)
     # nlargest en vez de sorted: ordenar 1381 libros para quedarse con 8 es
     # trabajo tirado, y esto corre 3 veces por conversacion bloqueando el loop.
     mejores = heapq.nlargest(
-        _TOP_K_CANDIDATOS, libros, key=lambda l: _coseno_con_norma(vector, norma, l)
+        _TOP_K_CANDIDATOS, libros, key=lambda l: _puntaje(vector, norma, ancla, l)
     )
     # Los puntajes van en un dict aparte y NO como una clave del libro: los
     # dicts que devuelve _libros() son los de la cache compartida, asi que
     # escribirles encima filtraria el score de un lector al siguiente.
-    puntajes = {l["id"]: _coseno_con_norma(vector, norma, l) for l in mejores}
+    puntajes = {l["id"]: _puntaje_detalle(vector, norma, ancla, l) for l in mejores}
     logger.info(
-        "funes_chat_pool macro=%s banda=%s pool=%s aflojado=%s candidatos=%s",
+        "funes_chat_pool macro=%s banda=%s pool=%s aflojado=%s candidatos=%s ancla=%s",
         respuestas.get("q0"), respuestas.get("q2"), pool, aflojado, len(mejores),
+        ancla is not None,
     )
-    return mejores, puntajes, pool, aflojado
+    return mejores, puntajes, pool, aflojado, ancla
 
 
 def _parsear_json_llm(texto: str) -> dict:
@@ -439,7 +855,7 @@ async def generar_pregunta(respuestas: dict, profundas: list[dict]) -> dict:
     """Genera la proxima pregunta profunda (la 1ra o la 2da), informada por
     los candidatos actuales y por lo que el lector ya contesto en rondas
     anteriores de esta misma etapa."""
-    candidatos, _puntajes, _pool, _aflojado = await _candidatos(respuestas)
+    candidatos, _puntajes, _pool, _aflojado, _ancla_vec = await _candidatos(respuestas)
     resumen_candidatos = "\n".join(
         f"- {c['titulo']}: {c['abstracto'][:180]}" for c in candidatos
     )
@@ -706,7 +1122,7 @@ async def recomendar(
 
     `motivo_rechazo` es lo que el lector contesto cuando pidio otra: se reescribe
     en positivo antes de entrar al vector (ver _reformular_rechazo)."""
-    candidatos, puntajes, pool, filtro_aflojado = await _candidatos(respuestas)
+    candidatos, puntajes, pool, filtro_aflojado, ancla = await _candidatos(respuestas)
     disponibles = [l for l in candidatos if l["id"] not in ya_mostrados]
     if not disponibles:
         raise ErrorFunesChat("No quedan libros sin mostrar entre los candidatos.")
@@ -716,12 +1132,15 @@ async def recomendar(
     vector_afinado = await _embeber(texto_afinado)
     norma_afinado = sum(x * x for x in vector_afinado) ** 0.5
 
-    mejor = max(disponibles, key=lambda l: _coseno_con_norma(vector_afinado, norma_afinado, l))
+    # El ancla tambien pesa en el re-ranking, con el mismo peso: si solo entrara
+    # al elegir los 8 candidatos, la referencia del lector decidiria quienes
+    # compiten pero no quien gana.
+    mejor = max(disponibles, key=lambda l: _puntaje(vector_afinado, norma_afinado, ancla, l))
     voz = await _generar_voz(respuestas, profundas, mejor)
 
     mostrados_tras_este = len(ya_mostrados) + 1
     agotado = (
-        mostrados_tras_este >= _MAX_RECOMENDACIONES
+        mostrados_tras_este >= _MAX_TOTAL_RECOMENDACIONES
         or mostrados_tras_este >= len(candidatos)
     )
 
@@ -731,6 +1150,7 @@ async def recomendar(
         sesion_id, mostrados_tras_este, mejor, voz, candidatos, puntajes,
         _construir_texto_consulta(respuestas), texto_afinado,
         motivo_rechazo, motivo_reformulado,
+        _construir_texto_perfil(respuestas), ancla, _PESO_ANCLA,
     ) if sesion_id else None
 
     return {

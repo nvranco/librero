@@ -74,7 +74,13 @@ class RespuestasFijas(BaseModel):
         significaria saltearse el filtro duro."""
         if valor == "":
             return valor
-        if valor not in nucleo.PREGUNTAS[info.field_name]["opciones"]:
+        # info.data trae los campos ya validados, y q0 esta declarado antes que
+        # q1, asi que aca se valida contra el juego de opciones de LA macro
+        # elegida: mandar "argentina" habiendo elegido literatura es tan
+        # invalido como mandar cualquier invento. Si q0 vino roto, resolver()
+        # cae en la macro por defecto y el pedido falla igual por el error de q0.
+        opciones = nucleo.resolver(info.field_name, info.data)["opciones"]
+        if valor not in opciones:
             raise ValueError(f"Opcion desconocida para {info.field_name}: {valor!r}")
         return valor
 
@@ -85,7 +91,7 @@ class PedidoPregunta(RespuestasFijas):
 
 class RespuestaChat(RespuestasFijas):
     profundas: list[Profunda] = Field([], max_length=nucleo._CANT_PREGUNTAS_PROFUNDAS)
-    ya_mostrados: list[str] = Field([], max_length=nucleo._MAX_RECOMENDACIONES)
+    ya_mostrados: list[str] = Field([], max_length=nucleo._MAX_TOTAL_RECOMENDACIONES)
     sesion_id: str = Field("", max_length=64)
     motivo_rechazo: str = Field("", max_length=500)
 
@@ -135,7 +141,7 @@ async def pagina(request: Request):
         request,
         "funes_chat.html",
         {
-            "preguntas_js": _js(nucleo.PREGUNTAS),
+            "preguntas_js": _js(nucleo.preguntas_publicas()),
             "origen_js": _js(origen),
             "base_url": _base_absoluta(request),
         },
@@ -185,7 +191,7 @@ async def clic_conseguir(request: Request, cuerpo: PedidoClic):
 
 @router.post("/funes-chat/precio")
 async def precio(request: Request, cuerpo: PedidoPrecio):
-    """Precio orientativo + link de busqueda en MercadoLibre.
+    """Precio orientativo + link de busqueda del libro.
 
     Endpoint aparte y no plegado dentro de /recomendar por tres razones: la
     recomendacion ya cuesta 2 embeddings y una llamada al LLM y no le podemos

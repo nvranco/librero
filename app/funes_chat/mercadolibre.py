@@ -2,9 +2,9 @@
 
 Dos piezas, y la diferencia entre ellas es deliberada:
 
-1. **El deep link a la busqueda de MercadoLibre** (`url_busqueda`) no depende de
-   nada: es armar una URL. Sale siempre. Es lo que mide la hipotesis de
-   intencion (HF-3), que es la que decide si el negocio existe.
+1. **El link de busqueda** (`url_busqueda`) no depende de nada: es armar una
+   URL. Sale siempre. Es lo que mide la hipotesis de intencion (HF-3), que es
+   la que decide si el negocio existe.
 2. **El precio de referencia** (`precio`) es un accesorio que reduce la
    incertidumbre del lector antes de decidir. Si falla, se muestra el link solo.
 
@@ -84,29 +84,88 @@ _MARGEN_REFRESCO = timedelta(minutes=5)
 _lock_token = asyncio.Lock()
 
 _SYSTEM_PRECIO = (
-    "Buscas el precio de referencia de un libro a la venta en Argentina. "
-    "Devolves UNICAMENTE un JSON valido, sin markdown y sin texto alrededor, "
-    'con esta forma exacta: {"precio_ars": <entero o null>, "fuente": "<dominio>"}.\n\n'
+    "Buscas el precio de referencia de un libro a la venta ONLINE en la Ciudad "
+    "de Buenos Aires. Devolves UNICAMENTE un JSON valido, sin markdown y sin "
+    "texto alrededor, con esta forma exacta: "
+    '{"precio_ars": <entero o null>, "fuente": "<dominio>", "url": "<link a la publicacion>"}.\n\n'
     "Reglas:\n"
-    "- Busca la edicion COMUN y mas economica disponible en Argentina, en "
-    "rustica o tapa blanda. Ignora ediciones importadas, de coleccion, de lujo, "
-    "tapa dura cara, combos, lotes y ejemplares de anticuario. Sin esta regla "
-    "aparecen importados que cuestan el triple que la edicion que la persona "
+    "- Busca como si estuvieras en la Ciudad de Buenos Aires. Solo valen "
+    "tiendas online argentinas que vendan y ENTREGUEN en CABA o el AMBA. "
+    "Descarta tiendas de otros paises y librerias que no hagan envio a Buenos "
+    "Aires: una oferta a la que la persona no puede llegar no le sirve de nada "
+    "y le hace perder el viaje.\n"
+    "- Busca la edicion COMUN y mas economica disponible, en rustica o tapa "
+    "blanda. Ignora ediciones importadas, de coleccion, de lujo, tapa dura "
+    "cara, combos, lotes y ejemplares de anticuario. Sin esta regla aparecen "
+    "importados que cuestan el triple que la edicion que la persona "
     "efectivamente va a encontrar.\n"
-    "- Preferi tiendas argentinas.\n"
+    "- El precio va en pesos argentinos, sin puntos ni simbolos.\n"
+    '- "url" es el link directo a ESA publicacion, la que tiene ese precio, no la '
+    "home de la tienda ni una busqueda. Tiene que ser del mismo dominio que "
+    'declaras en "fuente". Si no lo tenes a mano, devolve "url": null antes que '
+    "un link inventado: un link roto en el momento de comprar es peor que "
+    "ningun link.\n"
     "- Si el unico precio que encontras parece anormalmente alto para un libro "
     "comun, devolve null antes que un numero que confunda.\n"
     "- Si no encontras publicaciones reales de ESE libro puntual, precio_ars "
     "tiene que ser null. No inventes y no estimes por analogia con otros libros."
 )
 
+def _dominio(fuente: str) -> str:
+    """El dominio de la tienda donde se encontro el precio, si parece un dominio.
 
-def url_busqueda(titulo: str, autor: str) -> str:
-    """Deep link a la busqueda de MercadoLibre. /jm/search?as_word= y no la URL
-    canonica de listado porque es a prueba de encoding (tildes, comillas, & en
-    los titulos): ML resuelve solo la forma canonica con un 301."""
-    consulta = " ".join(x for x in (titulo, autor) if x).strip()
-    return f"https://www.mercadolibre.com.ar/jm/search?as_word={quote_plus(consulta)}"
+    Lo escribe un LLM, asi que puede llegar cualquier cosa: el nombre de la
+    libreria con espacios, una frase, una URL entera o vacio. Se valida a mano
+    porque meter texto libre en la consulta ensuciaria la busqueda en lugar de
+    afinarla, y el link es lo unico que sale siempre."""
+    fuente = (fuente or "").strip().lower()
+    fuente = fuente.split("//")[-1].split("/")[0]
+    if not fuente or " " in fuente or "." not in fuente or len(fuente) > 60:
+        return ""
+    if set(fuente) - set("abcdefghijklmnopqrstuvwxyz0123456789.-"):
+        return ""
+    return fuente if fuente.rsplit(".", 1)[-1].isalpha() else ""
+
+
+def _url_oferta(url, dominio: str) -> str:
+    """El link directo a la publicacion, solo si se puede confiar en el.
+
+    Tres condiciones, y las tres existen por la misma razon: lo escribe un
+    modelo y un link roto justo cuando la persona decide comprar es peor que no
+    ofrecer ninguno. Tiene que ser http(s), tiene que vivir en el mismo dominio
+    que el modelo declaro como fuente —si no coinciden, algo invento— y tiene
+    que entrar en un largo razonable."""
+    url = str(url or "").strip()
+    if not dominio or not url.lower().startswith(("http://", "https://")) or len(url) > 500:
+        return ""
+    host = url.split("//", 1)[-1].split("/")[0].lower()
+    return url if host == dominio or host.endswith("." + dominio) else ""
+
+
+def url_busqueda(titulo: str, autor: str, fuente: str = "") -> str:
+    """Busqueda en Google del libro recomendado, para el boton "¿Donde lo
+    consigo?".
+
+    Google y no el listado de una tienda puntual: la pregunta del lector es
+    donde conseguirlo, y la respuesta honesta es todo el mercado a la vez
+    (librerias, usados, marketplaces), no el stock de un solo vendedor. Ademas
+    no ata el boton a que esa tienda tenga el titulo: una busqueda vacia en un
+    listado es una pantalla muerta, y en Google nunca lo es.
+
+    Se agrega "comprar" a proposito: sin esa palabra la primera pagina se llena
+    de resenas y de Wikipedia, que no es lo que el boton promete. El titulo NO
+    va entre comillas: muchos titulos del catalogo arrastran subtitulo y
+    puntuacion, y la frase exacta devolveria casi nada.
+
+    `fuente` es el dominio donde el precio de referencia encontro la mejor
+    oferta. Va al final de la consulta, no como `site:`, y la diferencia
+    importa: `site:` deja al lector encerrado en esa tienda y le muestra una
+    pantalla vacia si el precio quedo viejo o la pagina se movio. Como termino
+    suelto, Google la pone primera y ademas deja ver las alternativas."""
+    consulta = " ".join(
+        x for x in (titulo, autor, "comprar", _dominio(fuente)) if x
+    ).strip()
+    return f"https://www.google.com/search?q={quote_plus(consulta)}"
 
 
 # --------------------------------------------------------------------------
@@ -223,10 +282,12 @@ def _limpiar_fuente(fuente) -> str:
     return texto.split("/")[0].strip()[:80]
 
 
-async def _precio_referencia(titulo: str, autor: str) -> tuple[int | None, str | None, str | None]:
-    """Devuelve (precio, fuente, error). Nunca levanta excepcion."""
+async def _precio_referencia(
+    titulo: str, autor: str
+) -> tuple[int | None, str | None, str, str | None]:
+    """Devuelve (precio, fuente, url_oferta, error). Nunca levanta excepcion."""
     if not OPENROUTER_API_KEY:
-        return None, None, "sin OPENROUTER_API_KEY"
+        return None, None, "", "sin OPENROUTER_API_KEY"
 
     consulta = " ".join(x for x in (titulo, autor) if x).strip()
     body = {
@@ -256,10 +317,11 @@ async def _precio_referencia(titulo: str, autor: str) -> tuple[int | None, str |
             "funes_precio_fallo consulta=%r latencia_ms=%s error=%s",
             consulta, round((time.monotonic() - inicio) * 1000), exc,
         )
-        return None, None, str(exc)[:200]
+        return None, None, "", str(exc)[:200]
 
     latencia = round((time.monotonic() - inicio) * 1000)
     fuente = _limpiar_fuente(datos.get("fuente"))
+    oferta = _url_oferta(datos.get("url"), _dominio(fuente or ""))
     try:
         precio_ars = int(datos["precio_ars"]) if datos.get("precio_ars") is not None else None
     except (TypeError, ValueError):
@@ -274,20 +336,22 @@ async def _precio_referencia(titulo: str, autor: str) -> tuple[int | None, str |
             "funes_precio_descartado consulta=%r precio=%s fuente=%r latencia_ms=%s",
             consulta, precio_ars, fuente, latencia,
         )
-        return None, None, None
+        return None, None, "", None
 
     logger.info(
-        "funes_precio_ok consulta=%r precio=%s fuente=%s latencia_ms=%s",
-        consulta, precio_ars, fuente, latencia,
+        "funes_precio_ok consulta=%r precio=%s fuente=%s oferta=%s latencia_ms=%s",
+        consulta, precio_ars, fuente, bool(oferta), latencia,
     )
-    return precio_ars, fuente, None
+    return precio_ars, fuente, oferta, None
 
 
 async def precio(libro: dict) -> dict:
     """Precio de referencia + link, con cache. Nunca levanta excepcion: en el
     peor caso devuelve el link con `precio=None` y el front muestra solo el link."""
-    url = url_busqueda(libro.get("titulo", ""), libro.get("autor", ""))
-    salida = {"url": url, "precio": None, "moneda": "ARS", "fuente": None}
+    titulo, autor = libro.get("titulo", ""), libro.get("autor", "")
+    # Sin fuente todavia: es el link que sale si el precio falla o no hay libro_id.
+    salida = {"url": url_busqueda(titulo, autor), "precio": None, "moneda": "ARS",
+              "fuente": None, "url_oferta": ""}
     libro_id = libro.get("id")
     if not libro_id:
         return salida
@@ -304,31 +368,38 @@ async def precio(libro: dict) -> dict:
         ttl = _TTL_ERROR if fila["error"] else _TTL_OK
         if fila["consultado_en"] + ttl > datetime.now(timezone.utc):
             return {
-                "url": fila["url_busqueda"] or url,
+                # El link se recalcula SIEMPRE y se ignora el de la fila. Es
+                # una funcion pura de titulo y autor, asi que cambiar su forma
+                # (como cuando paso de MercadoLibre a Google) tiene efecto al
+                # instante en todo el catalogo. Si mandara el guardado, las
+                # filas cacheadas seguirian sirviendo el link viejo hasta 30
+                # dias y no habria ningun error a la vista.
+                "url": url_busqueda(titulo, autor, fila["fuente"] or ""),
                 "precio": fila["precio"],
                 "moneda": fila["moneda"],
                 "fuente": fila["fuente"],
+                "url_oferta": fila["url_oferta"] or "",
             }
 
-    precio_ars, fuente, error = await _precio_referencia(
-        libro.get("titulo", ""), libro.get("autor", "")
-    )
+    precio_ars, fuente, oferta, error = await _precio_referencia(titulo, autor)
+    url = url_busqueda(titulo, autor, fuente or "")
 
     try:
         await db.pool().execute(
             """
             INSERT INTO funes_precios
-                (libro_id, precio, moneda, fuente, url_busqueda, consultado_en, error)
-            VALUES ($1, $2, 'ARS', $3, $4, now(), $5)
+                (libro_id, precio, moneda, fuente, url_busqueda, url_oferta, consultado_en, error)
+            VALUES ($1, $2, 'ARS', $3, $4, $5, now(), $6)
             ON CONFLICT (libro_id) DO UPDATE
                 SET precio = EXCLUDED.precio, fuente = EXCLUDED.fuente,
-                    url_busqueda = EXCLUDED.url_busqueda, consultado_en = now(),
+                    url_busqueda = EXCLUDED.url_busqueda,
+                    url_oferta = EXCLUDED.url_oferta, consultado_en = now(),
                     error = EXCLUDED.error
             """,
-            libro_id, precio_ars, fuente, url, error,
+            libro_id, precio_ars, fuente, url, oferta, error,
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning("funes_precio_cache_escritura_fallo error=%s", exc)
 
-    salida.update({"precio": precio_ars, "fuente": fuente})
+    salida.update({"url": url, "precio": precio_ars, "fuente": fuente, "url_oferta": oferta})
     return salida

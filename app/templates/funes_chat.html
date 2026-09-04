@@ -1,5 +1,9 @@
 {% extends "base.html" %}
-{% block titulo %}Funes — recomendador{% endblock %}
+{% block titulo %}Funes{% endblock %}
+{# El favicon de libritos es el de LIBRERO, la herramienta de la libreria.
+   Funes se presenta con lo suyo. Se pisa solo aca y no se cambia en
+   base.html a proposito: el panel de la libreria sigue con el suyo. #}
+{% block favicon %}<link rel="icon" href="/static/funes-favicon.svg" type="image/svg+xml">{% endblock %}
 {% block head %}
 {# Open Graph: es lo que hace que el link mandado por WhatsApp llegue con
    tarjeta en vez de pelado. En un piloto que se reparte por WhatsApp y por QR,
@@ -19,16 +23,20 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="Contame cómo querés leer hoy y te digo qué libro te toca.">
 <style>
-  .puntito {
-    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-    background: rgb(var(--gris)); margin: 0 2px;
-    animation: puntito-rebote 1.2s infinite ease-in-out;
-  }
-  .puntito:nth-child(2) { animation-delay: 0.15s; }
-  .puntito:nth-child(3) { animation-delay: 0.3s; }
-  @keyframes puntito-rebote {
-    0%, 80%, 100% { transform: translateY(0); opacity: .4; }
-    40% { transform: translateY(-4px); opacity: 1; }
+  /* Puntos suspensivos de toda la vida: aparecen de a uno y vuelven a empezar.
+     Son caracteres "." y no circulitos dibujados, asi quedan pegados a la
+     palabra como en cualquier texto. steps(1) para que prendan y apaguen sin
+     desvanecerse. */
+  .punto { opacity: 0; animation: punto-aparece 1.4s steps(1, end) infinite; }
+  /* Por hermano y no por :nth-child(n): los puntos vienen despues del .verbo,
+     asi que son el 2do, 3ro y 4to hijo, y contar posiciones les daba el retraso
+     corrido (el ultimo punto se prendia primero). */
+  .punto + .punto { animation-delay: 0.2s; }
+  .punto + .punto + .punto { animation-delay: 0.4s; }
+  @keyframes punto-aparece {
+    0%, 15%   { opacity: 0; }
+    30%, 80%  { opacity: 1; }
+    95%, 100% { opacity: 0; }
   }
   .opcion-aparece {
     opacity: 0; transform: translateY(6px);
@@ -37,10 +45,85 @@
   @keyframes opcion-aparece {
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* El "pensando" de Funes: el laberinto del logo, con cada anillo haciendo su
+     propio vaiven, como una cerradura buscando la combinacion. Los delays son
+     NEGATIVOS a proposito (la animacion arranca ya empezada): sin eso, el
+     primer ciclo sale con los tres anillos alineados en el mismo angulo y se
+     ve como una sola pieza girando. El del medio va para el lado contrario. */
+  .arco {
+    transform-box: view-box;
+    transform-origin: 16px 16px;
+    animation: arco-vaiven 1.5s ease-in-out infinite alternate;
+  }
+  .arco-2 { animation-delay: -0.4s; animation-direction: alternate-reverse; }
+  .arco-3 { animation-delay: -0.8s; }
+  @keyframes arco-vaiven {
+    from { transform: rotate(-60deg); }
+    to   { transform: rotate(60deg); }
+  }
+
+  /* Los anillos del logo del header. No animan solos: giran de a uno cada vez
+     que avanza la barra de progreso (ver girarAnillo). La transicion dura lo
+     mismo que la de la barra para que se lean como un solo gesto y no como dos
+     cosas que se movieron por casualidad al mismo tiempo. */
+  .anillo {
+    transform-box: view-box;
+    transform-origin: 16px 16px;
+    transition: transform 700ms ease-out;
+  }
+
+  /* La burbuja no aparece de golpe, se funde.
+
+     Solo opacidad, sin translate ni scale, y no es una decision estetica: la
+     burbuja se mide con getBoundingClientRect() apenas nace, para calcular a
+     donde scrollear (ver llevarArriba). Un transform corriendo en ese momento
+     le miente a esa medicion y el mensaje termina unos px por debajo del borde
+     de la cabecera. El movimiento lo pone el texto creciendo adentro. */
+  .burbuja-entra { animation: burbuja-entra 0.3s ease-out; }
+  @keyframes burbuja-entra {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Cada letra hace su propio desvanecido corto al aterrizar.
+     Solo opacidad, sin movimiento: es lo que le da el pulso de maquina de
+     escribir en vez de texto que flota hacia su lugar.
+
+     Y por ser solo opacidad puede quedarse en inline (el default). No es un
+     detalle menor: un inline-block por caracter es una oportunidad de corte de
+     linea en CADA letra, y el navegador puede partir "recomendacion" al medio;
+     un inline no agrega ningun corte, asi que el texto se parte donde se
+     partiria normalmente y no hace falta envolver cada palabra en un nowrap.
+     Si alguna vez se le vuelve a poner un transform, hay que reponer ese
+     envoltorio. La duracion tiene que seguir coincidiendo con
+     DURACION_LETRA_MS, que es lo que usa el JS para saber cuando termino. */
+  .letra {
+    opacity: 0;
+    animation: letra-entra 0.07s ease-out forwards;
+  }
+  @keyframes letra-entra {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .verbo { display: inline-block; animation: verbo-entra 0.4s ease-out; }
+  @keyframes verbo-entra {
+    from { opacity: 0; transform: translateY(3px); }
+    to   { opacity: 1; transform: none; }
+  }
 </style>
 {% endblock %}
 {% block contenido %}
 <div class="min-h-screen flex flex-col">
+
+  <!-- Cabecera pegajosa: el banner y la barra quedan siempre a la vista, como
+       en WhatsApp, y el contenido pasa por debajo. El bg-fondo no es decorativo
+       — sin fondo opaco las burbujas se ven a traves de la franja de la barra.
+       El costo es que tapa los ~88px de arriba de la pantalla, asi que
+       scrollSuaveHacia() descuenta altoCabecera() cuando lleva una burbuja
+       arriba de todo. -->
+  <div id="cabecera" class="sticky top-0 z-20 bg-fondo">
 
   <header class="bg-celeste px-5 py-4">
     <div class="flex items-center justify-center gap-2">
@@ -52,9 +135,9 @@
            icono de la aplicacion de MercadoLibre. -->
       <svg viewBox="0 0 32 32" class="w-6 h-6 text-tinta shrink-0" fill="none"
            stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
-        <circle cx="16" cy="16" r="13"  stroke-dasharray="65.8 15.9" transform="rotate(-125 16 16)"/>
-        <circle cx="16" cy="16" r="9.3" stroke-dasharray="47.1 11.4" transform="rotate(-5 16 16)"/>
-        <circle cx="16" cy="16" r="5.6" stroke-dasharray="28.4 6.8"  transform="rotate(115 16 16)"/>
+        <g class="anillo"><circle cx="16" cy="16" r="13"  stroke-dasharray="65.8 15.9" transform="rotate(-125 16 16)"/></g>
+        <g class="anillo"><circle cx="16" cy="16" r="9.3" stroke-dasharray="47.1 11.4" transform="rotate(-5 16 16)"/></g>
+        <g class="anillo"><circle cx="16" cy="16" r="5.6" stroke-dasharray="28.4 6.8"  transform="rotate(115 16 16)"/></g>
         <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/>
       </svg>
     </div>
@@ -65,13 +148,14 @@
        porque el header ya es bg-celeste y el verde sobre verde no se veria.
        Dos diferencias con el patron original: alla el progreso es fingido
        porque no se sabe cuando termina el backend, aca los pasos son conocidos
-       de antemano y la barra dice la verdad; y no es sticky a proposito,
-       porque scrollSuaveHacia() calcula el destino con rect.top y un header
-       fijo taparia el inicio de cada burbuja. -->
-  <div class="px-4 pt-4">
-    <div class="h-2 w-full bg-borde rounded-full overflow-hidden">
+       de antemano y la barra dice la verdad. Va adentro de #cabecera, o sea
+       que viaja pegada arriba junto con el header. -->
+  <div class="px-4 pt-3 pb-3">
+    <div class="h-3 w-full bg-borde rounded-full overflow-hidden">
       <div id="barra-progreso" class="h-full bg-celeste rounded-full transition-all duration-700 ease-out" style="width: 4%"></div>
     </div>
+  </div>
+
   </div>
 
   <div class="flex-1 px-4 pt-6 pb-10 safe-b">
@@ -84,15 +168,39 @@
       <a href="/funes-chat/privacidad" class="underline">Qué guarda</a>.
     </p>
     <!-- Sin esto, el documento no tiene suficiente alto debajo del ultimo
-         mensaje como para poder scrollearlo hasta arriba del todo (el
-         scroll se clampea al maximo posible, que en ese momento es mucho
-         menor a lo que hace falta): las opciones/el input de la pregunta
-         nueva todavia no se renderizaron cuando se calcula el destino del
-         scroll. Este espaciador le da "lugar" de sobra siempre. -->
+         mensaje como para poder scrollearlo hasta arriba del todo: el scroll
+         se clampea al maximo posible, que en ese momento es mucho menor a lo
+         que hace falta. El 75vh de aca es solo el valor inicial (antes del
+         primer turno); a partir de ahi lo maneja abrirEspacio(), que lo
+         recalcula en cada respuesta. Era el bug del autoscroll: un 75vh fijo
+         nunca alcanza a completar una pantalla. -->
     <div id="espaciador" style="min-height: 75vh;" aria-hidden="true"></div>
   </div>
 
 </div>
+
+<!-- El marcador de "pensando": el mismo laberinto del header, animado, con el
+     verbo y los puntos suspensivos a la derecha. NO va adentro de una burbuja:
+     esto no es un mensaje de Funes, es Funes moviendose, y meterlo en un
+     recuadro vacio lo hacia parecer un mensaje que no dice nada. Vive en un
+     <template> y no como string adentro del JS para no tener una tercera copia
+     del SVG dando vueltas.
+     Cada anillo va envuelto en un <g> porque su rotacion base es un atributo
+     de presentacion del <circle>, y una animacion CSS sobre el mismo elemento
+     la pisaria (el CSS le gana a los atributos). El punto del centro queda
+     quieto: es el libro al que se llega. -->
+<template id="tpl-pensando">
+  <span class="inline-flex items-center gap-2 align-middle text-gris">
+    <svg viewBox="0 0 32 32" class="w-5 h-5 shrink-0" fill="none"
+         stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+      <g class="arco arco-1"><circle cx="16" cy="16" r="13"  stroke-dasharray="65.8 15.9" transform="rotate(-125 16 16)"/></g>
+      <g class="arco arco-2"><circle cx="16" cy="16" r="9.3" stroke-dasharray="47.1 11.4" transform="rotate(-5 16 16)"/></g>
+      <g class="arco arco-3"><circle cx="16" cy="16" r="5.6" stroke-dasharray="28.4 6.8"  transform="rotate(115 16 16)"/></g>
+      <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+    </svg>
+    <span><span class="verbo"></span><span class="punto">.</span><span class="punto">.</span><span class="punto">.</span></span>
+  </span>
+</template>
 
 <script>
 const PREGUNTAS = {{ preguntas_js | safe }};
@@ -107,12 +215,82 @@ const ORIGEN = {{ origen_js | safe }};
 const ORDEN = Object.keys(PREGUNTAS);
 const MAX_RECOMENDACIONES = 3;
 const CANT_PREGUNTAS_PROFUNDAS = 2;
-const DELAY_TIPEO_MIN = 700;
+const DELAY_TIPEO_MIN = 1400;
+// Lo que se espera entre letra y letra. Ritmo FIJO a proposito: la letra numero
+// 50 entra siempre 50 pasos despues de la primera, sea el mensaje corto o
+// largo. Repartir un total fijo entre las letras daria el efecto al reves -
+// cuanto mas largo el mensaje, mas rapido se destapa.
+//
+// El 20 es el pulso de maquina de escribir: 50 caracteres por segundo. Medido
+// sobre mensajes reales de Funes (mediana 79 caracteres, los largos entre 164
+// y 177), da ~1,6 s para uno tipico y ~3,5 s para uno largo.
+const MS_ENTRE_LETRAS = 20;
+// Lo que tarda UNA letra en entrar. Tiene que coincidir con la animacion
+// letra-entra del CSS: es lo que se usa para saber cuando termino la ultima.
+//
+// La RELACION entre los dos numeros es lo que define el caracter: 70/20 son
+// menos de 4 letras a la vez, o sea un borde de escritura casi duro, tipo
+// consola o cuadro de texto de RPG. Subir la duracion ensancha esa ola y el
+// tipeo se empieza a leer como un barrido suave. Para que la letra aparezca de
+// golpe, sin ningun desvanecido, alcanza con cambiar el ease-out del CSS por
+// steps(1, end).
+const DURACION_LETRA_MS = 70;
+// Cada cuanto, como mucho, la escritura vuelve a pedir scroll mientras la
+// burbuja crece. Sin el techo lo pediria en cada frame, y como cada pedido
+// cancela al anterior, la vista no terminaria de llegar nunca a ningun lado.
+const MS_ENTRE_SCROLLS_ESCRITURA = 100;
 const MAX_MENSAJES_POR_RESPUESTA = 3;
 const MENSAJE_ERROR = "Funes se quedó sin palabras por ahora. Probá de nuevo en un rato.";
 
+// Los verbos que rota el "pensando". Todos de una palabra y todos se leen en
+// los dos registros a la vez: el laberinto de Borges y lo que la maquina hace
+// con los vectores (ramificar, podar el arbol, enhebrar el hilo, converger),
+// mas uno que es puro ir a oscuras.
+const VERBOS = ["Bifurcando", "Podando", "Enhebrando", "Cotejando",
+               "Convergiendo", "Desandando"];
+const ROTACION_VERBOS = 1900;
+
+// Bolsa barajada: se reparten los verbos de a uno y recien cuando se acabaron
+// se vuelve a barajar. Asi ninguno se repite hasta que salieron todos, y la
+// bolsa es del modulo y no de cada pensar() justamente para que la garantia
+// valga tambien ENTRE una espera y la siguiente (con un indice al azar por
+// llamada, dos esperas seguidas podian arrancar con el mismo verbo).
+let bolsaVerbos = [];
+let ultimoVerbo = "";
+
+// Fisher-Yates y no sort(() => Math.random() - 0.5): el truco del sort no
+// reparte parejo, y con 7 elementos el sesgo se nota.
+function barajar(lista) {
+  const copia = lista.slice();
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+function proximoVerbo() {
+  // Se rebaraja hasta que el proximo a salir no sea el que acaba de salir: sin
+  // esto, el unico lugar donde puede haber un repetido pegado es justo el
+  // cambio de bolsa, que es el mas visible.
+  while (bolsaVerbos.length === 0 || bolsaVerbos[bolsaVerbos.length - 1] === ultimoVerbo) {
+    bolsaVerbos = barajar(VERBOS);
+  }
+  ultimoVerbo = bolsaVerbos.pop();
+  return ultimoVerbo;
+}
+
 const hilo = document.getElementById("hilo");
 const zonaInput = document.getElementById("zona-input");
+const cabecera = document.getElementById("cabecera");
+const espaciador = document.getElementById("espaciador");
+
+// Se mide en cada llamada y no una sola vez al arrancar: el alto real depende
+// de cuando termino de cargar la tipografia del titulo, y cambia si el telefono
+// rota o si iOS esconde la barra de URL.
+function altoCabecera() {
+  return cabecera.getBoundingClientRect().height;
+}
 
 const respuestas = {};
 const profundas = [];
@@ -156,14 +334,39 @@ function guardarSesion() {
 const PASOS_TOTALES = ORDEN.length + CANT_PREGUNTAS_PROFUNDAS;
 const barraProgreso = document.getElementById("barra-progreso");
 let progresoActual = 4;
+// Vueltas empezadas. La segunda es la que habilita "Empezar de nuevo" cuando se
+// agotaron las 3 recomendaciones; despues de esa no hay mas, y el tope de
+// ya_mostrados del servidor (_MAX_TOTAL_RECOMENDACIONES) lo hace cumplir.
+let ciclos = 1;
+const MAX_CICLOS = 2;
 
 // Monotona, igual que ponerBarra() en panel.html: una barra que retrocede se
 // lee como un error. La diferencia es el tope: alla se clampea en 97% para no
 // mentir que termino (el progreso es fingido), aca los pasos son conocidos y
 // la barra tiene que poder cerrar de verdad en 100.
+// Cada avance de la barra mueve UN anillo del logo, y en cada avance le toca a
+// otro: el laberinto se lee como una cerradura que va cediendo a medida que
+// avanza la charla, en vez de un icono que gira porque si. El del medio va para
+// el otro lado, igual que en el laberinto del "pensando".
+const anillos = [...document.querySelectorAll("#cabecera .anillo")];
+const girosAnillo = anillos.map(() => 0);
+let proximoAnillo = 0;
+
+function girarAnillo() {
+  if (anillos.length === 0) return;
+  const i = proximoAnillo % anillos.length;
+  girosAnillo[i] += i === 1 ? -110 : 110;
+  anillos[i].style.transform = "rotate(" + girosAnillo[i] + "deg)";
+  proximoAnillo += 1;
+}
+
 function ponerBarra(pct) {
+  const antes = progresoActual;
   progresoActual = Math.max(progresoActual, Math.min(pct, 100));
   barraProgreso.style.width = progresoActual + "%";
+  // Solo si de verdad avanzo: ponerBarra es monotona y se la puede llamar con
+  // un valor que ya paso, y ahi el anillo no tiene nada que festejar.
+  if (progresoActual > antes) girarAnillo();
 }
 
 function actualizarBarra() {
@@ -197,10 +400,19 @@ function easeInOutQuad(t) {
 
 function scrollSuaveHacia(el, block, duracionMs = 450) {
   const rect = el.getBoundingClientRect();
+  // "start" descuenta la cabecera pegajosa, que si no taparia el arranque de la
+  // burbuja. "end" no la necesita: esta anclado abajo, donde no tapa nada.
   const destinoCrudo = block === "start"
-    ? window.scrollY + rect.top
+    ? window.scrollY + rect.top - altoCabecera()
     : window.scrollY + rect.bottom - window.innerHeight;
-  const destino = Math.max(0, Math.min(destinoCrudo, limiteScroll()));
+  let destino = Math.max(0, Math.min(destinoCrudo, limiteScroll()));
+  // "end" quiere decir "traelo a la vista si quedo abajo", NO "pega su borde
+  // inferior contra el fondo de la pantalla". La diferencia importa en la 2da
+  // burbuja de un turno: nace vacia, de 26px, y pedir su borde inferior contra
+  // el fondo tira la vista cientos de px PARA ATRAS, deshaciendo el "start" que
+  // acababa de dejar el turno arriba de todo. Todo lo que se scrollea con "end"
+  // es contenido recien agregado al final, asi que retroceder nunca hace falta.
+  if (block !== "start") destino = Math.max(destino, window.scrollY);
 
   const miToken = ++scrollTokenActual;
   const inicio = window.scrollY;
@@ -216,13 +428,51 @@ function scrollSuaveHacia(el, block, duracionMs = 450) {
   requestAnimationFrame(frame);
 }
 
+// El colchon de abajo existe para que el ancla PUEDA llegar arriba de todo:
+// scrollSuaveHacia clampea el destino contra scrollHeight - innerHeight, asi
+// que si debajo del ancla no hay una pantalla entera de contenido el scroll se
+// queda corto y la conversacion vieja no termina de esconderse.
+//
+// Se mide donde ARRANCA el espaciador (no se lo pone en 0 para releer
+// scrollHeight): achicar el documento hace que el navegador clampee scrollY
+// solo, y eso corromperia el window.scrollY + rect.top de la linea de arriba.
+function abrirEspacio(ancla) {
+  const anclaTop = window.scrollY + ancla.getBoundingClientRect().top;
+  const finContenido = window.scrollY + espaciador.getBoundingClientRect().top;
+  const necesario = window.innerHeight - altoCabecera();
+  espaciador.style.minHeight = Math.max(0, necesario - (finContenido - anclaTop)) + "px";
+}
+
+// "Guardar arriba lo que ya se contesto y dejar la pantalla para lo nuevo".
+// Es el unico gesto de scroll que se usa cuando el usuario acaba de responder,
+// y va SIEMPRE despues de renderizar lo nuevo, para que abrirEspacio() mida el
+// contenido real y no reserve de mas.
+function llevarArriba(ancla) {
+  abrirEspacio(ancla);
+  scrollSuaveHacia(ancla, "start");
+}
+
+// Vuelve a correr la animacion de entrada sobre un div que ya la tiene puesta.
+// Sacar y reponer la clase en el mismo frame no alcanza: el navegador junta los
+// dos cambios y no ve ninguna transicion. El offsetHeight del medio lo obliga a
+// recalcular, y ahi si la animacion arranca de nuevo.
+function animarEntrada(div) {
+  div.classList.remove("burbuja-entra");
+  void div.offsetHeight;
+  div.classList.add("burbuja-entra");
+}
+
 function burbujaVacia(propia, scrollBlock = "end") {
   const div = document.createElement("div");
+  // La burbuja propia lleva el MISMO borde que tenia el boton del que salio
+  // (border-celeste, no el border-borde de Funes): la respuesta elegida se lee
+  // como el boton que se acaba de tocar, ya del lado de uno.
   div.className = propia
-    ? "self-end max-w-[85%] rounded-xl2 px-4 py-3 bg-celeste-claro text-texto-papel"
-    : "self-start max-w-[90%] rounded-xl2 px-4 py-3 bg-papel border-2 border-borde whitespace-pre-line";
+    ? "burbuja-entra self-end max-w-[85%] rounded-xl2 px-4 py-3 bg-celeste-claro border-2 border-celeste text-texto-papel"
+    : "burbuja-entra self-start max-w-[90%] rounded-xl2 px-4 py-3 bg-papel border-2 border-borde whitespace-pre-line";
   hilo.appendChild(div);
-  scrollSuaveHacia(div, scrollBlock);
+  if (scrollBlock === "start") llevarArriba(div);
+  else scrollSuaveHacia(div, "end");
   return div;
 }
 
@@ -232,19 +482,73 @@ function burbuja(texto, propia) {
   return div;
 }
 
-// seguirScroll=false deja la vista quieta (ya se hizo scroll al inicio de la
-// burbuja antes de tipear, y no queremos que el bloque "end" de cada
-// caracter vaya empujando la pantalla hacia abajo y arruine ese
-// posicionamiento).
-async function tipear(div, texto, seguirScroll = true) {
-  const pasos = 40;
-  const porPaso = Math.max(1, Math.ceil(texto.length / pasos));
-  for (let i = 0; i < texto.length; i += porPaso) {
-    div.textContent = texto.slice(0, i + porPaso);
-    if (seguirScroll) scrollSuaveHacia(div, "end");
-    await esperar(20);
-  }
-  div.textContent = texto;
+// seguirScroll=false deja la vista quieta: la primera burbuja de un turno ya
+// se scrolleo a su propio inicio, y un "end" ahora la empujaria hacia abajo
+// arruinando ese posicionamiento.
+//
+// El texto no se escribe: se arma. Cada palabra entra por su cuenta -sube,
+// aparece y se asienta- escalonada con la anterior. Reemplaza al tipeo caracter
+// por caracter, que por suave que fuera seguia siendo una linea creciendo. Es
+// el mismo gesto que ya hacen los botones de opcion al aparecer
+// (.opcion-aparece), asi que no suma un lenguaje visual nuevo.
+//
+// Las palabras se crean TODAS de una y se escalonan con animation-delay, en vez
+// de irlas agregando por timer: la burbuja toma su tamaño final en el primer
+// frame, con lo cual no hay un reflow por palabra y alcanza con pedir scroll
+// una sola vez en lugar de perseguir una altura que crece.
+function revelarTexto(div, texto, seguirScroll = true) {
+  return new Promise((resolve) => {
+    div.textContent = "";
+    const caracteres = [...texto];
+    let puestos = 0;
+    let ultimoScroll = 0;
+    const t0 = performance.now();
+
+    function frame(ahora) {
+      // Cuantos caracteres van se saca del tiempo transcurrido y no de un
+      // contador de frames: asi el ritmo es el mismo en cualquier maquina, sin
+      // importar el framerate.
+      const objetivo = Math.min(caracteres.length,
+                                Math.floor((ahora - t0) / MS_ENTRE_LETRAS) + 1);
+      while (puestos < objetivo) {
+        const caracter = caracteres[puestos];
+        if (caracter === " ") {
+          // Los espacios van como nodo de texto suelto y no como .letra: son
+          // los unicos puntos donde la linea puede cortar y hay que dejarlos
+          // tal cual. Igual consumen su paso del ritmo, si no la escritura se
+          // aceleraria cada vez que termina una palabra.
+          div.appendChild(document.createTextNode(" "));
+        } else {
+          const span = document.createElement("span");
+          span.className = "letra";
+          span.textContent = caracter;
+          div.appendChild(span);
+        }
+        puestos += 1;
+      }
+
+      if (seguirScroll && ahora - ultimoScroll >= MS_ENTRE_SCROLLS_ESCRITURA) {
+        scrollSuaveHacia(div, "end");
+        ultimoScroll = ahora;
+      }
+
+      if (puestos < caracteres.length) {
+        requestAnimationFrame(frame);
+        return;
+      }
+      if (seguirScroll) scrollSuaveHacia(div, "end");
+
+      setTimeout(() => {
+        // Cierra colapsando a un unico nodo de texto: en pantalla es identico
+        // (a esta altura todas las letras estan al 100%), le saca al DOM un
+        // span por caracter, y le simplifica la vida a enlazarLibro(), que
+        // despues lee el textContent y pisa el innerHTML entero.
+        div.textContent = texto;
+        resolve();
+      }, DURACION_LETRA_MS);
+    }
+    requestAnimationFrame(frame);
+  });
 }
 
 // Parte una respuesta del LLM en varios mensajes de chat (asi se siente como
@@ -255,12 +559,14 @@ async function tipear(div, texto, seguirScroll = true) {
 // salto de linea, se muestra como un solo mensaje entero en vez de arriesgar
 // un corte mal hecho.
 function dividirEnMensajes(texto) {
-  // El LLM a veces deja una barra invertida suelta en su propia linea (resto
-  // de un intento de escapar el "\n" del formato pedido en vez de escribir
-  // el salto de linea real) — se descarta como si fuera una linea vacia.
+  // El LLM a veces escribe el separador como texto en su propia linea en vez de
+  // poner el salto real: a veces una barra invertida suelta, y a veces la
+  // secuencia barra-ene entera. Los dos casos se descartan como linea vacia.
+  // Visto en produccion: sin esto sale una burbuja que dice, literalmente, esa
+  // secuencia, en el medio de la recomendacion.
   const lineas = texto.split("\n")
     .map((s) => s.trim())
-    .filter((s) => s && !/^\\+$/.test(s));
+    .filter((s) => s && !/^\\+n?$/.test(s));
   if (lineas.length === 0) return [texto];
   if (lineas.length <= MAX_MENSAJES_POR_RESPUESTA) return lineas;
   const cabeza = lineas.slice(0, MAX_MENSAJES_POR_RESPUESTA - 1);
@@ -268,10 +574,56 @@ function dividirEnMensajes(texto) {
   return [...cabeza, cola];
 }
 
+// Pone el laberinto animado y el verbo que va rotando. El verbo sale desde el
+// primer frame en TODA espera, tambien en las cortas de un texto fijo: es la
+// voz del que piensa, no un aviso de que se esta demorando. Devuelve la funcion
+// que apaga todo: el que llama es dueño del div y tiene que frenar los timers
+// antes de escribir el texto real, o el verbo le pisaria la burbuja ya tipeada.
+function pensar(div) {
+  // Mientras piensa, el div deja de ser una burbuja: sin fondo, sin borde y sin
+  // padding, para que se vea el laberinto suelto sobre el papel y no un
+  // recuadro de mensaje vacio esperando texto. Al frenar se le devuelven las
+  // clases y recien ahi se convierte en el mensaje.
+  const claseBurbuja = div.className;
+  div.className = "self-start px-1 py-1";
+  div.innerHTML = "";
+  div.appendChild(document.getElementById("tpl-pensando").content.cloneNode(true));
+  let verbo = div.querySelector(".verbo");
+  let rotacion = null;
+
+  // Reemplaza el nodo en vez de reescribirle el texto: es lo que hace que la
+  // animacion de entrada vuelva a correr en cada cambio de verbo.
+  function pintar() {
+    const nuevo = document.createElement("span");
+    nuevo.className = "verbo";
+    nuevo.textContent = proximoVerbo();
+    verbo.replaceWith(nuevo);
+    verbo = nuevo;
+  }
+
+  pintar();
+  rotacion = setInterval(pintar, ROTACION_VERBOS);
+
+  return () => {
+    clearInterval(rotacion);
+    // Este es el corte mas duro de la pantalla: el div deja de ser el laberinto
+    // suelto sobre el papel y le aparecen fondo, borde y padding en el mismo
+    // frame. Reponer la clase no re-dispara nada (es el mismo valor que ya
+    // tenia), asi que la entrada se fuerza a mano y el cambio se lee como algo
+    // que aparece en vez de algo que salta.
+    div.className = claseBurbuja;
+    animarEntrada(div);
+  };
+}
+
 async function escribirBurbuja(div, texto) {
-  div.innerHTML = '<span class="puntito"></span><span class="puntito"></span><span class="puntito"></span>';
+  // La 2da/3ra burbuja de un turno: el texto ya llego, asi que la espera es
+  // corta y el verbo alcanza a mostrarse uno solo. Igual va, para que cada
+  // burbuja del turno arranque con el mismo gesto.
+  const dejarDePensar = pensar(div);
   await esperar(DELAY_TIPEO_MIN);
-  await tipear(div, texto);
+  dejarDePensar();
+  await revelarTexto(div, texto);
 }
 
 function escaparHtml(texto) {
@@ -286,20 +638,48 @@ function urlBusquedaGoogle(consulta) {
 // ya tipeada en links que abren una busqueda de Google en pestaña nueva. Si
 // el LLM parafraseo en vez de nombrar el libro tal cual, esa burbuja
 // simplemente no tiene links — no vale la pena forzarlo.
+// Palabras que aparecen en el campo autor pero no son una persona a la que se
+// pueda seguir. Un link a "colaboradores" es una busqueda vacia.
+const NO_SON_AUTORES = ["colaboradores", "varios autores", "otros", "et al", "aa vv"];
+
+// "Mariano Sigman y Santiago Bilinkis" son dos personas, no una. El catalogo
+// las guarda en un solo campo separadas por " y ", coma o barra.
+function separarAutores(autor) {
+  const partes = String(autor || "")
+    .split(new RegExp(",|/|&| y "))
+    .map((s) => s.split("(")[0].trim())
+    .filter(Boolean);
+  if (partes.length <= 1) return partes;
+  // Con varios autores se tiran los fragmentos de una sola palabra: en el
+  // catalogo son casi siempre nombres cortados ("Tammie Ronen y Ayelet") y
+  // buscar "Ayelet" no lleva a ningun lado. Con un autor solo NO se aplica,
+  // para no perder a los que firman con un nombre unico.
+  return partes
+    .filter((s) => s.split(" ").length >= 2)
+    .filter((s) => !NO_SON_AUTORES.includes(s.toLowerCase()));
+}
+
 function enlazarLibro(div, titulo, autor) {
   const texto = div.textContent;
-  const objetivos = [titulo, autor]
-    .filter(Boolean)
-    .filter((t) => texto.includes(t))
-    .sort((a, b) => b.length - a.length); // el mas largo primero, para no partir un match adentro de otro
+  // El titulo se busca CON los autores al lado: "Artificial" solo no es una
+  // busqueda, es una palabra. Cada autor, en cambio, se busca por su cuenta:
+  // quien quiere seguir a uno de los dos tiene que poder.
+  const objetivos = [{ texto: titulo, consulta: [titulo, autor].filter(Boolean).join(" ") }]
+    .concat(separarAutores(autor).map((a) => ({ texto: a, consulta: a })))
+    .filter((o) => o.texto && texto.includes(o.texto))
+    .sort((a, b) => b.texto.length - a.texto.length); // el mas largo primero, para no partir un match adentro de otro
   if (objetivos.length === 0) return;
 
   const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const patron = new RegExp(objetivos.map((t) => escapeRegex(escaparHtml(t))).join("|"), "g");
+  // El texto que se subraya y la consulta que dispara ya no son lo mismo, asi
+  // que hace falta el mapa: la clave es el texto ya escapado, que es contra lo
+  // que matchea el patron.
+  const consultas = new Map(objetivos.map((o) => [escaparHtml(o.texto), o.consulta]));
+  const patron = new RegExp(objetivos.map((o) => escapeRegex(escaparHtml(o.texto))).join("|"), "g");
   div.innerHTML = escaparHtml(texto).replace(
     patron,
     (coincidencia) =>
-      `<a href="${urlBusquedaGoogle(coincidencia)}" target="_blank" rel="noopener noreferrer" class="underline">${coincidencia}</a>`
+      `<a href="${urlBusquedaGoogle(consultas.get(coincidencia) || coincidencia)}" target="_blank" rel="noopener noreferrer" class="underline">${coincidencia}</a>`
   );
 }
 
@@ -314,14 +694,15 @@ function enlazarLibro(div, titulo, autor) {
 // releer. Las burbujas siguientes (2da, 3ra oracion) sí seguyen el scroll
 // normal hacia abajo, para que la lectura fluya de corrido dentro del mismo
 // turno.
-async function mostrarRespuestaFunes(origen, alTerminarBurbuja) {
+async function mostrarRespuestaFunes(origen, alTerminarBurbuja, anclaje = "start") {
   const promesaTexto = typeof origen === "string" ? Promise.resolve(origen) : origen;
-  const primera = burbujaVacia(false, "start");
-  primera.innerHTML = '<span class="puntito"></span><span class="puntito"></span><span class="puntito"></span>';
+  const primera = burbujaVacia(false, anclaje);
+  const dejarDePensar = pensar(primera);
   const [textoCompleto] = await Promise.all([promesaTexto, esperar(DELAY_TIPEO_MIN)]);
+  dejarDePensar();
 
   const mensajes = dividirEnMensajes(textoCompleto);
-  await tipear(primera, mensajes[0], false);
+  await revelarTexto(primera, mensajes[0], false);
   if (alTerminarBurbuja) await alTerminarBurbuja(primera, mensajes[0]);
   for (let i = 1; i < mensajes.length; i++) {
     const div = burbujaVacia(false);
@@ -335,8 +716,17 @@ function limpiarInput() {
   zonaInput.innerHTML = "";
 }
 
-async function mostrarOpciones(clave) {
+// Espejo de nucleo.resolver(): q1 tiene un juego de opciones distinto por
+// macro. Se resuelve con respuestas.q0, que a esta altura siempre esta
+// contestada porque q0 va primera en ORDEN.
+function preguntaActual(clave) {
   const p = PREGUNTAS[clave];
+  if (!p.variantes) return p;
+  return { ...p, ...(p.variantes[respuestas.q0] || p.variantes.literatura) };
+}
+
+async function mostrarOpciones(clave) {
+  const p = preguntaActual(clave);
   await mostrarRespuestaFunes(p.pregunta);
   limpiarInput();
   const cont = document.createElement("div");
@@ -345,7 +735,7 @@ async function mostrarOpciones(clave) {
   for (const [valor, etiqueta] of Object.entries(p.opciones)) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-sm bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-base bg-celeste-claro border-2 border-celeste text-texto-papel";
     btn.style.animationDelay = `${indice * 160}ms`;
     btn.textContent = etiqueta;
     btn.addEventListener("click", () => {
@@ -361,7 +751,7 @@ async function mostrarOpciones(clave) {
 }
 
 async function mostrarTexto(clave) {
-  const p = PREGUNTAS[clave];
+  const p = preguntaActual(clave);
   await mostrarRespuestaFunes(p.pregunta);
   limpiarInput();
   const form = document.createElement("form");
@@ -448,13 +838,16 @@ function mostrarOpcionesProfundas(pregunta, opciones) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = esOtra
-      ? "opcion-aparece btn-secundario tap rounded-xl2 px-4 py-3 text-left text-sm"
-      : "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-sm bg-celeste-claro border-2 border-celeste text-texto-papel";
+      ? "opcion-aparece btn-secundario tap rounded-xl2 px-4 py-3 text-left text-base"
+      : "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-base bg-celeste-claro border-2 border-celeste text-texto-papel";
     btn.style.animationDelay = `${indice * 160}ms`;
     btn.textContent = etiqueta;
     btn.addEventListener("click", () => {
       if (esOtra) {
+        // No es una respuesta sino un cambio de modo de entrada: no hay burbuja
+        // propia, asi que se ancla en la pregunta para que quede arriba del input.
         formularioTextoProfunda(pregunta);
+        llevarArriba(hilo.lastElementChild);
       } else {
         avanzarProfunda(pregunta, etiqueta);
       }
@@ -487,7 +880,7 @@ async function pedirPreguntaProfunda() {
 }
 
 // Se dispara apenas llega la recomendacion, no cuando se muestran los botones:
-// asi el ida y vuelta con MercadoLibre pasa mientras la persona lee la
+// asi la busqueda del precio pasa mientras la persona lee la
 // recomendacion y da su veredicto, y para cuando tiene que decidir el boton ya
 // esta listo. Nunca rechaza: sin precio igual devuelve el link.
 function pedirPrecio(libroId) {
@@ -510,16 +903,34 @@ function registrarClicConseguir() {
   }).catch(() => {});
 }
 
+// Veredicto de la recomendacion que esta en pantalla, o null si todavia no lo
+// dio. Lo miran los botones: a quien acaba de decir "no me interesa" no se le
+// ofrece un boton para comprarlo.
+let veredictoActual = null;
+
 async function mostrarBotonesRecomendacion() {
   limpiarInput();
+  const ofrecerConseguir = veredictoActual !== "no_me_interesa";
   const cont = document.createElement("div");
   cont.className = "flex flex-col gap-2";
 
   // Accion principal. El precio es un extra: si ML no contesta, si no hay
   // credenciales o si no hubo resultados utiles, el boton sale igual con el
   // link a la busqueda y el lector no se entera de nada.
-  const precio = promesaPrecio ? await promesaPrecio : null;
-  if (precio && precio.url) {
+  // Casi siempre ya llego (se pide al aparecer la recomendacion, bastante antes
+  // del veredicto), pero si demorara la pantalla quedaria sin nada: el
+  // laberinto tapa ese hueco.
+  let precio = null;
+  if (ofrecerConseguir && promesaPrecio) {
+    const espera = document.createElement("p");
+    espera.className = "text-gris";
+    zonaInput.appendChild(espera);
+    const dejarDePensar = pensar(espera);
+    precio = await promesaPrecio;
+    dejarDePensar();
+    espera.remove();
+  }
+  if (ofrecerConseguir && precio && precio.url) {
     const btnConseguir = document.createElement("a");
     btnConseguir.href = precio.url;
     btnConseguir.target = "_blank";
@@ -529,15 +940,33 @@ async function mostrarBotonesRecomendacion() {
     btnConseguir.addEventListener("click", registrarClicConseguir);
     cont.appendChild(btnConseguir);
 
-    // El precio va DEBAJO del boton y con la fuente a la vista, no adentro del
-    // boton. Es una referencia del mercado argentino, no una cotizacion de
-    // MercadoLibre: meterlo en el boton que linkea a ML seria prometer un
-    // precio que no tenemos. Con la fuente, el lector puede verificarlo.
+    // El precio va DEBAJO del boton y con la fuente a la vista, no adentro
+    // del boton. Es una referencia del mercado argentino sacada de una tienda
+    // concreta, no el precio de lo que el lector va a encontrar del otro lado
+    // del link: meterlo adentro del boton seria prometer un precio que no
+    // tenemos. Con la fuente, el lector puede verificarlo.
     if (precio.precio) {
       const nota = document.createElement("p");
       nota.className = "text-xs text-gris text-center";
-      nota.textContent = `Suele estar cerca de $${precio.precio.toLocaleString("es-AR")}`
-        + (precio.fuente ? ` · ${precio.fuente}` : "");
+      nota.textContent = `Suele estar cerca de $${precio.precio.toLocaleString("es-AR")}`;
+      if (precio.fuente) {
+        nota.append(" · ");
+        // El link a la oferta concreta va aca y NO en el boton principal: lo
+        // escribe un modelo, puede estar muerto, y el boton es lo que mide la
+        // hipotesis de intencion. Asi el que quiere ir directo a la oferta va,
+        // y el que la encuentra caida tiene la busqueda al lado, intacta.
+        if (precio.url_oferta) {
+          const link = document.createElement("a");
+          link.href = precio.url_oferta;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.className = "underline";
+          link.textContent = precio.fuente;
+          nota.appendChild(link);
+        } else {
+          nota.append(precio.fuente);
+        }
+      }
       cont.appendChild(nota);
     }
   }
@@ -549,6 +978,15 @@ async function mostrarBotonesRecomendacion() {
   btnInfo.addEventListener("click", () => pedirMasInfo());
   cont.appendChild(btnInfo);
 
+  if (agotadoActual && ciclos < MAX_CICLOS) {
+    const btnReinicio = document.createElement("button");
+    btnReinicio.type = "button";
+    btnReinicio.className = "tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btnReinicio.textContent = "Probemos de nuevo";
+    btnReinicio.addEventListener("click", () => reiniciarDesdeQ1());
+    cont.appendChild(btnReinicio);
+  }
+
   if (!agotadoActual) {
     const btnOtra = document.createElement("button");
     btnOtra.type = "button";
@@ -559,6 +997,38 @@ async function mostrarBotonesRecomendacion() {
   }
 
   zonaInput.appendChild(cont);
+}
+
+// Cuando se agotaron las 3 recomendaciones, el unico camino que queda es
+// volver a describir lo que se busca. Se reinicia desde q1 y NO desde q0: la
+// macro es el estante, y quien entro a historia no cambio de idea sobre eso
+// por haber rechazado tres libros; lo que no funciono fue el resto del perfil.
+//
+// `yaMostrados` se conserva a proposito: son justamente los libros que ya
+// rechazo, y repetirselos seria lo peor que puede pasar en esta pantalla.
+async function reiniciarDesdeQ1() {
+  ciclos += 1;
+  for (const clave of ORDEN) {
+    if (clave !== "q0") delete respuestas[clave];
+  }
+  profundas.length = 0;
+  recomendacionesPedidas = 0;
+  agotadoActual = false;
+  veredictoActual = null;
+  recomendacionActual = null;
+  libroActual = null;
+  tituloActual = "";
+  autorActual = "";
+  promesaPrecio = null;
+  // La barra vuelve al principio: es una vuelta nueva, y dejarla llena
+  // mientras Funes hace las preguntas de nuevo seria mentir sobre el progreso.
+  progresoActual = 4;
+  ponerBarra(4);
+  limpiarInput();
+  await mostrarRespuestaFunes(
+    "Volvamos a empezar.\nMe acuerdo de todo lo que ya te mostré, así que no te lo repito."
+  );
+  avanzar();
 }
 
 async function pedirRecomendacion(motivoRechazo) {
@@ -599,6 +1069,7 @@ async function pedirRecomendacion(motivoRechazo) {
   tituloActual = datos.titulo;
   autorActual = datos.autor;
   recomendacionActual = datos.recomendacion_id || null;
+  veredictoActual = null;
   promesaPrecio = pedirPrecio(datos.id);
   yaMostrados.push(datos.id);
   recomendacionesPedidas += 1;
@@ -611,7 +1082,11 @@ async function pedirRecomendacion(motivoRechazo) {
 // renderizan hasta que se contesta. Asi es obligatorio sin necesidad de un
 // modal ni de bloquear nada, y sin el la prueba piloto no mide nada.
 async function mostrarVeredicto() {
-  await mostrarRespuestaFunes("Decime qué te pareció.\nNo es cortesía: es lo único que me corrige.");
+  // Unico turno de Funes que NO se ancla arriba de todo: es continuacion
+  // del mismo momento, no un tema nuevo. Anclarlo empuja la recomendacion
+  // fuera de la pantalla justo cuando hay que juzgarla, y un veredicto
+  // sobre un libro que no se ve no mide nada.
+  await mostrarRespuestaFunes("Decime qué te pareció.\nNo es cortesía: es lo único que me corrige.", null, "end");
   limpiarInput();
   const cont = document.createElement("div");
   cont.className = "flex flex-col gap-2";
@@ -623,12 +1098,15 @@ async function mostrarVeredicto() {
   opciones.forEach(([valor, etiqueta], indice) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-sm bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-base bg-celeste-claro border-2 border-celeste text-texto-papel";
     btn.style.animationDelay = `${indice * 160}ms`;
     btn.textContent = etiqueta;
     btn.addEventListener("click", () => {
-      burbuja(etiqueta, true);
+      // Aca no habla Funes, asi que no nace ninguna burbuja "start" que haga el
+      // scroll sola: se ancla en la respuesta propia, ya con el form renderizado.
+      const mia = burbuja(etiqueta, true);
       pedirJustificacion(valor);
+      llevarArriba(mia);
     });
     cont.appendChild(btn);
   });
@@ -651,10 +1129,26 @@ function pedirJustificacion(veredicto) {
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
     const texto = form.querySelector("input").value.trim();
-    if (texto) burbuja(texto, true);
+    // La justificacion es opcional: si no escribio nada no hay burbuja nueva y
+    // el ancla pasa a ser el ultimo mensaje del hilo (su propio veredicto).
+    const mia = texto ? burbuja(texto, true) : hilo.lastElementChild;
     enviarVeredicto(veredicto, texto);
+    veredictoActual = veredicto;
     limpiarInput();
-    mostrarBotonesRecomendacion();
+    if (veredicto === "no_me_interesa" && !agotadoActual) {
+      // Ya dijo que no: quedarse ofreciendole el libro es no haberlo
+      // escuchado. Y si ademas escribio por que, ESE es el motivo del rechazo,
+      // asi que preguntarle "¿que le erre?" seria preguntarle dos veces lo
+      // mismo en dos pantallas seguidas. Se salta derecho a buscar otra.
+      if (texto) pedirRecomendacion(texto);
+      else preguntarMotivo();
+    } else {
+      // mostrarBotonesRecomendacion() es async (espera el precio), asi que los
+      // botones pueden llegar despues del scroll. No importa: solo agregan alto
+      // DEBAJO del ancla, y eso nunca acorta el destino.
+      mostrarBotonesRecomendacion();
+    }
+    llevarArriba(mia);
   });
   zonaInput.appendChild(form);
 }
@@ -722,21 +1216,45 @@ async function pedirMasInfo() {
   mostrarBotonesRecomendacion();
 }
 
+// El boton corta el saludo en dos: primero quien es Funes, despues la primera
+// pregunta. Sin ese corte, la explicacion y la pregunta llegan como un solo
+// bloque de texto y la persona empieza a contestar sin haber entendido con
+// quien esta hablando — y despues no entiende por que le pregunta lo que le
+// pregunta. Ademas le da algo para tocar temprano, que es lo unico que
+// confirma que la pantalla esta viva mientras Funes tipea.
+function mostrarContinuar() {
+  limpiarInput();
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 w-full text-base font-semibold bg-celeste-claro border-2 border-celeste text-texto-papel";
+  btn.textContent = "Continuar";
+  // Sin burbuja propia: tocar "Continuar" no es una respuesta, y dejarla en el
+  // hilo ensuciaria la transcripcion que despues se lee en la bitacora.
+  btn.addEventListener("click", async () => {
+    limpiarInput();
+    await mostrarRespuestaFunes("Contame cómo estás buscando leer hoy.");
+    avanzar();
+  });
+  zonaInput.appendChild(btn);
+}
+
 async function iniciar() {
-  // El encuadre de que esto es una prueba va en personaje, no como cartel: el
-  // system prompt de Funes tiene prohibido hablar de sistemas o formularios.
-  // Y hay una coincidencia feliz: Funes es el que se acuerda de todo, asi que
-  // que el mismo avise que guarda la conversacion es a la vez el chiste
-  // borgeano y el aviso honesto de que estamos registrando.
+  // El encuadre va en personaje, no como cartel: el system prompt de Funes
+  // tiene prohibido hablar de sistemas o formularios. Y hay una coincidencia
+  // feliz con el cuento: Funes es el que se acuerda de todo, asi que que el
+  // mismo lo diga es a la vez el chiste borgeano, la explicacion de que hace y
+  // el aviso honesto de que la conversacion se guarda.
   await mostrarRespuestaFunes(
-    // Corto a proposito: el tipeo es caracter por caracter, y cada linea de mas
-    // son segundos en los que la persona no puede tocar nada. El pedido de
-    // opinion no va aca, va donde se pide el veredicto, que es cuando importa.
-    "Hola, soy Funes.\n" +
-    "Estoy aprendiendo a leer lectores: me acuerdo de todo lo que me decís y lo uso para errarle menos.\n" +
-    "Contame cómo estás buscando leer hoy."
+    // Tres lineas y ni una mas: el tipeo es caracter por caracter (ver
+    // MS_ENTRE_LETRAS, mas DELAY_TIPEO_MIN de "pensando" por burbuja), asi que
+    // cada linea extra son
+    // segundos en los que la persona mira sin poder tocar nada. MAX_MENSAJES_
+    // POR_RESPUESTA es 3, ademas: una cuarta linea se fusionaria con otra.
+    "Hola. Me llamo Funes, como el personaje de Borges que no podía olvidarse de nada.\n" +
+    "A él la memoria lo tenía postrado. Yo la uso para otra cosa: escuchar cómo estás y buscarte un libro que le sirva a eso.\n" +
+    "Estoy aprendiendo, así que a veces le voy a errar. Decímelo cuando pase: es lo único que me corrige."
   );
-  avanzar();
+  mostrarContinuar();
 }
 
 iniciar();

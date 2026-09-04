@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block titulo %}Qué guarda Funes{% endblock %}
+{# El favicon de libritos es el de LIBRERO, la herramienta de la libreria.
+   Funes se presenta con lo suyo. Se pisa solo aca y no se cambia en
+   base.html a proposito: el panel de la libreria sigue con el suyo. #}
+{% block favicon %}<link rel="icon" href="/static/funes-favicon.svg" type="image/svg+xml">{% endblock %}
 
 {% block contenido %}
 <div class="min-h-screen flex flex-col">

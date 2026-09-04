@@ -269,6 +269,10 @@ CREATE TABLE IF NOT EXISTS funes_precios (
 -- De donde salio el precio. Se muestra al lector: un precio sin fuente es una
 -- afirmacion nuestra, uno con fuente es una referencia que puede verificar.
 ALTER TABLE funes_precios ADD COLUMN IF NOT EXISTS fuente TEXT;
+-- Link directo a la publicacion con ese precio. Se guarda aparte de `fuente`
+-- (que es solo el dominio) porque el link puede faltar o no validar y el
+-- dominio igual sirve para afinar la busqueda.
+ALTER TABLE funes_precios ADD COLUMN IF NOT EXISTS url_oferta TEXT;
 
 -- Excepcion por-libreria: alguna libreria cataloga CDs de musica, no libros,
 -- pero reusa el mismo pipeline (foto -> vision -> revision -> catalogo
@@ -307,6 +311,25 @@ CREATE INDEX IF NOT EXISTS idx_libros_catalogo ON libros(catalogo_id);
 -- conseguir el libro. Va como timestamp y no como boolean para saber cuanto
 -- tardo en decidirse desde que vio la recomendacion.
 ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS clic_conseguir_en TIMESTAMPTZ;
+
+-- Trazabilidad del ancla de similitud (q4). Sin esto una recomendacion no se
+-- puede auditar despues: el parrafo que el LLM escribe sobre la referencia del
+-- lector es literalmente la mitad del vector que elige los candidatos, y hasta
+-- ahora se calculaba, se usaba y se tiraba. `texto_consulta` guarda lo que
+-- escribio la persona, no lo que el modelo entendio que era.
+ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS ancla_texto TEXT;
+ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS ancla_expandida TEXT;
+-- false = el modelo no reconocio la referencia y hubo que ir a buscarla a la
+-- web (40 veces mas caro). Es la senal que dice si el catalogo de referencias
+-- que trae la gente le queda grande al modelo.
+ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS ancla_conocida BOOLEAN;
+-- El peso con el que se mezclo. Va guardado para que las filas viejas sigan
+-- siendo interpretables el dia que lo cambiemos.
+ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS peso_ancla REAL;
+-- Lo que REALMENTE se embebio como perfil: texto_consulta incluye la linea de
+-- la referencia, que desde que el ancla tiene vector propio ya no entra al
+-- vector del perfil. Sin esta columna los dos textos se confunden.
+ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS texto_perfil TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_funes_libros_macro ON funes_libros(macro) WHERE embedding IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_funes_sesiones_fecha ON funes_sesiones(creado_en);
