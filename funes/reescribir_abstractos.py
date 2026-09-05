@@ -84,7 +84,7 @@ from app.funes_chat.nucleo import _embeber, _parsear_json_llm  # noqa: E402
 
 MODELO = "google/gemini-2.5-flash"
 # Cambiala cuando cambie el prompt: es lo que decide que filas hay que rehacer.
-VERSION = "v3"
+VERSION = "v4"
 CONCURRENCIA = 4
 
 # Vocabulario cerrado. Es cerrado a proposito: un campo de texto libre no sirve
@@ -177,7 +177,13 @@ _SYSTEM = (
     '  "para": UNA frase de menos de 12 palabras que empiece con "para quien" y '
     "diga a que lector le sirve.\n\n"
     "Si la ficha actual dice algo que no podes verificar, no lo repitas. Es "
-    "preferible una sinopsis mas corta y cierta que una larga inventada."
+    "preferible una sinopsis mas corta y cierta que una larga inventada.\n\n"
+    "IMPORTANTE: la ficha puede ser de OTRO libro. Las sinopsis que vienen de "
+    "las librerias a veces quedan cruzadas entre productos. Lo unico confiable "
+    "son el titulo y el autor: si la ficha cuenta algo que no cierra con esos "
+    "dos, ignorala entera y escribi con lo que sepas del libro. Una sinopsis "
+    "que describe otro libro es peor que ninguna, porque el catalogo la da por "
+    "buena y el lector recibe una recomendacion que no tiene nada que ver."
 )
 
 

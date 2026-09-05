@@ -228,12 +228,33 @@ def probar_filtros() -> None:
     ed1 = dict(libro("edicion-1", "La vida secreta de la mente", "divulgacion"), autor="Mariano Sigman")
     ed2 = dict(libro("edicion-2", "La vida secreta de la mente", "divulgacion"), autor="Mariano Sigman")
     otro = dict(libro("otro", "Otra cosa", "divulgacion"), autor="Otra Persona")
-    ok(nucleo._clave_de_obra(ed1) == nucleo._clave_de_obra(ed2),
-       "dos ediciones del mismo libro comparten clave de obra")
-    ok(nucleo._clave_de_obra(ed1) != nucleo._clave_de_obra(otro), "y dos libros distintos no")
-    ok(nucleo._clave_de_obra({"titulo": "El Túnel", "autor": "Ernesto Sábato"})
-       == nucleo._clave_de_obra({"titulo": "el tunel", "autor": "ernesto sabato"}),
-       "la clave no depende de acentos ni mayusculas")
+    ok(nucleo._es_la_misma_obra(ed1, ed2), "dos ediciones del mismo libro son la misma obra")
+    ok(not nucleo._es_la_misma_obra(ed1, otro), "y dos libros distintos no")
+    ok(nucleo._es_la_misma_obra({"titulo": "El Túnel", "autor": "Ernesto Sábato"},
+                                {"titulo": "el tunel", "autor": "ernesto sabato"}),
+       "no depende de acentos ni mayusculas")
+
+    # Las librerias escriben al mismo autor de varias formas, y comparando los
+    # strings son personas distintas: en el catalogo que viene, "Don Quijote"
+    # aparecia partido en tres obras por eso.
+    mismo = [("CERVANTES SAAVEDRA, MIGUEL DE", "CERVANTES, MIGUEL DE"),
+             ("DE CERVANTES, MIGUEL", "CERVANTES, MIGUEL"),
+             ("JAMES, HENRY", "HENRY, JAMES"),
+             ("Julio Cortázar", "Cortázar, Julio"),
+             ("García Márquez, Gabriel", "Gabriel García Márquez")]
+    ok(all(nucleo._mismo_autor(a, b) for a, b in mismo),
+       "el mismo autor escrito al reves, con particulas o con dos apellidos",
+       str([f"{a} != {b}" for a, b in mismo if not nucleo._mismo_autor(a, b)]))
+    distintos = [("García Márquez, Gabriel", "García Lorca, Federico"),
+                 ("Isaac Asimov", "Isaac Bashevis Singer"),
+                 ("Ana Frank", ""),
+                 ("Julio Verne", "Julio Cortázar")]
+    ok(not any(nucleo._mismo_autor(a, b) for a, b in distintos),
+       "compartir un apellido o un nombre de pila no alcanza",
+       str([f"{a} == {b}" for a, b in distintos if nucleo._mismo_autor(a, b)]))
+    ok(nucleo._es_la_misma_obra({"titulo": "Don Quijote", "autor": "CERVANTES, MIGUEL DE"},
+                                {"titulo": "Don Quijote", "autor": "DE CERVANTES SAAVEDRA, MIGUEL"}),
+       "y por eso dos fichas del mismo libro se reconocen aunque cambie el autor")
 
     print("\ncastigo por repetir lo ya mostrado")
     arr = __import__("array").array

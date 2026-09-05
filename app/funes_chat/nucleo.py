@@ -111,7 +111,7 @@ _FILTRO_SUBGENERO = True
 # Austen y recibe tres Austen, el juez le pone 4 y 5, no 2. La repeticion nos
 # molesta a nosotros mirando la lista, no necesariamente a quien esta buscando
 # un libro. Lo que si es un error objetivo -el mismo titulo dos veces- se corrige
-# aparte y de forma dura, con _clave_de_obra en elegir_libro().
+# aparte y de forma dura, con _es_la_misma_obra en elegir_libro().
 # Queda el mecanismo listo para subirlo cuando haya veredictos de gente real,
 # que es la unica vara que puede decidir esto de verdad.
 _PESO_DIVERSIDAD = 0.0
@@ -707,13 +707,49 @@ def _claves_de_titulo(titulo: str) -> list[str]:
     return claves
 
 
-def _clave_de_obra(libro: dict) -> str:
-    """Titulo y autor normalizados: identifica al LIBRO, no a la fila.
+# Particulas que no distinguen a un autor de otro y que cada libreria escribe a
+# su manera. "DE CERVANTES" y "CERVANTES" son la misma persona.
+_PARTICULAS_AUTOR = {"de", "del", "la", "las", "los", "el", "y", "van", "von",
+                     "da", "di", "do", "dos", "das", "le", "saint", "san"}
+
+
+def _tokens_autor(autor: str) -> frozenset:
+    """El nombre de un autor como conjunto de palabras, sin orden ni particulas.
+
+    Las librerias escriben al mismo autor de varias formas -"CERVANTES SAAVEDRA,
+    MIGUEL DE", "CERVANTES, MIGUEL DE", "DE CERVANTES, MIGUEL"- y comparando los
+    strings son tres personas distintas. Comparando conjuntos son la misma, sin
+    importar si el apellido va primero ni cuantas particulas trae."""
+    palabras = _normalizar_texto(autor).split()
+    return frozenset(p for p in palabras if len(p) > 1 and p not in _PARTICULAS_AUTOR)
+
+
+def _mismo_autor(uno: str, otro: str) -> bool:
+    """Si dos formas de escribir un autor son la misma persona.
+
+    Alcanza con que un conjunto este contenido en el otro: "Cervantes Saavedra,
+    Miguel de" contiene a "Cervantes, Miguel". Se pide contencion y no
+    interseccion porque compartir una palabra suelta no basta: "Garcia Marquez" y
+    "Garcia Lorca" comparten "garcia" y no son la misma persona.
+
+    Dos autores vacios cuentan como iguales: si ademas el titulo coincide, es la
+    misma obra cargada dos veces sin el dato."""
+    a, b = _tokens_autor(uno), _tokens_autor(otro)
+    if not a or not b:
+        return not a and not b
+    return a <= b or b <= a
+
+
+def _es_la_misma_obra(uno: dict, otro: dict) -> bool:
+    """Si dos filas del catalogo son el mismo LIBRO, no la misma fila.
 
     El catalogo tiene el mismo libro cargado dos veces cuando la libreria tiene
-    dos ediciones (otro ISBN, otra cantidad de paginas). Son filas legitimas y no
-    se borran, pero para quien esta charlando son el mismo libro."""
-    return f"{_normalizar_texto(libro.get('titulo') or '')}|{_normalizar_texto(libro.get('autor') or '')}"
+    dos ediciones (otro ISBN, otras paginas). Son filas legitimas y no se borran,
+    pero para quien esta charlando son el mismo libro, y mostrarselo dos veces es
+    un error visible."""
+    if _normalizar_texto(uno.get("titulo") or "") != _normalizar_texto(otro.get("titulo") or ""):
+        return False
+    return _mismo_autor(uno.get("autor") or "", otro.get("autor") or "")
 
 
 def _menciono_el_libro(titulo: str, q4_normalizada: str) -> bool:
@@ -785,8 +821,8 @@ def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict],
     # por id: si dijo que leyo un libro, tampoco quiere otra edicion del mismo.
     leidos = respuestas.get("_leidos") or []
     if leidos:
-        claves = {_clave_de_obra(l) for l in leidos}
-        libros = [l for l in libros if _clave_de_obra(l) not in claves]
+        libros = [l for l in libros
+                  if not any(_es_la_misma_obra(l, leido) for leido in leidos)]
 
     banda = _BANDAS_PAGINAS.get(str(respuestas.get("q2") or "").strip())
     if not banda:
@@ -1596,9 +1632,9 @@ async def elegir_libro(
     # sin esto la segunda recomendacion podia ser el mismo libro otra vez: paso
     # en el banco de pruebas, con La vida secreta de la mente saliendo primera y
     # segunda. Para el lector eso no es una edicion distinta, es un error.
-    obras_vistas = {_clave_de_obra(l) for l in mostrados}
     disponibles = [l for l in candidatos
-                   if l["id"] not in ya_mostrados and _clave_de_obra(l) not in obras_vistas]
+                   if l["id"] not in ya_mostrados
+                   and not any(_es_la_misma_obra(l, visto) for visto in mostrados)]
     if not disponibles:
         raise ErrorFunesChat("No quedan libros sin mostrar entre los candidatos.")
 
