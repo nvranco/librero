@@ -2,7 +2,7 @@
 
 El catalogo de Funes (1381 libros con su abstracto y su embedding de 1536
 dimensiones) se construyo entero en local. Produccion no lo tiene: sin esto,
-/funes-chat levanta y falla en el primer pedido con "No hay libros vectorizados".
+/funes levanta y falla en el primer pedido con "No hay libros vectorizados".
 
 Es reejecutable: hace UPSERT por id, asi que se puede correr de nuevo despues de
 tocar el catalogo en local sin duplicar nada.

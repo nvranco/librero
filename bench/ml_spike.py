@@ -10,7 +10,7 @@ Esto es el go/no-go de la Fase de precios. Si aun autorizados devuelve 403,
 sin precio) y no hay nada mas que construir de ese lado.
 
 Requiere haber autorizado la app una vez (abrir
-/funes-chat/admin/{ADMIN_TOKEN}/ml/conectar), porque lee el access token de la
+/funes/admin/{ADMIN_TOKEN}/ml/conectar), porque lee el access token de la
 tabla funes_ml_credenciales.
 
     python bench/ml_spike.py                      # contra la base local
@@ -46,7 +46,7 @@ async def main() -> None:
     try:
         fila = await db.pool().fetchrow("SELECT * FROM funes_ml_credenciales WHERE id = 1")
         if fila is None:
-            print("No hay token guardado. Autorizá primero en /funes-chat/admin/{TOKEN}/ml/conectar")
+            print("No hay token guardado. Autorizá primero en /funes/admin/{TOKEN}/ml/conectar")
             return
         print(f"token guardado, vence {fila['expira_en']}")
 

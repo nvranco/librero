@@ -12,9 +12,9 @@
    servidores) y pesar poco: 1200x630 y 68 KB, bien debajo del limite. #}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Funes">
-<meta property="og:title" content="Funes — te dice qué leer">
-<meta property="og:description" content="Contame cómo querés leer hoy y te digo qué libro te toca. Una conversación corta, sin buscar por género.">
-<meta property="og:url" content="{{ base_url }}/funes-chat">
+<meta property="og:title" content="Funes">
+<meta property="og:description" content="Descubrí tu próxima lectura conversando con uno de los personajes más icónicos de Borges.">
+<meta property="og:url" content="{{ base_url }}/funes">
 <meta property="og:image" content="{{ base_url }}/static/funes-og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -163,9 +163,13 @@
     <div id="zona-input" class="mt-4"></div>
     <!-- Visible desde que carga la pagina, o sea antes de que la persona
          escriba nada: si el aviso apareciera al final ya no seria un aviso. -->
-    <p class="mt-4 text-xs text-gris">
-      Funes está en prueba y guarda la charla para mejorar.
-      <a href="/funes-chat/privacidad" class="underline">Qué guarda</a>.
+    <!-- Todo corrido en un solo parrafo centrado: la pregunta sigue a la
+         oracion y el texto corta donde le toque. text-wrap: balance reparte
+         las lineas parejas en vez de dejar una palabra sola al final; el
+         navegador que no lo soporte lo ignora y sigue centrado igual. -->
+    <p id="aviso-datos" class="mt-4 text-xs text-gris text-center" style="text-wrap: balance">
+      Funes es una prueba de concepto y guarda esta charla para mejorar sus recomendaciones.
+      <a href="/funes/privacidad" class="underline">¿Qué datos almacena?</a>
     </p>
     <!-- Sin esto, el documento no tiene suficiente alto debajo del ultimo
          mensaje como para poder scrollearlo hasta arriba del todo: el scroll
@@ -204,6 +208,12 @@
 
 <script>
 const PREGUNTAS = {{ preguntas_js | safe }};
+// Cuantos libros hay en el catalogo, para el saludo. Puede venir null
+// si la base no contesto: el saludo tiene una variante sin numero.
+// El default no es adorno: si la variable no llega desde el router, Jinja
+// renderiza vacio, queda "const CANT_LIBROS = ;" y el SyntaxError se lleva
+// puesto todo el chat, no solo el saludo.
+const CANT_LIBROS = {{ cant_libros_js | default('null', true) | safe }};
 // De donde vino esta persona (?src= del QR o del link). Separa las cohortes de
 // la prueba piloto: los amigos y los desconocidos de la calle no se pueden leer
 // en la misma tabla.
@@ -239,6 +249,13 @@ const DURACION_LETRA_MS = 70;
 // burbuja crece. Sin el techo lo pediria en cada frame, y como cada pedido
 // cancela al anterior, la vista no terminaria de llegar nunca a ningun lado.
 const MS_ENTRE_SCROLLS_ESCRITURA = 100;
+// Cuanto se puede bajar mas alla del final real de la conversacion. Un poco de
+// aire para que no termine cortado justo contra el borde, y nada mas.
+const RESPIRO_FINAL = 24;
+// Cuanto tiene que quedarse quieto el DOM antes de devolver el espacio que
+// sobro. Tiene que aguantar la tanda de cambios de un turno (limpiar el input,
+// dibujar las burbujas, poner los botones) sin dispararse en el medio.
+const MS_QUIETO_PARA_REAJUSTAR = 250;
 const MAX_MENSAJES_POR_RESPUESTA = 3;
 const MENSAJE_ERROR = "Funes se quedó sin palabras por ahora. Probá de nuevo en un rato.";
 
@@ -319,10 +336,11 @@ let cadenaSesion = Promise.resolve();
 function guardarSesion() {
   cadenaSesion = cadenaSesion.then(async () => {
     try {
-      const resp = await fetch("/funes-chat/sesion", {
+      const resp = await fetch("/funes/sesion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...respuestas, profundas, sesion_id: sesionId, origen: ORIGEN }),
+        body: JSON.stringify({ ...respuestas, profundas, sesion_id: sesionId,
+                               origen: ORIGEN, ciclo: ciclos }),
         keepalive: true,
       });
       if (resp.ok) sesionId = (await resp.json()).sesion_id || sesionId;
@@ -340,6 +358,15 @@ let progresoActual = 4;
 let ciclos = 1;
 const MAX_CICLOS = 2;
 
+// Los libros que la persona dijo que ya leyo, con lo que opino de cada uno.
+// Viajan en cada pedido: el servidor los saca del catalogo y usa la opinion
+// para orientar la busqueda.
+let leidos = [];
+// Cuantas veces seguidas se le puede preguntar "¿ya lo leiste?". Si alguien
+// leyo todo lo que le ofrecemos, seguir preguntando es un interrogatorio: a
+// partir de ahi se recomienda igual y que decida con el libro delante.
+const MAX_LEIDOS = 3;
+
 // Monotona, igual que ponerBarra() en panel.html: una barra que retrocede se
 // lee como un error. La diferencia es el tope: alla se clampea en 97% para no
 // mentir que termino (el progreso es fingido), aca los pasos son conocidos y
@@ -352,6 +379,10 @@ const anillos = [...document.querySelectorAll("#cabecera .anillo")];
 const girosAnillo = anillos.map(() => 0);
 let proximoAnillo = 0;
 
+// Un cuarto de vuelta de un anillo, rotando cual toca. Lo llama ponerBarra()
+// cuando la barra avanza de verdad, y tambien "Continuar", que es un paso
+// adelante sin barra: la barra cuenta preguntas contestadas y ahi todavia no
+// hay ninguna, pero para quien mira la pantalla es el primer avance.
 function girarAnillo() {
   if (anillos.length === 0) return;
   const i = proximoAnillo % anillos.length;
@@ -399,13 +430,16 @@ function easeInOutQuad(t) {
 }
 
 function scrollSuaveHacia(el, block, duracionMs = 450) {
-  const rect = el.getBoundingClientRect();
   // "start" descuenta la cabecera pegajosa, que si no taparia el arranque de la
   // burbuja. "end" no la necesita: esta anclado abajo, donde no tapa nada.
-  const destinoCrudo = block === "start"
-    ? window.scrollY + rect.top - altoCabecera()
-    : window.scrollY + rect.bottom - window.innerHeight;
-  let destino = Math.max(0, Math.min(destinoCrudo, limiteScroll()));
+  function objetivo() {
+    const rect = el.getBoundingClientRect();
+    const crudo = block === "start"
+      ? window.scrollY + rect.top - altoCabecera()
+      : window.scrollY + rect.bottom - window.innerHeight;
+    return Math.max(0, Math.min(crudo, limiteScroll()));
+  }
+  let destino = objetivo();
   // "end" quiere decir "traelo a la vista si quedo abajo", NO "pega su borde
   // inferior contra el fondo de la pantalla". La diferencia importa en la 2da
   // burbuja de un turno: nace vacia, de 26px, y pedir su borde inferior contra
@@ -416,12 +450,20 @@ function scrollSuaveHacia(el, block, duracionMs = 450) {
 
   const miToken = ++scrollTokenActual;
   const inicio = window.scrollY;
-  const distancia = destino - inicio;
+  let distancia = destino - inicio;
   const t0 = performance.now();
 
   function frame(ahora) {
     if (miToken !== scrollTokenActual) return; // una llamada mas nueva tomo el control
     const t = Math.min(1, (ahora - t0) / duracionMs);
+    // El destino se relee en cada frame, no se fija al arrancar. Mientras el
+    // scroll corre, el contenido de ARRIBA del ancla todavia se puede mover: la
+    // burbuja de la respuesta recien elegida se parte en dos renglones cuando
+    // el colchon agranda el documento y aparece la barra de scroll (medido: 52
+    // -> 76 px, justo los 24 que dejaban asomando la respuesta anterior). Con
+    // el destino congelado el scroll aterrizaba corto y recien se acomodaba al
+    // terminar de dibujarse las opciones, que es el salto tardio que se veia.
+    if (block === "start") distancia = objetivo() - inicio;
     window.scrollTo(0, inicio + distancia * easeInOutQuad(t));
     if (t < 1) requestAnimationFrame(frame);
   }
@@ -436,18 +478,86 @@ function scrollSuaveHacia(el, block, duracionMs = 450) {
 // Se mide donde ARRANCA el espaciador (no se lo pone en 0 para releer
 // scrollHeight): achicar el documento hace que el navegador clampee scrollY
 // solo, y eso corromperia el window.scrollY + rect.top de la linea de arriba.
-function abrirEspacio(ancla) {
-  const anclaTop = window.scrollY + ancla.getBoundingClientRect().top;
-  const finContenido = window.scrollY + espaciador.getBoundingClientRect().top;
-  const necesario = window.innerHeight - altoCabecera();
-  espaciador.style.minHeight = Math.max(0, necesario - (finContenido - anclaTop)) + "px";
+//
+// Se llama DOS veces por turno, y la segunda es la que evita el vacio: la
+// primera corre cuando la burbuja todavia esta vacia y el input borrado, asi
+// que reserva casi una pantalla entera; cuando el turno termino de dibujarse
+// (texto escrito y opciones puestas) ese contenido ya ocupa buena parte de lo
+// reservado, y volver a calcular devuelve lo que sobro. Sin la segunda pasada
+// queda el pozo en el que se puede seguir bajando sin razon.
+let ultimaAncla = null;
+// Se prende con un gesto de scroll de la persona (rueda, dedo o teclas) y se
+// apaga cada vez que se clava un turno nuevo. No se escucha el evento "scroll"
+// a secas porque lo disparan tambien nuestras propias animaciones.
+let usuarioMovioLaVista = false;
+for (const evento of ["wheel", "touchmove", "keydown"]) {
+  window.addEventListener(evento, () => { usuarioMovioLaVista = true; }, { passive: true });
 }
+
+function abrirEspacio(ancla) {
+  ultimaAncla = ancla;
+  const anclaTop = window.scrollY + ancla.getBoundingClientRect().top;
+  // Todo lo que hay debajo del ancla sin contar el colchon. Se saca del fondo
+  // real del documento y no de donde arranca el espaciador: debajo del
+  // espaciador todavia esta el pb-10 del contenedor, y medir hasta su borde de
+  // arriba se comia esos 40 px reservando de mas.
+  const debajoSinColchon = document.documentElement.scrollHeight - anclaTop - espaciador.offsetHeight;
+  const necesario = window.innerHeight - altoCabecera() + RESPIRO_FINAL;
+  espaciador.style.minHeight = Math.max(0, necesario - debajoSinColchon) + "px";
+}
+
+// Se recalcula con el ancla de siempre y no con el scroll actual a proposito:
+// si la persona scrolleo para arriba a releer justo en este momento, tomar su
+// posicion dejaria el colchon demasiado corto y despues no podria volver a
+// bajar hasta donde estaba el turno. Con el ancla, el resultado es el mismo
+// mire donde mire. Y como el contenido solo pudo crecer, esta segunda pasada
+// solo puede achicar: nunca corre el destino de un scroll en curso.
+// Cuanto puede haberse corrido el ancla del borde de la cabecera antes de
+// que valga la pena reacomodarla. Un pixel o dos es redondeo del navegador y
+// no se ve; mas que eso es la respuesta anterior asomando por arriba.
+const DERIVA_TOLERADA = 3;
+
+function reajustarColchon() {
+  if (!ultimaAncla || !ultimaAncla.isConnected) return;
+  abrirEspacio(ultimaAncla);
+  // Y si el turno quedo fuera de lugar, se lo vuelve a clavar. El pin lo hace
+  // llevarArriba() cuando la burbuja nace vacia, y entre ese momento y este
+  // pasaron cosas que pueden haberlo corrido: el texto y los botones que se
+  // dibujaron despues, el colchon que acaba de achicarse, o —en el telefono—
+  // la barra de direcciones apareciendo y cambiando innerHeight. Cuando eso
+  // pasa el navegador recorta el scroll y la pantalla baja sola unos pixeles,
+  // justo los que dejan asomando el final de la respuesta anterior.
+  //
+  // Va sin animacion: es una correccion, no un movimiento. Animarla se veria
+  // como un salto espontaneo un cuarto de segundo despues de que todo paro.
+  // Si la persona se movio a mano desde que se clavo el turno, no se le toca la
+  // vista: puede haber subido a releer algo mientras Funes escribe, y que la
+  // pantalla se le vuelva sola seria peor que cualquier deriva.
+  if (usuarioMovioLaVista) return;
+  const deriva = ultimaAncla.getBoundingClientRect().top - altoCabecera();
+  if (Math.abs(deriva) <= DERIVA_TOLERADA) return;
+  window.scrollTo(0, Math.max(0, Math.min(window.scrollY + deriva, limiteScroll())));
+}
+
+// El disparo va por observador y no llamando a reajustarColchon() en cada lugar
+// donde se dibuja un input: son ocho, y el dia que se agregue el noveno y se
+// olvide, el sintoma es el pozo silencioso de vuelta. El observador no se puede
+// olvidar. Mira solo los hijos DIRECTOS: las letras que va agregando
+// revelarTexto viven adentro de una burbuja y no lo despiertan.
+let temporizadorColchon = null;
+const observadorColchon = new MutationObserver(() => {
+  clearTimeout(temporizadorColchon);
+  temporizadorColchon = setTimeout(reajustarColchon, MS_QUIETO_PARA_REAJUSTAR);
+});
+observadorColchon.observe(hilo, { childList: true });
+observadorColchon.observe(zonaInput, { childList: true });
 
 // "Guardar arriba lo que ya se contesto y dejar la pantalla para lo nuevo".
 // Es el unico gesto de scroll que se usa cuando el usuario acaba de responder,
 // y va SIEMPRE despues de renderizar lo nuevo, para que abrirEspacio() mida el
 // contenido real y no reserve de mas.
 function llevarArriba(ancla) {
+  usuarioMovioLaVista = false;
   abrirEspacio(ancla);
   scrollSuaveHacia(ancla, "start");
 }
@@ -496,10 +606,50 @@ function burbuja(texto, propia) {
 // de irlas agregando por timer: la burbuja toma su tamaño final en el primer
 // frame, con lo cual no hay un reflow por palabra y alcanza con pedir scroll
 // una sola vez en lugar de perseguir una altura que crece.
+// Cursivas al estilo markdown: *asi*. Se parsea una sola vez y el tipeo
+// trabaja sobre el resultado, asi la bastardilla aparece junto con la letra
+// y no de golpe al final.
+//
+// El par tiene que estar completo y en la misma linea. Un asterisco suelto no
+// matchea y queda como asterisco: importa porque este mismo camino escribe
+// las respuestas del LLM, y no quiero que una comilla rara se coma medio
+// mensaje.
+function parsearCursivas(texto) {
+  const partes = [];
+  const re = /\*([^*\n]+)\*/g;
+  let desde = 0;
+  let m;
+  while ((m = re.exec(texto)) !== null) {
+    if (m.index > desde) partes.push({ texto: texto.slice(desde, m.index), cursiva: false });
+    partes.push({ texto: m[1], cursiva: true });
+    desde = m.index + m[0].length;
+  }
+  if (desde < texto.length) partes.push({ texto: texto.slice(desde), cursiva: false });
+  return partes;
+}
+
+// Arma el nodo final de una burbuja ya escrita: texto suelto donde no hay
+// marca y un <em> por cada tramo en cursiva. Sin cursivas devuelve un unico
+// nodo de texto, que es exactamente lo que habia antes.
+function pintarPartes(div, partes) {
+  div.textContent = "";
+  for (const parte of partes) {
+    if (!parte.cursiva) {
+      div.appendChild(document.createTextNode(parte.texto));
+      continue;
+    }
+    const em = document.createElement("em");
+    em.textContent = parte.texto;
+    div.appendChild(em);
+  }
+}
+
 function revelarTexto(div, texto, seguirScroll = true) {
   return new Promise((resolve) => {
     div.textContent = "";
-    const caracteres = [...texto];
+    const partes = parsearCursivas(texto);
+    const caracteres = partes.flatMap(
+      (parte) => [...parte.texto].map((c) => ({ c, cursiva: parte.cursiva })));
     let puestos = 0;
     let ultimoScroll = 0;
     const t0 = performance.now();
@@ -511,7 +661,7 @@ function revelarTexto(div, texto, seguirScroll = true) {
       const objetivo = Math.min(caracteres.length,
                                 Math.floor((ahora - t0) / MS_ENTRE_LETRAS) + 1);
       while (puestos < objetivo) {
-        const caracter = caracteres[puestos];
+        const caracter = caracteres[puestos].c;
         if (caracter === " ") {
           // Los espacios van como nodo de texto suelto y no como .letra: son
           // los unicos puntos donde la linea puede cortar y hay que dejarlos
@@ -520,7 +670,7 @@ function revelarTexto(div, texto, seguirScroll = true) {
           div.appendChild(document.createTextNode(" "));
         } else {
           const span = document.createElement("span");
-          span.className = "letra";
+          span.className = caracteres[puestos].cursiva ? "letra italic" : "letra";
           span.textContent = caracter;
           div.appendChild(span);
         }
@@ -542,8 +692,9 @@ function revelarTexto(div, texto, seguirScroll = true) {
         // Cierra colapsando a un unico nodo de texto: en pantalla es identico
         // (a esta altura todas las letras estan al 100%), le saca al DOM un
         // span por caracter, y le simplifica la vida a enlazarLibro(), que
-        // despues lee el textContent y pisa el innerHTML entero.
-        div.textContent = texto;
+        // despues lee el textContent y pisa el innerHTML entero (y le da lo
+        // mismo que haya un <em>: textContent devuelve el texto pelado).
+        pintarPartes(div, partes);
         resolve();
       }, DURACION_LETRA_MS);
     }
@@ -758,7 +909,7 @@ async function mostrarTexto(clave) {
   form.className = "flex gap-2";
   form.innerHTML =
     '<input type="text" class="flex-1 rounded-xl2 border-2 px-3 py-3" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="Un autor o un título..." required>' +
+    'style="border-color: var(--borde-secundario)" placeholder="Un autor o un título..." required maxlength="300">' +
     '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
@@ -796,8 +947,8 @@ function avanzar() {
 
 // Comun a las 3 formas de contestar una pregunta profunda (opcion A, opcion
 // B, o texto libre via "Otra"): guarda la respuesta y sigue el flujo.
-function avanzarProfunda(pregunta, respuesta) {
-  profundas.push({ pregunta, respuesta });
+function avanzarProfunda(pregunta, respuesta, consulta) {
+  profundas.push({ pregunta, respuesta, consulta: consulta || "" });
   burbuja(respuesta, true);
   limpiarInput();
   actualizarBarra();
@@ -805,7 +956,7 @@ function avanzarProfunda(pregunta, respuesta) {
   if (profundas.length < CANT_PREGUNTAS_PROFUNDAS) {
     pedirPreguntaProfunda();
   } else {
-    pedirRecomendacion();
+    pedirCandidato();
   }
 }
 
@@ -815,7 +966,7 @@ function formularioTextoProfunda(pregunta) {
   form.className = "flex gap-2";
   form.innerHTML =
     '<input type="text" class="flex-1 rounded-xl2 border-2 px-3 py-3" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="Tu respuesta..." required>' +
+    'style="border-color: var(--borde-secundario)" placeholder="Tu respuesta..." required maxlength="600">' +
     '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
@@ -828,7 +979,7 @@ function formularioTextoProfunda(pregunta) {
 
 // 2 opciones generadas por el LLM (las posturas que la pregunta ya plantea)
 // mas un tercer boton "Otra" que abre el texto libre de siempre.
-function mostrarOpcionesProfundas(pregunta, opciones) {
+function mostrarOpcionesProfundas(pregunta, opciones, consultas) {
   limpiarInput();
   const cont = document.createElement("div");
   cont.className = "flex flex-col gap-2";
@@ -849,7 +1000,7 @@ function mostrarOpcionesProfundas(pregunta, opciones) {
         formularioTextoProfunda(pregunta);
         llevarArriba(hilo.lastElementChild);
       } else {
-        avanzarProfunda(pregunta, etiqueta);
+        avanzarProfunda(pregunta, etiqueta, (consultas || [])[indice]);
       }
     });
     cont.appendChild(btn);
@@ -857,18 +1008,32 @@ function mostrarOpcionesProfundas(pregunta, opciones) {
   zonaInput.appendChild(cont);
 }
 
+// Cuando una llamada falla (se corto la conexion, el modelo tardo de mas), la
+// unica salida que tenia la persona era recargar y empezar de cero. Esto le
+// deja reintentar el mismo paso.
+function botonReintentar(accion, etiqueta) {
+  limpiarInput();
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "opcion-aparece btn-primario border-celeste tap rounded-xl2 px-4 py-3 w-full font-semibold";
+  btn.textContent = etiqueta || "Reintentar";
+  btn.addEventListener("click", () => { limpiarInput(); accion(); });
+  zonaInput.appendChild(btn);
+}
+
 async function pedirPreguntaProfunda() {
   limpiarInput();
   const promesa = (async () => {
     try {
-      const resp = await fetch("/funes-chat/pregunta-profunda", {
+      const resp = await fetch("/funes/pregunta-profunda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...respuestas, profundas }),
       });
       if (!resp.ok) throw new Error("fallo el pedido");
       const datos = await resp.json();
-      return { ok: true, texto: datos.pregunta, opciones: datos.opciones || [] };
+      return { ok: true, texto: datos.pregunta, opciones: datos.opciones || [],
+               consultas: datos.consultas || [] };
     } catch (err) {
       return { ok: false, texto: MENSAJE_ERROR, opciones: [] };
     }
@@ -876,7 +1041,14 @@ async function pedirPreguntaProfunda() {
 
   await mostrarRespuestaFunes(promesa.then((r) => r.texto));
   const resultado = await promesa;
-  if (resultado.ok) mostrarOpcionesProfundas(resultado.texto, resultado.opciones);
+  if (resultado.ok) {
+    mostrarOpcionesProfundas(resultado.texto, resultado.opciones, resultado.consultas);
+  } else {
+    // Sin esto la pantalla se quedaba sin un solo boton: el mensaje de error
+    // y nada mas, con la conversacion terminada de hecho aunque el problema
+    // fuera un tunel del subte.
+    botonReintentar(pedirPreguntaProfunda);
+  }
 }
 
 // Se dispara apenas llega la recomendacion, no cuando se muestran los botones:
@@ -884,7 +1056,7 @@ async function pedirPreguntaProfunda() {
 // recomendacion y da su veredicto, y para cuando tiene que decidir el boton ya
 // esta listo. Nunca rechaza: sin precio igual devuelve el link.
 function pedirPrecio(libroId) {
-  return fetch("/funes-chat/precio", {
+  return fetch("/funes/precio", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ libro_id: libroId }),
@@ -895,7 +1067,7 @@ function pedirPrecio(libroId) {
 
 function registrarClicConseguir() {
   if (!sesionId || !recomendacionActual) return;
-  fetch("/funes-chat/clic-conseguir", {
+  fetch("/funes/clic-conseguir", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ sesion_id: sesionId, recomendacion_id: recomendacionActual }),
@@ -978,6 +1150,17 @@ async function mostrarBotonesRecomendacion() {
   btnInfo.addEventListener("click", () => pedirMasInfo());
   cont.appendChild(btnInfo);
 
+  if (agotadoActual && ciclos >= MAX_CICLOS) {
+    // Fin del recorrido: sin esto quedaba solo "Contame mas", que repite el
+    // mismo libro que la persona acaba de descartar.
+    const btnCero = document.createElement("button");
+    btnCero.type = "button";
+    btnCero.className = "tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btnCero.textContent = "Empezar de cero";
+    btnCero.addEventListener("click", () => window.location.reload());
+    cont.appendChild(btnCero);
+  }
+
   if (agotadoActual && ciclos < MAX_CICLOS) {
     const btnReinicio = document.createElement("button");
     btnReinicio.type = "button";
@@ -1031,19 +1214,142 @@ async function reiniciarDesdeQ1() {
   avanzar();
 }
 
-async function pedirRecomendacion(motivoRechazo) {
+// Antes de presentar un libro, preguntar si ya lo leyo. Sale de una medicion:
+// 5 de cada 25 recomendaciones que un juez reprobo eran libros que la persona
+// ya conocia, y pasaba siempre que nombraba un autor como referencia y le
+// devolviamos su obra mas famosa. Es la diferencia entre errarle y llegar
+// tarde, y desde afuera se veian iguales.
+async function pedirCandidato(motivoRechazo) {
+  limpiarInput();
+  if (leidos.length >= MAX_LEIDOS) return pedirRecomendacion(motivoRechazo);
+  await cadenaSesion;
+  let libro = null;
+  try {
+    const resp = await fetch("/funes/candidato", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...respuestas, profundas, ya_mostrados: yaMostrados, leidos,
+        sesion_id: sesionId, motivo_rechazo: motivoRechazo || "",
+      }),
+    });
+    if (resp.ok) libro = await resp.json();
+  } catch (err) { /* sin candidato se sigue por el camino de siempre */ }
+
+  // Si esto falla no se corta nada: se recomienda como antes, sin preguntar.
+  if (!libro || !libro.titulo) return pedirRecomendacion(motivoRechazo);
+
+  const comoSeLlama = libro.autor ? `${libro.titulo}, de ${libro.autor}` : libro.titulo;
+  await mostrarRespuestaFunes(`Antes de contarte por qué: ¿ya leíste ${comoSeLlama}?`);
+  mostrarSiONo(libro, motivoRechazo);
+}
+
+// Si ya lo leyo, lo unico que importa es que le parecio. Tres botones cubren
+// casi todo y se contestan de un toque; el cuarto abre el texto libre para
+// quien quiera decir algo mas fino, que es de donde sale la mejor senal.
+const OPINIONES = [
+  "Me encantó",
+  "Estuvo bien",
+  "No me gustó",
+];
+
+function mostrarSiONo(libro, motivoRechazo) {
+  limpiarInput();
+  const cont = document.createElement("div");
+  cont.className = "flex flex-col gap-2";
+  [["No, no lo leí", false], ["Sí, ya lo leí", true]].forEach(([etiqueta, leido], i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-base bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btn.style.animationDelay = `${i * 160}ms`;
+    btn.textContent = etiqueta;
+    btn.addEventListener("click", () => {
+      burbuja(etiqueta, true);
+      limpiarInput();
+      if (leido) preguntarQueLeParecio(libro, motivoRechazo);
+      else pedirRecomendacion(motivoRechazo, libro.id);
+    });
+    cont.appendChild(btn);
+  });
+  zonaInput.appendChild(cont);
+}
+
+async function preguntarQueLeParecio(libro, motivoRechazo) {
+  await mostrarRespuestaFunes("¿Y qué te pareció?");
+  limpiarInput();
+  const cont = document.createElement("div");
+  cont.className = "flex flex-col gap-2";
+  [...OPINIONES, "Otra"].forEach((etiqueta, i) => {
+    const esOtra = etiqueta === "Otra";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = esOtra
+      ? "opcion-aparece btn-secundario tap rounded-xl2 px-4 py-3 text-left text-base"
+      : "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-base bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btn.style.animationDelay = `${i * 160}ms`;
+    btn.textContent = etiqueta;
+    btn.addEventListener("click", () => {
+      if (esOtra) {
+        formularioOpinion(libro, motivoRechazo);
+        llevarArriba(hilo.lastElementChild);
+      } else {
+        registrarLeido(libro, etiqueta, motivoRechazo);
+      }
+    });
+    cont.appendChild(btn);
+  });
+  zonaInput.appendChild(cont);
+}
+
+function formularioOpinion(libro, motivoRechazo) {
+  limpiarInput();
+  const form = document.createElement("form");
+  form.className = "flex gap-2";
+  form.innerHTML =
+    '<input type="text" class="flex-1 rounded-xl2 border-2 px-3 py-3" ' +
+    'style="border-color: var(--borde-secundario)" placeholder="Qué te pareció..." required maxlength="500">' +
+    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 font-semibold">Enviar</button>';
+  form.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const valor = form.querySelector("input").value.trim();
+    if (!valor) return;
+    registrarLeido(libro, valor, motivoRechazo);
+  });
+  zonaInput.appendChild(form);
+}
+
+function registrarLeido(libro, opinion, motivoRechazo) {
+  burbuja(opinion, true);
+  limpiarInput();
+  leidos.push({ titulo: libro.titulo, autor: libro.autor || "", opinion });
+  // Fire and forget, igual que la bitacora de siempre: que se pierda el
+  // registro no puede cortarle la charla a nadie.
+  fetch("/funes/ya-lei", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sesion_id: sesionId, libro_id: libro.id, titulo: libro.titulo,
+      autor: libro.autor || "", opinion,
+    }),
+    keepalive: true,
+  }).catch(() => {});
+  pedirCandidato(motivoRechazo);
+}
+
+async function pedirRecomendacion(motivoRechazo, libroFijado) {
   limpiarInput();
   // Esperamos a que la cadena de bitacora termine para que sesionId ya exista:
   // sin el, la recomendacion se guardaria huerfana y no se podria calificar.
   await cadenaSesion;
   const promesa = (async () => {
     try {
-      const resp = await fetch("/funes-chat/recomendar", {
+      const resp = await fetch("/funes/recomendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...respuestas, profundas, ya_mostrados: yaMostrados,
+          ...respuestas, profundas, ya_mostrados: yaMostrados, leidos,
           sesion_id: sesionId, motivo_rechazo: motivoRechazo || "",
+          libro_id: libroFijado || "",
         }),
       });
       if (!resp.ok) throw new Error("fallo el pedido");
@@ -1062,7 +1368,13 @@ async function pedirRecomendacion(motivoRechazo) {
     }
   );
   const resultado = await promesa;
-  if (!resultado.ok) return;
+  if (!resultado.ok) {
+    // El `return` pelado dejaba la pantalla con el mensaje de error y cero
+    // botones. Para la persona eso es el fin de la conversacion, aunque lo
+    // unico que haya pasado sea que se le corto el wifi un segundo.
+    botonReintentar(() => pedirRecomendacion(motivoRechazo, libroFijado));
+    return;
+  }
 
   const datos = resultado.datos;
   libroActual = datos.id;
@@ -1122,7 +1434,7 @@ function pedirJustificacion(veredicto) {
   form.className = "flex flex-col gap-2";
   form.innerHTML =
     '<input type="text" class="w-full rounded-xl2 border-2 px-3 py-3" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="¿Por qué? (opcional)">' +
+    'style="border-color: var(--borde-secundario)" placeholder="¿Por qué? (opcional)" maxlength="1000">' +
     '<div class="flex gap-2">' +
     '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 flex-1 font-semibold">Listo</button>' +
     '</div>';
@@ -1140,7 +1452,7 @@ function pedirJustificacion(veredicto) {
       // escuchado. Y si ademas escribio por que, ESE es el motivo del rechazo,
       // asi que preguntarle "¿que le erre?" seria preguntarle dos veces lo
       // mismo en dos pantallas seguidas. Se salta derecho a buscar otra.
-      if (texto) pedirRecomendacion(texto);
+      if (texto) pedirCandidato(texto);
       else preguntarMotivo();
     } else {
       // mostrarBotonesRecomendacion() es async (espera el precio), asi que los
@@ -1155,7 +1467,7 @@ function pedirJustificacion(veredicto) {
 
 function enviarVeredicto(veredicto, justificacion) {
   if (!sesionId || !recomendacionActual) return;
-  fetch("/funes-chat/veredicto", {
+  fetch("/funes/veredicto", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1170,13 +1482,21 @@ function enviarVeredicto(veredicto, justificacion) {
 // es solo dato cualitativo: se reescribe en positivo en el servidor y entra al
 // vector de la busqueda siguiente (ver _reformular_rechazo en nucleo.py).
 async function preguntarMotivo() {
-  await mostrarRespuestaFunes("¿Qué le erré?\nDecímelo en una línea y busco de nuevo con eso.");
+  // "¿Que le erre?" despues de un "me la llevo" no tiene sentido: la persona
+  // no esta corrigiendo nada, esta pidiendo otro mas.
+  await mostrarRespuestaFunes(
+    veredictoActual === "me_la_llevo"
+      ? "Buenísimo.\n¿Para dónde querés que vaya el próximo?"
+      : "¿Qué le erré?\nDecímelo en una línea y busco de nuevo con eso."
+  );
   limpiarInput();
   const form = document.createElement("form");
   form.className = "flex gap-2";
   form.innerHTML =
     '<input type="text" class="flex-1 rounded-xl2 border-2 px-3 py-3" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="Lo que no te cerró..." required>' +
+    'style="border-color: var(--borde-secundario)" placeholder="' +
+    (veredictoActual === "me_la_llevo" ? 'Algo parecido, pero...' : 'Lo que no te cerró...') +
+    '" required maxlength="500">' +
     '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
@@ -1184,7 +1504,7 @@ async function preguntarMotivo() {
     if (!valor) return;
     burbuja(valor, true);
     limpiarInput();
-    pedirRecomendacion(valor);
+    pedirCandidato(valor);
   });
   zonaInput.appendChild(form);
 }
@@ -1193,7 +1513,7 @@ async function pedirMasInfo() {
   limpiarInput();
   const promesa = (async () => {
     try {
-      const resp = await fetch("/funes-chat/mas-info", {
+      const resp = await fetch("/funes/mas-info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...respuestas, profundas, libro_id: libroActual }),
@@ -1232,27 +1552,56 @@ function mostrarContinuar() {
   // hilo ensuciaria la transcripcion que despues se lee en la bitacora.
   btn.addEventListener("click", async () => {
     limpiarInput();
-    await mostrarRespuestaFunes("Contame cómo estás buscando leer hoy.");
+    // El aviso de datos cumplio su funcion: estuvo a la vista desde que
+    // cargo la pagina y hasta el ultimo momento en que la persona todavia no
+    // habia contestado nada. De aca en adelante seria un cartel fijo abajo de
+    // la conversacion. Se saca del DOM y no se esconde con una clase, asi el
+    // alto del documento que mide abrirEspacio() no arrastra un nodo invisible.
+    const aviso = document.getElementById("aviso-datos");
+    if (aviso) aviso.remove();
+    girarAnillo();
+    // Derecho a q0, sin preambulo: antes salia una burbuja de transicion
+    // ("Contame como estas buscando leer hoy") y enseguida otra con la
+    // pregunta. Eran dos burbujas para una sola cosa, y la primera hacia
+    // esperar el tipeo entero antes de poder leer lo que habia que contestar.
     avanzar();
   });
   zonaInput.appendChild(btn);
 }
 
+function saludo() {
+  // "mas de 1300" y no "1.381": el numero exacto envejece mal (queda viejo en
+  // cuanto entra un libro) y ademas suena a inventario, no a biblioteca. Se
+  // redondea para abajo, asi la frase sigue siendo cierta mientras el catalogo
+  // crezca, y sale del catalogo vivo igual que antes.
+  //
+  // Por debajo de 200 libros la centena de abajo miente feo (120 libros diria
+  // "mas de 100") o directamente da cero, asi que ahi cae en la variante sin
+  // numero, la misma que se usa si la base no contesta.
+  if (!CANT_LIBROS || CANT_LIBROS < 200) {
+    return "Tengo a mi disposición una biblioteca curada y de cada libro me acuerdo hasta el último detalle.";
+  }
+  const redondo = Math.floor(CANT_LIBROS / 100) * 100;
+  return "Tengo a mi disposición una biblioteca curada de más de " +
+         redondo.toLocaleString("es-AR") +
+         " libros y de cada uno me acuerdo hasta el último detalle.";
+}
+
 async function iniciar() {
   // El encuadre va en personaje, no como cartel: el system prompt de Funes
-  // tiene prohibido hablar de sistemas o formularios. Y hay una coincidencia
-  // feliz con el cuento: Funes es el que se acuerda de todo, asi que que el
-  // mismo lo diga es a la vez el chiste borgeano, la explicacion de que hace y
-  // el aviso honesto de que la conversacion se guarda.
+  // tiene prohibido hablar de sistemas o formularios. Hay una coincidencia
+  // feliz con el cuento, y las tres lineas la aprovechan en orden: quien es,
+  // que tiene (que es el chiste borgeano y la explicacion de que hace, todo
+  // junto), y para que le sirve eso a quien esta del otro lado.
   await mostrarRespuestaFunes(
     // Tres lineas y ni una mas: el tipeo es caracter por caracter (ver
     // MS_ENTRE_LETRAS, mas DELAY_TIPEO_MIN de "pensando" por burbuja), asi que
-    // cada linea extra son
-    // segundos en los que la persona mira sin poder tocar nada. MAX_MENSAJES_
-    // POR_RESPUESTA es 3, ademas: una cuarta linea se fusionaria con otra.
-    "Hola. Me llamo Funes, como el personaje de Borges que no podía olvidarse de nada.\n" +
-    "A él la memoria lo tenía postrado. Yo la uso para otra cosa: escuchar cómo estás y buscarte un libro que le sirva a eso.\n" +
-    "Estoy aprendiendo, así que a veces le voy a errar. Decímelo cuando pase: es lo único que me corrige."
+    // cada linea extra son segundos en los que la persona mira la pantalla sin
+    // poder tocar nada. MAX_MENSAJES_POR_RESPUESTA es 3, ademas: una cuarta
+    // linea se fusionaria con la anterior en la misma burbuja.
+    "¡Hola! Mi nombre es *Ireneo Funes*.\n" +
+    saludo() + "\n" +
+    "Mi propósito es hacerte recomendaciones a partir de tu perfil *único* como lector."
   );
   mostrarContinuar();
 }

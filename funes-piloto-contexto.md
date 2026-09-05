@@ -163,14 +163,14 @@ conversaciones calificadas. **El QR no es el motor de volumen; los amigos sí.**
 
 **Concentración** es la que nadie mira y la que más rápido se pudre: si cinco
 libros se comen el 40% de las recomendaciones, el motor está degenerado aunque
-el veredicto sea bueno. Se ve en `/funes-chat/admin/{token}/bitacora`.
+el veredicto sea bueno. Se ve en `/funes/admin/{token}/bitacora`.
 
 ### 4.2 Métricas vanidosas, prohibidas explícitamente
 
 Extiende §6.4 del documento de contexto:
 
 - Cantidad de libros en la base. *(Ya estaba prohibida. Sube siempre.)*
-- Visitas totales a `/funes-chat`.
+- Visitas totales a `/funes`.
 - Conversaciones iniciadas sin mirar cuántas terminaron.
 - Promedio del veredicto. *(Se lee el top-box, no el promedio.)*
 
@@ -221,7 +221,7 @@ Puesta antes de empezar, como la semana 8 de LIBRERO. Si se define después, se 
 
 | # | Acción | Salida |
 |---|---|---|
-| 1 | Deploy + migración del catálogo + autorizar MercadoLibre | `/funes-chat` vivo en producción |
+| 1 | Deploy + migración del catálogo + autorizar MercadoLibre | `/funes` vivo en producción |
 | 2 | Probarlo con 3 amigos sentados al lado, mirando dónde dudan | Arreglos de fricción, sin mirar números |
 | 3 | Mandar el link `?src=amigo` a ~15 personas | ~25-30 conversaciones calificadas |
 | 4 | Imprimir flyers con QR `?src=flyer` y `?src=qr` | ~100 escaneos |
