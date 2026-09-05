@@ -312,6 +312,18 @@ PREGUNTAS = {
                 # mide con instrumentos. Del otro lado, solo "vida" descarta
                 # ideas: en mente y en tecno un ensayo cae bien, y universo ya
                 # esta bajo el piso y sumarle exclusiones no lo mejora.
+                #
+                # UMBRAL, para cuando entre el catalogo nuevo: esa adyacencia
+                # vale porque hoy "ideas" son 10 libros contra 66 de mente. La
+                # curaduria tiene 122 titulos de filosofia esperando entrar, y
+                # con ~132 la opcion pasa a ser el tema mas grande de la macro:
+                # proyectado, el pool de mente queda 54% filosofia, el de tecno
+                # 56% y el de universo 65%. Ahi la adyacencia deja de ser un
+                # matiz y se vuelve una toma del pool -el mismo modo de falla
+                # que este filtro vino a arreglar, con otro sujeto-. Pasando los
+                # ~40 libros de "ideas" hay que sumarlo a los ajenos de mente,
+                # tecno y universo. Es una linea; lo caro es descubrirlo con el
+                # catalogo ya cargado y el piloto andando.
                 "temas_ajenos": {
                     "mente": ["vida", "tierra", "universo", "numeros"],
                     "vida": ["mente", "tecno", "universo", "numeros", "ideas"],
