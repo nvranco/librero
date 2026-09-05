@@ -512,7 +512,13 @@ let ultimaAncla = null;
 // a secas porque lo disparan tambien nuestras propias animaciones.
 let usuarioMovioLaVista = false;
 for (const evento of ["wheel", "touchmove", "keydown"]) {
-  window.addEventListener(evento, () => { usuarioMovioLaVista = true; }, { passive: true });
+  window.addEventListener(evento, (e) => {
+    // Tipear no es moverse por la conversacion. Sin esta guarda, la primera
+    // tecla apagaba la correccion de deriva del turno, y es justo cuando el
+    // campo esta creciendo y corriendo todo lo de abajo.
+    if (e.target && e.target.tagName === "TEXTAREA") return;
+    usuarioMovioLaVista = true;
+  }, { passive: true });
 }
 
 function abrirEspacio(ancla) {
@@ -884,6 +890,51 @@ async function mostrarRespuestaFunes(origen, alTerminarBurbuja, anclaje = "start
   return textoCompleto;
 }
 
+// Cuantos renglones puede crecer un campo antes de scrollear por dentro. Sin
+// tope, un texto largo empuja el boton de enviar fuera de la pantalla justo
+// cuando hay que tocarlo.
+const LINEAS_MAX_CAMPO = 6;
+
+// Ajusta el alto del campo a lo que se escribio. Se mide el lineHeight real y
+// no se fija un alto por renglon: la tipografia la elige el sistema operativo y
+// no mide lo mismo en un iPhone que en un Android.
+function crecerCampo(campo) {
+  const estilo = getComputedStyle(campo);
+  const linea = parseFloat(estilo.lineHeight) || 24;
+  const bordes = parseFloat(estilo.borderTopWidth) + parseFloat(estilo.borderBottomWidth);
+  const relleno = parseFloat(estilo.paddingTop) + parseFloat(estilo.paddingBottom);
+  const tope = linea * LINEAS_MAX_CAMPO + relleno + bordes;
+  const antes = campo.offsetHeight;
+  // "auto" primero: scrollHeight no baja solo cuando se borra texto, se queda
+  // con el alto anterior y el campo nunca volveria a achicarse.
+  campo.style.height = "auto";
+  const alto = Math.min(campo.scrollHeight + bordes, tope);
+  campo.style.height = alto + "px";
+  campo.style.overflowY = campo.scrollHeight + bordes > tope ? "auto" : "hidden";
+  // Solo cuando de verdad cambio de alto: en cada tecla habria un scroll
+  // peleandole al anterior. Corto (200 ms) porque acompana al dedo.
+  if (Math.round(alto) !== Math.round(antes)) scrollSuaveHacia(zonaInput, "end", 200);
+}
+
+// Delegado en la zona de respuesta y no enganchado formulario por formulario:
+// son cinco, y el sexto que se agregue no se iba a acordar de llamar a esto.
+zonaInput.addEventListener("input", (evento) => {
+  if (evento.target.tagName === "TEXTAREA") crecerCampo(evento.target);
+});
+
+// En una pantalla tactil, Enter escribe un renglon nuevo —que es para lo que
+// existe un campo que crece— y se manda con el boton, que esta al lado. Con
+// teclado de verdad manda Enter y Shift+Enter hace el renglon, que es lo que
+// espera cualquiera que escriba en una compu.
+const HAY_TECLADO = !window.matchMedia("(pointer: coarse)").matches;
+zonaInput.addEventListener("keydown", (evento) => {
+  if (evento.target.tagName !== "TEXTAREA") return;
+  if (evento.key !== "Enter" || evento.shiftKey || !HAY_TECLADO) return;
+  evento.preventDefault();
+  const form = evento.target.closest("form");
+  if (form) form.requestSubmit();
+});
+
 function limpiarInput() {
   zonaInput.innerHTML = "";
 }
@@ -936,14 +987,14 @@ async function mostrarTexto(clave) {
   await mostrarRespuestaFunes(p.pregunta);
   limpiarInput();
   const form = document.createElement("form");
-  form.className = "flex gap-2";
+  form.className = "flex gap-2 items-end";
   form.innerHTML =
-    '<input type="text" class="flex-1 rounded-xl2 border-2 px-3 py-3" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="Un autor o un título..." required maxlength="300">' +
-    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 font-semibold">Enviar</button>';
+    '<textarea rows="1" class="flex-1 rounded-xl2 border-2 px-3 py-3 resize-none overflow-hidden" ' +
+    'style="border-color: var(--borde-secundario)" placeholder="Un autor o un título..." required maxlength="300"></textarea>' +
+    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const valor = form.querySelector("input").value.trim();
+    const valor = form.querySelector("textarea").value.trim();
     if (!valor) return;
     respuestas[clave] = valor;
     burbuja(valor, true);
@@ -993,14 +1044,14 @@ function avanzarProfunda(pregunta, respuesta, consulta) {
 function formularioTextoProfunda(pregunta) {
   limpiarInput();
   const form = document.createElement("form");
-  form.className = "flex gap-2";
+  form.className = "flex gap-2 items-end";
   form.innerHTML =
-    '<input type="text" class="flex-1 rounded-xl2 border-2 px-3 py-3" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="Tu respuesta..." required maxlength="600">' +
-    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 font-semibold">Enviar</button>';
+    '<textarea rows="1" class="flex-1 rounded-xl2 border-2 px-3 py-3 resize-none overflow-hidden" ' +
+    'style="border-color: var(--borde-secundario)" placeholder="Tu respuesta..." required maxlength="600"></textarea>' +
+    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const valor = form.querySelector("input").value.trim();
+    const valor = form.querySelector("textarea").value.trim();
     if (!valor) return;
     avanzarProfunda(pregunta, valor);
   });
@@ -1110,6 +1161,29 @@ function registrarClicConseguir() {
 // ofrece un boton para comprarlo.
 let veredictoActual = null;
 
+// Convierte el nombre de la tienda, dentro de una burbuja ya escrita, en el
+// link que lleva a la busqueda. Es el MISMO destino y el MISMO registro que el
+// boton "¿Donde lo consigo?": para la hipotesis que se esta midiendo (HF-3, el
+// clic para conseguirlo) tocar acá tiene que valer exactamente igual que tocar
+// el boton, o el dato del piloto queda partido en dos mitades incomparables.
+//
+// Se rearma con nodos y no con innerHTML porque el nombre de la tienda lo
+// declara un modelo: es texto de afuera y no tiene por que poder inyectar HTML.
+function enlazarTienda(div, texto, precio) {
+  const donde = texto.lastIndexOf(precio.fuente);
+  if (donde === -1) return;
+  div.textContent = "";
+  div.append(texto.slice(0, donde));
+  const link = document.createElement("a");
+  link.href = precio.url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.className = "underline font-semibold";
+  link.textContent = precio.fuente;
+  link.addEventListener("click", registrarClicConseguir);
+  div.append(link, texto.slice(donde + precio.fuente.length));
+}
+
 async function mostrarBotonesRecomendacion() {
   limpiarInput();
   const ofrecerConseguir = veredictoActual !== "no_me_interesa";
@@ -1132,7 +1206,25 @@ async function mostrarBotonesRecomendacion() {
     dejarDePensar();
     espera.remove();
   }
-  if (ofrecerConseguir && precio && precio.url) {
+  // Quien ya dijo "Precisa" no necesita que le pregunten si quiere el libro:
+  // ya contesto que si. En vez de un boton que repite la pregunta, Funes le
+  // pasa el dato y sigue la charla. El link va embebido en la frase y hace lo
+  // mismo que hacia el boton.
+  const seLaLleva = veredictoActual === "me_la_llevo";
+  if (ofrecerConseguir && seLaLleva && precio && precio.url) {
+    const texto = precio.precio && precio.fuente
+      ? `¡Buenísimo! Podés encontrarlo desde $${precio.precio.toLocaleString("es-AR")} en ${precio.fuente}.`
+      : (precio.fuente
+          ? `¡Buenísimo! Podés encontrarlo en ${precio.fuente}.`
+          : "¡Buenísimo! Te dejo dónde buscarlo.");
+    // Anclaje "end" como el resto de este momento: subir el turno empujaria la
+    // recomendacion fuera de la pantalla justo cuando la persona la acepto.
+    await mostrarRespuestaFunes(
+      texto,
+      (div, escrito) => { if (precio.fuente) enlazarTienda(div, escrito, precio); },
+      "end",
+    );
+  } else if (ofrecerConseguir && precio && precio.url) {
     const btnConseguir = document.createElement("a");
     btnConseguir.href = precio.url;
     btnConseguir.target = "_blank";
@@ -1150,7 +1242,7 @@ async function mostrarBotonesRecomendacion() {
     if (precio.precio) {
       const nota = document.createElement("p");
       nota.className = "text-xs text-gris text-center";
-      nota.textContent = `Suele estar cerca de $${precio.precio.toLocaleString("es-AR")}`;
+      nota.textContent = `Desde $${precio.precio.toLocaleString("es-AR")}`;
       if (precio.fuente) {
         nota.append(" · ");
         // El link a la oferta concreta va aca y NO en el boton principal: lo
@@ -1175,7 +1267,11 @@ async function mostrarBotonesRecomendacion() {
 
   const btnInfo = document.createElement("button");
   btnInfo.type = "button";
-  btnInfo.className = "btn-secundario tap rounded-xl2 px-4 py-3 w-full text-sm";
+  // Verde cuando la persona se lo lleva: ahi las dos opciones que quedan son
+  // dos caminos igual de validos para seguir, y ninguna es "la secundaria".
+  btnInfo.className = seLaLleva
+    ? "tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel"
+    : "btn-secundario tap rounded-xl2 px-4 py-3 w-full text-sm";
   btnInfo.textContent = "Contame más";
   btnInfo.addEventListener("click", () => pedirMasInfo());
   cont.appendChild(btnInfo);
@@ -1338,14 +1434,14 @@ async function preguntarQueLeParecio(libro, motivoRechazo) {
 function formularioOpinion(libro, motivoRechazo) {
   limpiarInput();
   const form = document.createElement("form");
-  form.className = "flex gap-2";
+  form.className = "flex gap-2 items-end";
   form.innerHTML =
-    '<input type="text" class="flex-1 rounded-xl2 border-2 px-3 py-3" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="Qué te pareció..." required maxlength="500">' +
-    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 font-semibold">Enviar</button>';
+    '<textarea rows="1" class="flex-1 rounded-xl2 border-2 px-3 py-3 resize-none overflow-hidden" ' +
+    'style="border-color: var(--borde-secundario)" placeholder="Qué te pareció..." required maxlength="500"></textarea>' +
+    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const valor = form.querySelector("input").value.trim();
+    const valor = form.querySelector("textarea").value.trim();
     if (!valor) return;
     registrarLeido(libro, valor, motivoRechazo);
   });
@@ -1477,14 +1573,14 @@ function pedirJustificacion(veredicto) {
   const form = document.createElement("form");
   form.className = "flex flex-col gap-2";
   form.innerHTML =
-    '<input type="text" class="w-full rounded-xl2 border-2 px-3 py-3" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="¿Por qué? (opcional)" maxlength="1000">' +
+    '<textarea rows="1" class="w-full rounded-xl2 border-2 px-3 py-3 resize-none overflow-hidden" ' +
+    'style="border-color: var(--borde-secundario)" placeholder="¿Por qué? (opcional)" maxlength="1000"></textarea>' +
     '<div class="flex gap-2">' +
     '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 flex-1 font-semibold">Listo</button>' +
     '</div>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const texto = form.querySelector("input").value.trim();
+    const texto = form.querySelector("textarea").value.trim();
     // La justificacion es opcional: si no escribio nada no hay burbuja nueva y
     // el ancla pasa a ser el ultimo mensaje del hilo (su propio veredicto).
     const mia = texto ? burbuja(texto, true) : hilo.lastElementChild;
@@ -1535,16 +1631,16 @@ async function preguntarMotivo() {
   );
   limpiarInput();
   const form = document.createElement("form");
-  form.className = "flex gap-2";
+  form.className = "flex gap-2 items-end";
   form.innerHTML =
-    '<input type="text" class="flex-1 rounded-xl2 border-2 px-3 py-3" ' +
+    '<textarea rows="1" class="flex-1 rounded-xl2 border-2 px-3 py-3 resize-none overflow-hidden" ' +
     'style="border-color: var(--borde-secundario)" placeholder="' +
     (veredictoActual === "me_la_llevo" ? 'Algo parecido, pero...' : 'Lo que no te cerró...') +
-    '" required maxlength="500">' +
-    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 font-semibold">Enviar</button>';
+    '" required maxlength="500"></textarea>' +
+    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const valor = form.querySelector("input").value.trim();
+    const valor = form.querySelector("textarea").value.trim();
     if (!valor) return;
     burbuja(valor, true);
     limpiarInput();
@@ -1654,7 +1750,7 @@ async function iniciar() {
     // linea se fusionaria con la anterior en la misma burbuja.
     "¡Hola! Mi nombre es *Ireneo Funes*.\n" +
     saludo() + "\n" +
-    "Mi propósito es hacerte recomendaciones a partir de tu perfil *único* como lector."
+    "Mi propósito es hacerte recomendaciones a partir de tu perfil *único* como lector y tus intereses actuales."
   );
   mostrarContinuar();
 }

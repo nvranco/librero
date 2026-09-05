@@ -1,5 +1,9 @@
 """Precio de referencia y link de busqueda para el libro que Funes recomienda.
 
+(Este archivo se llamaba mercadolibre.py, de cuando el precio salia de la API de
+ML. Hoy ML esta parkeado y el precio sale de otro lado; el nombre viejo mentia
+sobre lo que hace.)
+
 Dos piezas, y la diferencia entre ellas es deliberada:
 
 1. **El link de busqueda** (`url_busqueda`) no depende de nada: es armar una
@@ -45,6 +49,7 @@ Tres cosas que salieron de medirlo, y que estan en el codigo por eso:
 import asyncio
 import json
 import logging
+import re
 import time
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote_plus
@@ -74,42 +79,113 @@ _MODELO_PRECIO = "google/gemini-2.5-flash:online"
 # caen entre $17.000 y $45.000, asi que el techo tiene aire de sobra.
 # OJO: son pesos nominales y la inflacion los desactualiza. Si empiezan a
 # aparecer precios validos filtrados, subir el techo antes que bajar el piso.
+# La Store API de WooCommerce que Cuspide expone sin autenticacion. Es la
+# unica libreria con presencia en Buenos Aires que se puede consultar en vivo
+# y de frente: buscalibre prohibe /libros/search en su robots, y Yenny,
+# Tematika y las demas de Tiendanube prohiben /search/. Cuspide solo prohibe
+# /cgi-bin/. Ademas su `sku` ES el ISBN, asi que el match es exacto y no hay
+# que adivinar si la publicacion corresponde al libro que buscamos.
+_API_CUSPIDE = "https://www.cuspide.com/wp-json/wc/store/v1/products"
+_UA_CUSPIDE = "LibreroBot/0.1 (Funes; nvrancovich@gmail.com)"
+# Corto a proposito: esto corre mientras la persona espera y es un accesorio.
+# Si Cuspide tarda, se sigue sin ella.
+_TIMEOUT_CUSPIDE = 6.0
+
 _PRECIO_MINIMO = 3_000
 _PRECIO_MAXIMO = 150_000
 
-_TTL_OK = timedelta(days=30)
+# Una semana y no un mes: son pesos argentinos. Con la inflacion, un precio de
+# hace 30 dias ya no es el que la persona va a encontrar, y el numero deja de
+# ser una ayuda para pasar a ser una promesa que no se cumple. Refrescar sale
+# ~US$0,008 y solo para el libro que efectivamente se recomendo.
+_TTL_OK = timedelta(days=7)
 _TTL_ERROR = timedelta(hours=6)
 _MARGEN_REFRESCO = timedelta(minutes=5)
 
 _lock_token = asyncio.Lock()
 
 _SYSTEM_PRECIO = (
-    "Buscas el precio de referencia de un libro a la venta ONLINE en la Ciudad "
-    "de Buenos Aires. Devolves UNICAMENTE un JSON valido, sin markdown y sin "
-    "texto alrededor, con esta forma exacta: "
-    '{"precio_ars": <entero o null>, "fuente": "<dominio>", "url": "<link a la publicacion>"}.\n\n'
+    "Buscas el precio de un libro a la venta ONLINE en la Ciudad de Buenos "
+    "Aires. Devolves UNICAMENTE un JSON valido, sin markdown y sin texto "
+    "alrededor, con esta forma exacta:\n"
+    '{"ofertas": [{"precio_ars": <entero>, "fuente": "<dominio>", "url": "<link a la publicacion>"}]}\n\n'
     "Reglas:\n"
+    "- Devolve HASTA 5 publicaciones distintas, cada una de una tienda o de una "
+    "edicion diferente. No las ordenes ni elijas vos la mejor: devolve las que "
+    "encontraste y nosotros nos quedamos con la mas barata. Si solo encontras "
+    "una, devolve una. Si no encontras ninguna, devolve la lista vacia.\n"
     "- Busca como si estuvieras en la Ciudad de Buenos Aires. Solo valen "
     "tiendas online argentinas que vendan y ENTREGUEN en CABA o el AMBA. "
     "Descarta tiendas de otros paises y librerias que no hagan envio a Buenos "
     "Aires: una oferta a la que la persona no puede llegar no le sirve de nada "
     "y le hace perder el viaje.\n"
-    "- Busca la edicion COMUN y mas economica disponible, en rustica o tapa "
-    "blanda. Ignora ediciones importadas, de coleccion, de lujo, tapa dura "
-    "cara, combos, lotes y ejemplares de anticuario. Sin esta regla aparecen "
-    "importados que cuestan el triple que la edicion que la persona "
-    "efectivamente va a encontrar.\n"
+    "- Ediciones COMUNES, en rustica o tapa blanda. Ignora importados, "
+    "ediciones de coleccion, de lujo, tapa dura cara, combos, lotes y "
+    "ejemplares de anticuario: aparecen a tres veces el precio de la edicion "
+    "que la persona efectivamente va a encontrar.\n"
+    "- Tiene que ser ESE libro puntual. No inventes y no estimes por analogia "
+    "con otros libros: mejor la lista vacia que un numero de otro libro.\n"
     "- El precio va en pesos argentinos, sin puntos ni simbolos.\n"
-    '- "url" es el link directo a ESA publicacion, la que tiene ese precio, no la '
-    "home de la tienda ni una busqueda. Tiene que ser del mismo dominio que "
-    'declaras en "fuente". Si no lo tenes a mano, devolve "url": null antes que '
-    "un link inventado: un link roto en el momento de comprar es peor que "
-    "ningun link.\n"
-    "- Si el unico precio que encontras parece anormalmente alto para un libro "
-    "comun, devolve null antes que un numero que confunda.\n"
-    "- Si no encontras publicaciones reales de ESE libro puntual, precio_ars "
-    "tiene que ser null. No inventes y no estimes por analogia con otros libros."
+    '- "url" es el link directo a ESA publicacion, la que tiene ese precio, no '
+    "la home de la tienda ni una busqueda. Tiene que ser del mismo dominio que "
+    'declaras en "fuente". Si no lo tenes a mano, poné "url": null antes que un '
+    "link inventado: un link roto en el momento de comprar es peor que ningun "
+    "link."
 )
+
+
+def isbn13(crudo) -> str | None:
+    """Normaliza el ISBN a 13 digitos, o None si no hay uno usable.
+
+    El catalogo los tiene escritos de tres formas: 13 digitos limpios, con
+    guiones ("978-84-9800-311-6") y en el formato viejo de 10 ("84-350-0129-8").
+    Tomando solo los limpios se pierden 82 libros de 1381, que es justo la
+    diferencia entre buscar por ISBN (exacto) y buscar por titulo (adivinando)."""
+    if not crudo:
+        return None
+    d = re.sub(r"[^0-9Xx]", "", str(crudo))
+    if len(d) == 13 and d.startswith(("978", "979")):
+        return d
+    if len(d) == 10:
+        base = "978" + d[:9]
+        suma = sum((1 if i % 2 == 0 else 3) * int(c) for i, c in enumerate(base))
+        return base + str((10 - suma % 10) % 10)
+    return None
+
+
+async def _precio_cuspide(isbn: str | None) -> tuple[int, str, str] | None:
+    """El precio en Cuspide para ese ISBN exacto, o None.
+
+    Gratis, ~1 s y deterministico, contra los ~US$0,008 y 3-5 s del LLM. No lo
+    reemplaza: mide una sola gondola, y medido sobre 18 libros da en promedio
+    un 30% mas caro que el minimo que encuentra el LLM recorriendo el mercado.
+    Sirve como piso confiable y como control de lo que devuelve el modelo.
+
+    Se busca por ISBN y se exige que el `sku` coincida: buscar por titulo
+    devuelve otras ediciones y hasta otros libros que comparten una palabra.
+    Los precios de la Store API vienen en centavos."""
+    if not isbn:
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=_TIMEOUT_CUSPIDE,
+                                     headers={"User-Agent": _UA_CUSPIDE}) as client:
+            resp = await client.get(_API_CUSPIDE,
+                                    params={"search": isbn, "per_page": 10})
+            resp.raise_for_status()
+            productos = resp.json()
+        for prod in productos if isinstance(productos, list) else []:
+            if str(prod.get("sku") or "").strip() != isbn:
+                continue
+            if prod.get("is_in_stock") is False:
+                continue
+            monto = int(prod["prices"]["price"]) // 100
+            if not (_PRECIO_MINIMO <= monto <= _PRECIO_MAXIMO):
+                continue
+            return monto, "cuspide.com", str(prod.get("permalink") or "")
+    except Exception as exc:  # noqa: BLE001
+        logger.info("funes_precio_cuspide_fallo isbn=%s error=%s", isbn, exc)
+    return None
+
 
 def _dominio(fuente: str) -> str:
     """El dominio de la tienda donde se encontro el precio, si parece un dominio.
@@ -292,6 +368,9 @@ async def _precio_referencia(
     consulta = " ".join(x for x in (titulo, autor) if x).strip()
     body = {
         "model": _MODELO_PRECIO,
+        # Sin esto, dos consultas del mismo libro dan precios distintos y con la
+        # cache de 30 dias el primero que salga se queda pegado un mes.
+        "temperature": 0,
         "messages": [
             {"role": "system", "content": _SYSTEM_PRECIO},
             {"role": "user", "content": f"Precio de referencia en Argentina de: {consulta}"},
@@ -320,29 +399,62 @@ async def _precio_referencia(
         return None, None, "", str(exc)[:200]
 
     latencia = round((time.monotonic() - inicio) * 1000)
-    fuente = _limpiar_fuente(datos.get("fuente"))
-    oferta = _url_oferta(datos.get("url"), _dominio(fuente or ""))
-    try:
-        precio_ars = int(datos["precio_ars"]) if datos.get("precio_ars") is not None else None
-    except (TypeError, ValueError):
-        precio_ars = None
+    # Se le piden varias y elegimos aca la mas barata. Antes se le pedia UNA y
+    # se confiaba en que eligiera bien la "mas economica": no lo hacia. En un
+    # caso real devolvio $33.081 con una edicion a $11.430 en la misma pagina
+    # de resultados. Comparar numeros es algo que conviene hacer en Python.
+    crudas = datos.get("ofertas")
+    if not isinstance(crudas, list):
+        # Forma vieja, por si el modelo la devuelve igual: un solo objeto suelto.
+        crudas = [datos] if datos.get("precio_ars") is not None else []
 
-    # El filtro es objetivo a proposito: la `confianza` que declara el modelo no
-    # sirve (dice "alta" siempre). Sin fuente o fuera de rango, no se muestra
-    # nada — mostrar un precio equivocado en el momento de decidir es peor que
-    # no mostrar ninguno.
-    if precio_ars is None or not fuente or not (_PRECIO_MINIMO <= precio_ars <= _PRECIO_MAXIMO):
+    validas = []
+    for cruda in crudas:
+        if not isinstance(cruda, dict):
+            continue
+        fuente = _limpiar_fuente(cruda.get("fuente"))
+        try:
+            monto = int(cruda["precio_ars"]) if cruda.get("precio_ars") is not None else None
+        except (TypeError, ValueError):
+            monto = None
+        # El filtro es objetivo a proposito: la `confianza` que declaraba el
+        # modelo no servia (decia "alta" siempre). Sin fuente o fuera de rango
+        # se descarta — mostrar un precio equivocado en el momento de decidir es
+        # peor que no mostrar ninguno.
+        if monto is None or not fuente or not (_PRECIO_MINIMO <= monto <= _PRECIO_MAXIMO):
+            continue
+        validas.append((monto, fuente, _url_oferta(cruda.get("url"), _dominio(fuente))))
+
+    if not validas:
         logger.info(
-            "funes_precio_descartado consulta=%r precio=%s fuente=%r latencia_ms=%s",
-            consulta, precio_ars, fuente, latencia,
+            "funes_precio_descartado consulta=%r ofertas_crudas=%s latencia_ms=%s",
+            consulta, len(crudas), latencia,
         )
         return None, None, "", None
+
+    precio_ars, fuente, oferta = min(validas, key=lambda x: x[0])
+    logger.info(
+        "funes_precio_elegido consulta=%r ofertas=%s validas=%s elegido=%s",
+        consulta, len(crudas), len(validas), precio_ars,
+    )
 
     logger.info(
         "funes_precio_ok consulta=%r precio=%s fuente=%s oferta=%s latencia_ms=%s",
         consulta, precio_ars, fuente, bool(oferta), latencia,
     )
     return precio_ars, fuente, oferta, None
+
+
+async def _isbn_de(libro_id: str) -> str | None:
+    """El ISBN sale de una consulta y no de la cache de nucleo: esa cache no lo
+    trae (el ranking no lo necesita) y agregarselo cargaria un campo mas para
+    los 1381 libros a cambio de usarlo en una recomendacion por conversacion."""
+    try:
+        return await db.pool().fetchval(
+            "SELECT isbn FROM funes_libros WHERE id = $1", libro_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("funes_precio_isbn_fallo error=%s", exc)
+        return None
 
 
 async def precio(libro: dict) -> dict:
@@ -372,8 +484,8 @@ async def precio(libro: dict) -> dict:
                 # una funcion pura de titulo y autor, asi que cambiar su forma
                 # (como cuando paso de MercadoLibre a Google) tiene efecto al
                 # instante en todo el catalogo. Si mandara el guardado, las
-                # filas cacheadas seguirian sirviendo el link viejo hasta 30
-                # dias y no habria ningun error a la vista.
+                # filas cacheadas seguirian sirviendo el link viejo hasta que
+                # venza el TTL y no habria ningun error a la vista.
                 "url": url_busqueda(titulo, autor, fila["fuente"] or ""),
                 "precio": fila["precio"],
                 "moneda": fila["moneda"],
@@ -381,7 +493,47 @@ async def precio(libro: dict) -> dict:
                 "url_oferta": fila["url_oferta"] or "",
             }
 
-    precio_ars, fuente, oferta, error = await _precio_referencia(titulo, autor)
+    # Las dos fuentes en paralelo, no una despues de la otra: la de Cuspide
+    # tarda ~1 s y la del LLM 3-5, asi que encadenarlas sumaria un segundo a la
+    # espera para nada.
+    isbn = isbn13(await _isbn_de(libro_id))
+    # return_exceptions=True: las dos funciones ya atrapan lo suyo, pero sin esto
+    # cualquier cosa que se les escape (un CancelledError, un fallo del propio
+    # gather) subiria hasta aca y romperia la promesa del docstring de que esto
+    # nunca levanta. El precio es un accesorio: que falle no puede costar el
+    # link, que es lo que mide la hipotesis.
+    del_llm, de_cuspide = await asyncio.gather(
+        _precio_referencia(titulo, autor),
+        _precio_cuspide(isbn),
+        return_exceptions=True,
+    )
+    if isinstance(del_llm, BaseException):
+        logger.warning("funes_precio_llm_excepcion libro=%s error=%s", libro_id, del_llm)
+        del_llm = (None, None, "", str(del_llm)[:200])
+    if isinstance(de_cuspide, BaseException):
+        logger.warning("funes_precio_cuspide_excepcion libro=%s error=%s", libro_id, de_cuspide)
+        de_cuspide = None
+    precio_llm, fuente_llm, oferta_llm, error = del_llm
+    en_cuspide = de_cuspide
+
+    # "Desde $X": de lo que consiguieron las dos fuentes se muestra lo mas
+    # barato. Cuspide sola sale en promedio 30% mas cara que el minimo del
+    # mercado (medido sobre 18 libros en bench/precios.py) porque mira una sola
+    # gondola; el LLM recorre varias pero a veces se queda con una edicion cara.
+    # Juntas, el piso es mas creible que cualquiera de las dos por separado.
+    candidatos = []
+    if precio_llm is not None and fuente_llm:
+        candidatos.append((precio_llm, fuente_llm, oferta_llm))
+    if en_cuspide is not None:
+        candidatos.append(en_cuspide)
+    if candidatos:
+        precio_ars, fuente, oferta = min(candidatos, key=lambda x: x[0])
+    else:
+        precio_ars, fuente, oferta = None, None, ""
+    logger.info(
+        "funes_precio_fuentes libro=%s isbn=%s llm=%s cuspide=%s elegido=%s",
+        libro_id, isbn, precio_llm, en_cuspide[0] if en_cuspide else None, precio_ars,
+    )
     url = url_busqueda(titulo, autor, fuente or "")
 
     try:
