@@ -38,6 +38,16 @@
     30%, 80%  { opacity: 1; }
     95%, 100% { opacity: 0; }
   }
+  /* El semaforo del veredicto. El verde es el MISMO tratamiento que ya tienen
+     todos los botones de opcion (elegir es elegir); los otros dos salen de
+     terracota y ambar, que son los colores que la paleta ya usa para salida y
+     para atencion, en su version palida para que sirvan de fondo. Solo cambian
+     fondo y borde: el texto sigue siendo el de siempre, para que el verde
+     quede igual a como estaba. */
+  .voto-verde { background: rgb(var(--celeste-claro)); border-color: rgb(var(--celeste)); }
+  .voto-ambar { background: rgb(242 231 203); border-color: rgb(var(--ambar)); }
+  .voto-rojo  { background: rgb(240 218 213); border-color: rgb(var(--terracota)); }
+
   .opcion-aparece {
     opacity: 0; transform: translateY(6px);
     animation: opcion-aparece 0.5s ease-out forwards;
@@ -161,13 +171,15 @@
   <div class="flex-1 px-4 pt-6 pb-10 safe-b">
     <div id="hilo" class="flex flex-col gap-3"></div>
     <div id="zona-input" class="mt-4"></div>
-    <!-- Visible desde que carga la pagina, o sea antes de que la persona
-         escriba nada: si el aviso apareciera al final ya no seria un aviso. -->
+    <!-- Aparece junto con el boton "Continuar" y se va cuando se lo toca. La
+         garantia que importa se mantiene: esta a la vista ANTES de que la
+         persona conteste nada. Antes salia desde que cargaba la pagina, y ahi
+         competia por atencion con Funes presentandose. -->
     <!-- Todo corrido en un solo parrafo centrado: la pregunta sigue a la
          oracion y el texto corta donde le toque. text-wrap: balance reparte
          las lineas parejas en vez de dejar una palabra sola al final; el
          navegador que no lo soporte lo ignora y sigue centrado igual. -->
-    <p id="aviso-datos" class="mt-4 text-xs text-gris text-center" style="text-wrap: balance">
+    <p id="aviso-datos" class="hidden mt-4 text-xs text-gris text-center" style="text-wrap: balance">
       Funes es una prueba de concepto y guarda esta charla para mejorar sus recomendaciones.
       <a href="/funes/privacidad" class="underline">¿Qué datos almacena?</a>
     </p>
@@ -349,7 +361,16 @@ function guardarSesion() {
   return cadenaSesion;
 }
 
-const PASOS_TOTALES = ORDEN.length + CANT_PREGUNTAS_PROFUNDAS;
+// Cuantos pasos tiene ESTA conversacion. Es una funcion y no una constante
+// porque no todas las preguntas se hacen siempre: la macro decide. Mientras q0
+// no este contestada se cuentan todas, asi la barra arranca con el maximo y
+// despues solo puede adelantarse; al reves -arrancar con el minimo- elegir
+// literatura la haria retroceder, que se ve como un error.
+function pasosTotales() {
+  const sabemosLaMacro = "q0" in respuestas;
+  const cuentan = ORDEN.filter((clave) => !sabemosLaMacro || aplicaPregunta(clave));
+  return cuentan.length + CANT_PREGUNTAS_PROFUNDAS;
+}
 const barraProgreso = document.getElementById("barra-progreso");
 let progresoActual = 4;
 // Vueltas empezadas. La segunda es la que habilita "Empezar de nuevo" cuando se
@@ -402,7 +423,7 @@ function ponerBarra(pct) {
 
 function actualizarBarra() {
   const contestadas = Object.keys(respuestas).length + profundas.length;
-  ponerBarra(4 + 96 * (contestadas / PASOS_TOTALES));
+  ponerBarra(4 + 96 * (contestadas / pasosTotales()));
 }
 
 function esperar(ms) {
@@ -876,6 +897,15 @@ function preguntaActual(clave) {
   return { ...p, ...(p.variantes[respuestas.q0] || p.variantes.literatura) };
 }
 
+// Espejo de nucleo.aplica(): hay preguntas que no se le hacen a todas las
+// macros (q1b, la forma, solo en literatura). Va al lado de preguntaActual
+// porque son un par: una elige QUE se pregunta, esta elige SI se pregunta.
+// Si se tocan las de alla, se tocan las de aca.
+function aplicaPregunta(clave) {
+  const solo = PREGUNTAS[clave].solo_macros;
+  return !solo || solo.includes(respuestas.q0);
+}
+
 async function mostrarOpciones(clave) {
   const p = preguntaActual(clave);
   await mostrarRespuestaFunes(p.pregunta);
@@ -924,7 +954,7 @@ async function mostrarTexto(clave) {
 }
 
 function siguientePregunta() {
-  return ORDEN.find((clave) => !(clave in respuestas));
+  return ORDEN.find((clave) => !(clave in respuestas) && aplicaPregunta(clave));
 }
 
 function avanzar() {
@@ -1239,8 +1269,12 @@ async function pedirCandidato(motivoRechazo) {
   // Si esto falla no se corta nada: se recomienda como antes, sin preguntar.
   if (!libro || !libro.titulo) return pedirRecomendacion(motivoRechazo);
 
-  const comoSeLlama = libro.autor ? `${libro.titulo}, de ${libro.autor}` : libro.titulo;
-  await mostrarRespuestaFunes(`Antes de contarte por qué: ¿ya leíste ${comoSeLlama}?`);
+  // El titulo va en cursiva (*asi*, ver parsearCursivas). Se le sacan los
+  // asteriscos que pudiera traer: uno suelto adentro del titulo cerraria la
+  // cursiva antes de tiempo y se comeria el resto de la frase.
+  const titulo = "*" + libro.titulo.replace(/\*/g, "") + "*";
+  const comoSeLlama = libro.autor ? `${titulo}, de ${libro.autor}` : titulo;
+  await mostrarRespuestaFunes(`¿Leíste ${comoSeLlama}?`);
   mostrarSiONo(libro, motivoRechazo);
 }
 
@@ -1398,19 +1432,29 @@ async function mostrarVeredicto() {
   // del mismo momento, no un tema nuevo. Anclarlo empuja la recomendacion
   // fuera de la pantalla justo cuando hay que juzgarla, y un veredicto
   // sobre un libro que no se ve no mide nada.
-  await mostrarRespuestaFunes("Decime qué te pareció.\nNo es cortesía: es lo único que me corrige.", null, "end");
+  await mostrarRespuestaFunes("¿Qué te parece esta recomendación?", null, "end");
   limpiarInput();
+  // En fila y no en columna: son tres palabras y un semaforo, y apiladas se
+  // comian media pantalla justo abajo del libro que hay que estar mirando para
+  // poder juzgarlo.
   const cont = document.createElement("div");
-  cont.className = "flex flex-col gap-2";
+  cont.className = "flex gap-2";
+  // Los VALORES no cambian aunque las etiquetas si. "me_la_llevo" ya no dice
+  // "Me la llevo" sino "Precisa": se conservan para que las respuestas de antes
+  // y las de ahora sigan siendo la misma serie, y para no romper el panel de
+  // admin, que consulta por estos nombres. Ojo al leer la base: hoy miden
+  // punteria de la recomendacion, no intencion de compra.
   const opciones = [
-    ["no_me_interesa", "No me interesa"],
-    ["puede_ser", "Puede ser"],
-    ["me_la_llevo", "Me la llevo"],
+    ["no_me_interesa", "Floja", "👎", "voto-rojo"],
+    ["puede_ser", "Dudosa", "🤏", "voto-ambar"],
+    ["me_la_llevo", "Precisa", "👍", "voto-verde"],
   ];
-  opciones.forEach(([valor, etiqueta], indice) => {
+  opciones.forEach(([valor, palabra, mano, tono], indice) => {
+    // La mano a la derecha: primero se lee la palabra, el gesto la remata.
+    const etiqueta = palabra + " " + mano;
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-base bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btn.className = "opcion-aparece tap flex-1 rounded-xl2 px-2 py-3 text-center text-sm border-2 text-texto-papel " + tono;
     btn.style.animationDelay = `${indice * 160}ms`;
     btn.textContent = etiqueta;
     btn.addEventListener("click", () => {
@@ -1567,6 +1611,15 @@ function mostrarContinuar() {
     avanzar();
   });
   zonaInput.appendChild(btn);
+  // Detras del boton, no junto con el: se le da la misma entrada que a una
+  // opcion y un retraso apenas mayor que el suyo, asi se lee en orden en vez
+  // de aparecer todo el bloque de golpe.
+  const aviso = document.getElementById("aviso-datos");
+  if (aviso) {
+    aviso.classList.remove("hidden");
+    aviso.classList.add("opcion-aparece");
+    aviso.style.animationDelay = "260ms";
+  }
 }
 
 function saludo() {
