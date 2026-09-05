@@ -41,11 +41,19 @@ def _ip(request: Request) -> str:
 
     Detras del proxy de Railway, request.client.host es el proxy: si usaramos
     eso, todas las personas compartirian un solo balde y el limite se dispararia
-    con dos usuarios simultaneos. El primer elemento de X-Forwarded-For es el
-    cliente original."""
+    con dos usuarios simultaneos.
+
+    Se toma el ULTIMO elemento de X-Forwarded-For y no el primero. El primero es
+    el que dice ser el cliente, y cualquiera puede mandar esa cabecera: bastaba
+    con cambiarla en cada request para estrenar un balde vacio cada vez, o sea
+    que el limite por IP no limitaba nada. El ultimo lo escribe el proxy de
+    Railway con la IP desde la que realmente le llego la conexion, y eso no se
+    puede falsificar desde afuera. En local no hay cabecera y se usa el peer."""
     reenviado = request.headers.get("x-forwarded-for", "")
     if reenviado:
-        return reenviado.split(",")[0].strip()
+        saltos = [x.strip() for x in reenviado.split(",") if x.strip()]
+        if saltos:
+            return saltos[-1]
     return request.client.host if request.client else "desconocido"
 
 

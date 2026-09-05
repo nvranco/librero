@@ -1,0 +1,968 @@
+{
+  "_comentario": [
+    "24 lectores sinteticos, 8 por macro, escritos a mano una sola vez contra el",
+    "catalogo real de 1.381 libros. Son la unica vara para decir si un cambio del",
+    "motor mejora o empeora, asi que se tocan lo menos posible: cambiarlos entre",
+    "dos corridas invalida la comparacion.",
+    "",
+    "'persona' es para el juez LLM y para el simulador de respuestas, no entra al",
+    "vector. 'exigencia' esta porque los simuladores de usuario sin personalidad",
+    "aceptan cualquier cosa (Yoon et al. 2024: la correlacion con humanos sube de",
+    "0,24 a 0,75 al declararla), y 'leidos' porque el historial sube la diversidad.",
+    "",
+    "'esperado' es lo que un librero daria por bueno: generos/subgeneros donde la",
+    "recomendacion tiene que caer, algunos titulos que serian un acierto claro, y",
+    "generos que serian un error visible. Los titulos se verifican contra la base",
+    "al arrancar: si uno no existe, el bench aborta en vez de medir cualquier cosa.",
+    "",
+    "Los 4 con 'adversario' no miden calidad sino que no se rompa: apuntan a",
+    "agujeros conocidos (q4 que expulsa titulos por una frase comun, q4 con un",
+    "autor que esta en el catalogo, perfil sin ninguna senal, q2 sobre una macro",
+    "donde faltan las paginas)."
+  ],
+  "perfiles": [
+    {
+      "id": "lit-policial-subte",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Contadora de 38, lee 20 minutos en el subte a la manana y otros 20 a la vuelta. Quiere algo que la enganche rapido y no le pida concentracion.",
+        "exigencia": "moderada",
+        "leidos": [
+          "El asesinato de Roger Ackroyd, de Agatha Christie",
+          "Asesinos sin rostro, de Henning Mankell",
+          "El club del crimen de los jueves, de Richard Osman"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "distraccion",
+        "q2": "corto",
+        "q3": "trama",
+        "q4": "Agatha Christie"
+      },
+      "esperado": {
+        "generos": [
+          "NOVELAS",
+          "CUENTOS / RELATOS"
+        ],
+        "subgeneros": [
+          "POLICIAL",
+          "SUSPENSO",
+          "TERROR"
+        ],
+        "libros": [
+          "El largo adiós",
+          "El juez y su verdugo",
+          "El cadáver de una chica"
+        ],
+        "prohibido_generos": [
+          "POESÍA",
+          "TEATRO",
+          "FILOSOFÍA",
+          "CRITICA LITERARIA"
+        ],
+        "nota": "Nombra una autora que esta en el catalogo con 25 titulos: mas Christie es una respuesta legitima, pero si las 3 recomendaciones son Christie el motor no esta explorando."
+      }
+    },
+    {
+      "id": "lit-cf-clasica",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Programador de 29, volvio a la ciencia ficcion despues de anos. Le interesan las ideas grandes mas que los personajes.",
+        "exigencia": "alta",
+        "leidos": [
+          "Fundación, de Asimov",
+          "2001, de Clarke",
+          "Cuna de gato, de Vonnegut"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "ideas",
+        "q2": "intermedio",
+        "q3": "ideas",
+        "q4": "Cánticos de la lejana Tierra, de Arthur C. Clarke"
+      },
+      "esperado": {
+        "generos": [
+          "CIENCIA FICCIÓN / FANTASTICA",
+          "NOVELAS"
+        ],
+        "subgeneros": [
+          "EN GENERAL"
+        ],
+        "libros": [
+          "Crónicas marcianas",
+          "Fahrenheit 451",
+          "Estación Hawksbill",
+          "El cuento de la criada"
+        ],
+        "prohibido_generos": [
+          "POESÍA",
+          "BIOGRAFIAS Y RELATOS",
+          "COCINA"
+        ],
+        "nota": "El caso real que motivo el ancla con vector propio. Sin ancla, el perfil solo devolvia Marai y Pauls."
+      }
+    },
+    {
+      "id": "lit-introspectivo-duelo",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Docente de 45, atraviesa una separacion. Busca algo que le ponga palabras a lo que le pasa, sin autoayuda.",
+        "exigencia": "alta",
+        "leidos": [
+          "Los años, de Annie Ernaux",
+          "Niveles de vida, de Julian Barnes",
+          "El año del Mono, de Patti Smith"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "introspectivo",
+        "q2": "corto",
+        "q3": "prosa",
+        "q4": "Annie Ernaux"
+      },
+      "esperado": {
+        "generos": [
+          "NOVELAS",
+          "CUENTOS / RELATOS",
+          "BIOGRAFIAS Y RELATOS",
+          "CLÁSICOS"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "GENERAL",
+          "UNIVERSAL",
+          "ARGENTINA",
+          "BIOGRAFIAS - MEMORIAS"
+        ],
+        "libros": [
+          "La herencia de Eszter",
+          "De profundis",
+          "Niveles de vida"
+        ],
+        "prohibido_generos": [
+          "SUPERACION PERSONAL",
+          "MATERNIDAD",
+          "SEXUALIDAD",
+          "METAFISICA",
+          "OCULTISMO"
+        ],
+        "nota": "Justo el perfil donde La herencia de Eszter es una buena respuesta. Ojo: ese libro es el hub numero 1 del catalogo y aparece tambien donde no corresponde."
+      }
+    },
+    {
+      "id": "lit-cuentos-argentinos",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Estudiante de Letras de 23, lee de a ratos entre cursadas. Quiere cuento argentino, no novela.",
+        "exigencia": "alta",
+        "leidos": [
+          "Ficciones, de Borges",
+          "Cuentos de Fontanarrosa",
+          "Los siete locos, de Arlt"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "narrativa",
+        "q2": "corto",
+        "q3": "prosa",
+        "q4": "Borges y Cortázar, cuentos"
+      },
+      "esperado": {
+        "generos": [
+          "CUENTOS / RELATOS",
+          "NOVELAS",
+          "CLÁSICOS"
+        ],
+        "subgeneros": [
+          "ARGENTINA",
+          "LATINOAMERICA",
+          "EN GENERAL",
+          "ANTOLOGIA",
+          "GENERAL"
+        ],
+        "libros": [
+          "No sé si he sido claro",
+          "Nada del otro mundo"
+        ],
+        "prohibido_generos": [
+          "COCINA",
+          "SUPERACION PERSONAL",
+          "MATERNIDAD",
+          "SEXUALIDAD",
+          "DICCIONARIOS",
+          "ENTRENAMIENTO Y PREP.FISICA"
+        ],
+        "nota": "q4 nombra dos autores. Prueba que la expansion del ancla no se quede solo con el primero."
+      }
+    },
+    {
+      "id": "lit-clasico-largo",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Jubilado de 68, tiene tiempo y quiere meterse en un ruso largo que nunca leyo.",
+        "exigencia": "alta",
+        "leidos": [
+          "Crimen y castigo",
+          "Ana Karenina",
+          "Los hermanos Karamazov"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "ideas",
+        "q2": "largo",
+        "q3": "personajes",
+        "q4": "Dostoievski, Los hermanos Karamazov"
+      },
+      "esperado": {
+        "generos": [
+          "CLÁSICOS",
+          "NOVELAS"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "UNIVERSAL",
+          "GENERAL"
+        ],
+        "libros": [
+          "Los demonios"
+        ],
+        "prohibido_generos": [
+          "HUMOR",
+          "SUPERACION PERSONAL",
+          "MATERNIDAD",
+          "SEXUALIDAD",
+          "METAFISICA",
+          "OCULTISMO"
+        ],
+        "nota": "Dostoievski tiene 12 titulos en el catalogo: la referencia por autor no tiene que devolver el mismo libro que nombro, pero si mas del mismo mundo."
+      }
+    },
+    {
+      "id": "lit-romantica-historica",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Empleada de 52, lee de noche antes de dormir. Le gustan las historias de amor de epoca, con drama.",
+        "exigencia": "baja",
+        "leidos": [
+          "Novelas de Danielle Steel",
+          "El tiempo entre costuras",
+          "Orgullo y prejuicio"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "narrativa",
+        "q2": "largo",
+        "q3": "personajes",
+        "q4": "Jane Austen"
+      },
+      "esperado": {
+        "generos": [
+          "NOVELAS",
+          "CLÁSICOS"
+        ],
+        "subgeneros": [
+          "ROMANTICA",
+          "HISTÓRICA",
+          "EN GENERAL",
+          "UNIVERSAL",
+          "GENERAL"
+        ],
+        "libros": [
+          "El perfume de las gardenias",
+          "El corazón helado",
+          "Con el corazón al sur"
+        ],
+        "prohibido_generos": [
+          "FILOSOFÍA",
+          "CRITICA LITERARIA",
+          "TEATRO"
+        ],
+        "nota": "El perfume de las gardenias es el hub numero 2. Aca SI corresponde: sirve para ver si el centrado lo saca de donde no va sin sacarlo de donde va."
+      }
+    },
+    {
+      "id": "lit-sin-referencia",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Tiene 31, no lee hace anos y no se acuerda de ningun titulo. Deja la referencia vacia.",
+        "exigencia": "baja",
+        "leidos": []
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "distraccion",
+        "q2": "corto",
+        "q3": "trama",
+        "q4": ""
+      },
+      "esperado": {
+        "generos": [
+          "NOVELAS",
+          "CUENTOS / RELATOS",
+          "HUMOR",
+          "CIENCIA FICCIÓN / FANTASTICA"
+        ],
+        "subgeneros": [],
+        "libros": [],
+        "prohibido_generos": [
+          "FILOSOFÍA",
+          "CRITICA LITERARIA",
+          "POESÍA",
+          "DICCIONARIOS",
+          "SOCIOLOGÍA"
+        ],
+        "adversario": true,
+        "nota": "Sin ancla el puntaje es solo el perfil. Mide el piso: que salga algo liviano y legible, y que las profundas hagan algo (aca es donde mas deberian pesar)."
+      }
+    },
+    {
+      "id": "lit-frase-comun-en-q4",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Tiene 40 y escribe la referencia como habla, con una frase larga en vez de un titulo.",
+        "exigencia": "moderada",
+        "leidos": [
+          "El túnel, de Sabato"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "introspectivo",
+        "q2": "corto",
+        "q3": "prosa",
+        "q4": "algo como El túnel de Sabato, esa cosa de la vida secreta de la mente de un tipo obsesionado"
+      },
+      "esperado": {
+        "generos": [
+          "NOVELAS",
+          "CUENTOS / RELATOS",
+          "CLÁSICOS"
+        ],
+        "subgeneros": [],
+        "libros": [],
+        "prohibido_generos": [
+          "COCINA",
+          "DICCIONARIOS",
+          "ENTRENAMIENTO Y PREP.FISICA"
+        ],
+        "adversario": true,
+        "nota": "'la vida secreta de' es titulo de dos libros del catalogo. Verifica cuantos titulos expulsa _menciono_el_libro: expulsar libros de divulgacion es inocuo aca (otra macro), pero la regla del primer tramo de titulo puede morder de mas."
+      }
+    },
+    {
+      "id": "hist-arg-peronismo",
+      "macro": "historia",
+      "persona": {
+        "quien": "Delegado sindical de 47. Quiere entender de donde viene el peronismo, sin panfleto ni manual.",
+        "exigencia": "moderada",
+        "leidos": [
+          "Mitos de la historia argentina, de Pigna",
+          "La patria peronista"
+        ]
+      },
+      "respuestas": {
+        "q0": "historia",
+        "q1": "argentina",
+        "q2": "intermedio",
+        "q3": "ideas",
+        "q4": "Felipe Pigna"
+      },
+      "esperado": {
+        "generos": [
+          "HISTORIA"
+        ],
+        "subgeneros": [
+          "HISTORIA ARGENTINA",
+          "HISTORIA POLITICA ARGENTINA",
+          "ARGENTINA"
+        ],
+        "libros": [
+          "1943. El fin de la Argentina liberal, el surgimiento del peronismo",
+          "Compañeros: un Libro Peronista"
+        ],
+        "prohibido_generos": [
+          "HISTORIA DEL ARTE"
+        ],
+        "prohibido_subgeneros": [
+          "HISTORIA UNIVERSAL",
+          "TEMAS BELICOS"
+        ],
+        "nota": "Compañeros salio 6 veces en 19 recomendaciones reales. Aca es correcto; el problema es que tambien salia con q1=mundial."
+      }
+    },
+    {
+      "id": "hist-arg-siglo-xix",
+      "macro": "historia",
+      "persona": {
+        "quien": "Abogada de 55, le interesa la formacion del Estado argentino y las discusiones de la epoca de Alberdi.",
+        "exigencia": "alta",
+        "leidos": [
+          "Facundo, de Sarmiento",
+          "Bases, de Alberdi"
+        ]
+      },
+      "respuestas": {
+        "q0": "historia",
+        "q1": "argentina",
+        "q2": "intermedio",
+        "q3": "ideas",
+        "q4": "Bases, de Juan Bautista Alberdi"
+      },
+      "esperado": {
+        "generos": [
+          "HISTORIA"
+        ],
+        "subgeneros": [
+          "HISTORIA ARGENTINA",
+          "HISTORIA POLITICA ARGENTINA",
+          "ARGENTINA",
+          "INDIGENISMO - PUEBLOS ORIGINARIOS"
+        ],
+        "libros": [
+          "Alberdi",
+          "Alberdi, ese desconocido y otros ensayos históricos"
+        ],
+        "prohibido_subgeneros": [
+          "HISTORIA UNIVERSAL",
+          "TEMAS BELICOS"
+        ],
+        "nota": "Bases esta en el catalogo con macro literatura (POLITICA). Prueba que el filtro por macro no lo devuelva y que el ancla igual funcione."
+      }
+    },
+    {
+      "id": "hist-mundial-guerra",
+      "macro": "historia",
+      "persona": {
+        "quien": "Ingeniero de 34, lee historia militar los fines de semana. Quiere la Segunda Guerra contada con detalle.",
+        "exigencia": "moderada",
+        "leidos": [
+          "Stalingrado, de Beevor",
+          "El día D"
+        ]
+      },
+      "respuestas": {
+        "q0": "historia",
+        "q1": "mundial",
+        "q2": "largo",
+        "q3": "trama",
+        "q4": "Antony Beevor, Stalingrado"
+      },
+      "esperado": {
+        "generos": [
+          "HISTORIA"
+        ],
+        "subgeneros": [
+          "HISTORIA UNIVERSAL",
+          "TEMAS BELICOS",
+          "HISTORIOGRAFIA"
+        ],
+        "libros": [
+          "Berlín. Auge y caída de una ciudad en el centro del mundo",
+          "Breve historia de la España de Franco"
+        ],
+        "prohibido_subgeneros": [
+          "HISTORIA ARGENTINA",
+          "HISTORIA POLITICA ARGENTINA"
+        ],
+        "nota": "El caso mas claro para medir si q1 filtra: hoy solo orienta el vector y se cuelan libros argentinos."
+      }
+    },
+    {
+      "id": "hist-mundial-antiguo",
+      "macro": "historia",
+      "persona": {
+        "quien": "Profesora de 41, da clases de historia antigua y quiere algo para leer por gusto, no para preparar clase.",
+        "exigencia": "moderada",
+        "leidos": [
+          "SPQR, de Mary Beard",
+          "Los griegos, de Kitto"
+        ]
+      },
+      "respuestas": {
+        "q0": "historia",
+        "q1": "mundial",
+        "q2": "intermedio",
+        "q3": "personajes",
+        "q4": "Mary Beard, SPQR"
+      },
+      "esperado": {
+        "generos": [
+          "HISTORIA"
+        ],
+        "subgeneros": [
+          "HISTORIA UNIVERSAL",
+          "ARQUEOLOGIA",
+          "HISTORIOGRAFIA"
+        ],
+        "libros": [
+          "Alejandría. En busca de la ciudad perdida",
+          "Antiguo Egipto",
+          "Alejandro en el fin del mundo"
+        ],
+        "prohibido_subgeneros": [
+          "HISTORIA ARGENTINA",
+          "HISTORIA POLITICA ARGENTINA"
+        ],
+        "nota": ""
+      }
+    },
+    {
+      "id": "hist-mundial-breve",
+      "macro": "historia",
+      "persona": {
+        "quien": "Tiene 26, poco tiempo, quiere una entrada corta a la historia mundial sin comprometerse a 600 paginas.",
+        "exigencia": "baja",
+        "leidos": [
+          "Sapiens, de Harari"
+        ]
+      },
+      "respuestas": {
+        "q0": "historia",
+        "q1": "mundial",
+        "q2": "corto",
+        "q3": "ideas",
+        "q4": "Sapiens"
+      },
+      "esperado": {
+        "generos": [
+          "HISTORIA"
+        ],
+        "subgeneros": [
+          "HISTORIA UNIVERSAL",
+          "HISTORIOGRAFIA",
+          "HISTORIA ECONOMICA",
+          "ARQUEOLOGIA"
+        ],
+        "libros": [],
+        "prohibido_subgeneros": [
+          "HISTORIA ARGENTINA",
+          "HISTORIA POLITICA ARGENTINA"
+        ],
+        "nota": "Sapiens fue la referencia mas repetida del piloto, pero siempre con q1=argentina (y ahi devolver peronismo era correcto). Aca se usa la misma referencia con q1=mundial, que es el cruce que nadie probo todavia: mide si una referencia muy generica se lleva el ranking puesto hacia el estante equivocado."
+      }
+    },
+    {
+      "id": "hist-pueblos-originarios",
+      "macro": "historia",
+      "persona": {
+        "quien": "Guia de turismo de 36 en la Patagonia. Quiere leer sobre los pueblos originarios antes de la conquista.",
+        "exigencia": "moderada",
+        "leidos": [
+          "Una excursión a los indios ranqueles, de Mansilla"
+        ]
+      },
+      "respuestas": {
+        "q0": "historia",
+        "q1": "argentina",
+        "q2": "intermedio",
+        "q3": "personajes",
+        "q4": "Una excursión a los indios ranqueles, de Lucio V. Mansilla"
+      },
+      "esperado": {
+        "generos": [
+          "HISTORIA"
+        ],
+        "subgeneros": [
+          "INDIGENISMO - PUEBLOS ORIGINARIOS",
+          "HISTORIA ARGENTINA",
+          "ARQUEOLOGIA",
+          "HISTORIA AMERICANA"
+        ],
+        "libros": [],
+        "prohibido_subgeneros": [
+          "HISTORIA UNIVERSAL",
+          "TEMAS BELICOS"
+        ],
+        "adversario": true,
+        "nota": "El libro que nombra ESTA en el catalogo (duplicado, dos filas). Las dos tienen que quedar excluidas: es la prueba del filtro por titulo con un duplicado de por medio."
+      }
+    },
+    {
+      "id": "hist-economica",
+      "macro": "historia",
+      "persona": {
+        "quien": "Economista de 44, quiere entender las crisis argentinas en serie, no una sola.",
+        "exigencia": "alta",
+        "leidos": [
+          "La economía argentina, de Ferrer"
+        ]
+      },
+      "respuestas": {
+        "q0": "historia",
+        "q1": "argentina",
+        "q2": "largo",
+        "q3": "ideas",
+        "q4": "Aldo Ferrer, La economía argentina"
+      },
+      "esperado": {
+        "generos": [
+          "HISTORIA"
+        ],
+        "subgeneros": [
+          "HISTORIA ECONOMICA",
+          "HISTORIA ARGENTINA",
+          "HISTORIA POLITICA ARGENTINA"
+        ],
+        "libros": [
+          "2001. Relatos de la crisis que cambió la Argentina"
+        ],
+        "prohibido_subgeneros": [
+          "HISTORIA UNIVERSAL",
+          "TEMAS BELICOS"
+        ],
+        "nota": "Solo hay 3 libros de HISTORIA ECONOMICA: mide si un nicho chico es alcanzable o el vector lo tapa con lo generico."
+      }
+    },
+    {
+      "id": "hist-generico",
+      "macro": "historia",
+      "persona": {
+        "quien": "Contesta lo primero que ve en cada pregunta y no deja referencia. El peor caso de senal.",
+        "exigencia": "baja",
+        "leidos": []
+      },
+      "respuestas": {
+        "q0": "historia",
+        "q1": "argentina",
+        "q2": "intermedio",
+        "q3": "ideas",
+        "q4": ""
+      },
+      "esperado": {
+        "generos": [
+          "HISTORIA"
+        ],
+        "subgeneros": [
+          "HISTORIA ARGENTINA",
+          "HISTORIA POLITICA ARGENTINA",
+          "ARGENTINA"
+        ],
+        "libros": [],
+        "prohibido_generos": [],
+        "adversario": true,
+        "nota": "Sin ancla y con las respuestas mas comunes. Es el perfil que produce el hub: sirve para ver si el centrado cambia el ganador por defecto."
+      }
+    },
+    {
+      "id": "div-hongos",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Cocinera de 33, se obsesiono con los hongos despues de un documental. Quiere el libro, no el resumen.",
+        "exigencia": "alta",
+        "leidos": [
+          "La red oculta de la vida, de Merlin Sheldrake"
+        ]
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "vida",
+        "q2": "intermedio",
+        "q3": "explicacion",
+        "q4": "Merlin Sheldrake, La red oculta de la vida"
+      },
+      "esperado": {
+        "generos": [
+          "CIENCIAS NATURALES",
+          "DIVULGACIÓN CIENTÍFICA"
+        ],
+        "subgeneros": [
+          "BOTANICA",
+          "BIOLOGIA",
+          "EN GENERAL",
+          "ZOOLOGIA"
+        ],
+        "libros": [
+          "El Reino: Vida y Obra de Hongos y Humanos",
+          "Hongos fantásticos",
+          "El Increíble Viaje de las Plantas"
+        ],
+        "prohibido_generos": [
+          "PSICOLOGÍA",
+          "MEDICINA"
+        ],
+        "prohibido_subgeneros": [
+          "PSICOANALISIS",
+          "PSICOTERAPIAS"
+        ],
+        "nota": "El caso que probo que q4 era inerte: sin vector propio devolvia psicologia."
+      }
+    },
+    {
+      "id": "div-plantas",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Paisajista de 39, quiere entender como funcionan las plantas, no como cuidarlas.",
+        "exigencia": "moderada",
+        "leidos": [
+          "La vida secreta de los árboles, de Wohlleben"
+        ]
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "vida",
+        "q2": "corto",
+        "q3": "asombro",
+        "q4": "Peter Wohlleben, La vida secreta de los árboles"
+      },
+      "esperado": {
+        "generos": [
+          "CIENCIAS NATURALES",
+          "DIVULGACIÓN CIENTÍFICA"
+        ],
+        "subgeneros": [
+          "BOTANICA",
+          "BIOLOGIA",
+          "EN GENERAL"
+        ],
+        "libros": [
+          "La Nación de las Plantas",
+          "La planta del mundo",
+          "Tesoros de la naturaleza"
+        ],
+        "prohibido_generos": [
+          "PSICOLOGÍA",
+          "MEDICINA"
+        ],
+        "prohibido_subgeneros": [
+          "PSICOANALISIS"
+        ],
+        "nota": "Junto con div-hongos mide si dos nichos vecinos (hongos vs plantas) se distinguen entre si o devuelven lo mismo."
+      }
+    },
+    {
+      "id": "div-mente-cerebro",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Estudiante de medicina de 24, quiere neurociencia divulgativa bien explicada.",
+        "exigencia": "alta",
+        "leidos": [
+          "El cerebro matemático, de Dehaene",
+          "Descubriendo el cerebro, de Manes"
+        ]
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "mente",
+        "q2": "intermedio",
+        "q3": "explicacion",
+        "q4": "Facundo Manes, Usar el cerebro"
+      },
+      "esperado": {
+        "generos": [
+          "DIVULGACIÓN CIENTÍFICA",
+          "PSICOLOGÍA"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "ENSAYOS"
+        ],
+        "libros": [
+          "Cerebros en construcción",
+          "El cerebro matemático. Cómo nacen, viven y a veces mueren los números en nuestra mente",
+          "DeMente. El cerebro, un hueso duro de roer"
+        ],
+        "prohibido_subgeneros": [
+          "BOTANICA",
+          "ZOOLOGIA",
+          "GEOLOGIA"
+        ],
+        "nota": "Manes tiene varios titulos en el catalogo: la referencia por autor no puede devolver el mismo libro."
+      }
+    },
+    {
+      "id": "div-psicoanalisis-no",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Psicologa de 30 que ya trabaja con psicoanalisis y justamente quiere leer otra cosa: conducta desde la evidencia.",
+        "exigencia": "alta",
+        "leidos": [
+          "Pensar rápido, pensar despacio, de Kahneman"
+        ]
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "mente",
+        "q2": "largo",
+        "q3": "ideas",
+        "q4": "Daniel Kahneman, Pensar rápido pensar despacio"
+      },
+      "esperado": {
+        "generos": [
+          "DIVULGACIÓN CIENTÍFICA",
+          "PSICOLOGÍA"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "ENSAYOS"
+        ],
+        "libros": [],
+        "prohibido_subgeneros": [
+          "PSICOANALISIS",
+          "PSICOTERAPIAS",
+          "PSICODIAGNOSTICO / TESTS"
+        ],
+        "nota": "23 de los 187 libros de divulgacion son PSICOANALISIS y el vector los engancha con cualquier cosa que diga mente. Es el caso que justifica el filtro duro por tema del bloque 4."
+      }
+    },
+    {
+      "id": "div-tecno-ia",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Disenadora de 35, quiere entender que esta pasando con la inteligencia artificial sin que le vendan humo.",
+        "exigencia": "moderada",
+        "leidos": [
+          "Artificial, de Sigman y Bilinkis"
+        ]
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "tecno",
+        "q2": "intermedio",
+        "q3": "ideas",
+        "q4": "Artificial, de Mariano Sigman y Santiago Bilinkis"
+      },
+      "esperado": {
+        "generos": [
+          "DIVULGACIÓN CIENTÍFICA"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "ENSAYOS"
+        ],
+        "libros": [
+          "Automatizados",
+          "Big data. Breve manual para conocer la ciencia de datos que ya invadió nuestras vidas"
+        ],
+        "prohibido_subgeneros": [
+          "BOTANICA",
+          "ZOOLOGIA",
+          "PSICOANALISIS",
+          "GEOLOGIA"
+        ],
+        "adversario": true,
+        "nota": "Nombra un libro que ESTA en el catalogo: tiene que quedar excluido y aun asi orientar el resto. En el piloto real, este perfil recibio justamente Artificial."
+      }
+    },
+    {
+      "id": "div-universo",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Tecnico de 50, mira el cielo con un telescopio chico. Quiere fisica contada para el, no formulas.",
+        "exigencia": "moderada",
+        "leidos": [
+          "Cosmos, de Sagan"
+        ]
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "universo",
+        "q2": "corto",
+        "q3": "asombro",
+        "q4": "Carl Sagan, Cosmos"
+      },
+      "esperado": {
+        "generos": [
+          "DIVULGACIÓN CIENTÍFICA"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "ENSAYOS",
+          "GEOLOGIA"
+        ],
+        "libros": [
+          "El infinito en la palma de la mano. 50 maravillas que revelan un universo extraordinario",
+          "Breve historia de los agujeros negros",
+          "El Bosón de Higgs no te va a Hacer la Cama: La Física Como Nunca te la Han Contado"
+        ],
+        "prohibido_subgeneros": [
+          "PSICOANALISIS",
+          "PSICOTERAPIAS",
+          "BOTANICA"
+        ],
+        "nota": ""
+      }
+    },
+    {
+      "id": "div-historias-cientificos",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Periodista de 42, le interesan las personas detras de los descubrimientos mas que la ciencia en si.",
+        "exigencia": "moderada",
+        "leidos": [
+          "El código de la vida, de Isaacson"
+        ]
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "mente",
+        "q2": "largo",
+        "q3": "historias",
+        "q4": "Walter Isaacson"
+      },
+      "esperado": {
+        "generos": [
+          "DIVULGACIÓN CIENTÍFICA",
+          "CIENCIAS NATURALES"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "ENSAYOS"
+        ],
+        "libros": [
+          "La Gioconda y Leonardo. Una historia de ciencia, arte y amor"
+        ],
+        "prohibido_subgeneros": [
+          "PSICOANALISIS"
+        ],
+        "nota": "q3=historias solo existe en la variante de divulgacion. Verifica que resolver() tome la variante y no las opciones base."
+      }
+    },
+    {
+      "id": "div-corto-sin-referencia",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Tiene 19, nunca leyo divulgacion, entro por curiosidad y no deja referencia.",
+        "exigencia": "baja",
+        "leidos": []
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "vida",
+        "q2": "corto",
+        "q3": "asombro",
+        "q4": ""
+      },
+      "esperado": {
+        "generos": [
+          "DIVULGACIÓN CIENTÍFICA",
+          "CIENCIAS NATURALES"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "BIOLOGIA",
+          "BOTANICA",
+          "ZOOLOGIA"
+        ],
+        "libros": [
+          "¡Está vivo!",
+          "Maravillas naturales",
+          "Tesoros de la naturaleza"
+        ],
+        "prohibido_subgeneros": [
+          "PSICOANALISIS",
+          "PSICOTERAPIAS",
+          "FARMACOLOGIA",
+          "PSIQUIATRIA"
+        ],
+        "nota": "Divulgacion es la macro mas chica (187) y con q2=corto el pool queda cerca del piso. Mide si se afloja la banda de paginas."
+      }
+    }
+  ]
+}

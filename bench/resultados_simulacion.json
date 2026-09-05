@@ -1,0 +1,1581 @@
+{
+ "un_vector": {
+  "metricas": {
+   "perfiles": 24,
+   "recomendaciones": 72,
+   "acierto@1": "4/18",
+   "acierto@3": "7/18",
+   "en_genero": "70/72",
+   "prohibido": 0,
+   "juez": 3.12,
+   "juez_bajos": 28,
+   "distintos": 59,
+   "hub_max": "5 (Argentina. Historia mínima)",
+   "flip": "5/24",
+   "ref_devuelta": 0,
+   "errores": []
+  },
+  "corridas": [
+   {
+    "id": "lit-policial-subte",
+    "macro": "literatura",
+    "profundas": [
+     {
+      "pregunta": "A menudo, lo intrigante de un misterio se juega entre lo que se muestra y lo que se esconde de la mirada del investigador y, por extensión, del lector.\n¿Te atrae más la intriga que se desvela a través de pistas claras o aquella que surge de secretos ocultos y relaciones complejas?",
+      "respuesta": "Pistas concretas y deducción lógica.",
+      "consulta": "Pistas concretas y deducción lógica."
+     },
+     {
+      "pregunta": "La forma en que se presenta el crimen puede influir en la cercanía del lector con la trama y sus personajes.\n¿Preferís presenciar el inicio del crimen y seguir de cerca la investigación, o llegar cuando el misterio ya está planteado y sumergirte en la resolución?",
+      "respuesta": "Ver el crimen suceder y la investigación desenvolverse.",
+      "consulta": "Ver el crimen suceder y la investigación desenvolverse."
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "asesinato-en-el-orient-express",
+      "titulo": "Asesinato en el Orient Express",
+      "autor": "Agatha Christie",
+      "genero": "NOVELAS",
+      "subgenero": "POLICIAL",
+      "coseno": 0.595002,
+      "perfil": 0.459338,
+      "ancla": 0.672724,
+      "juez": {
+       "puntaje": 5,
+       "por_que": "Misterio clásico de Christie: ritmo ágil, lectura ligera y engancha rápido, perfecto para viajes cortos."
+      }
+     },
+     {
+      "id": "asesinato-en-mesopotamia",
+      "titulo": "Asesinato en Mesopotamia",
+      "autor": "Agatha Christie",
+      "genero": "NOVELAS",
+      "subgenero": "POLICIAL",
+      "coseno": 0.596614,
+      "perfil": 0.401841,
+      "ancla": 0.699405,
+      "juez": {
+       "puntaje": 5,
+       "por_que": "Corto y ágil, tono Christie: misterio clásico y lectura ligera ideal para los viajes en subte."
+      }
+     },
+     {
+      "id": "el-misterioso-caso-de-styles",
+      "titulo": "El misterioso caso de Styles",
+      "autor": "Agatha Christie",
+      "genero": "NOVELAS",
+      "subgenero": "POLICIAL",
+      "coseno": 0.591475,
+      "perfil": 0.385501,
+      "ancla": 0.749243,
+      "juez": {
+       "puntaje": 5,
+       "por_que": "Perfecta: corta, ágil, con tono Christie clásico y lectura que no exige concentración."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 552,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Agatha Christie, destacada autora británica, es reconocida por sus novelas de misterio y detectives. Sus obras, protagonizadas por personajes icónicos como Hercule Poirot y Miss Marple, se caracteriza"
+   },
+   {
+    "id": "lit-cf-clasica",
+    "macro": "literatura",
+    "profundas": [
+     {
+      "pregunta": "La ciencia ficción explora las implicaciones de futuros alternativos, pero la forma en que se aborda la transformación social puede variar.\n¿Preferís una sociedad donde el cambio es impulsado por la voluntad individual o por fuerzas impersonales y cósmicas?",
+      "respuesta": "Fuerzas impersonales",
+      "consulta": "Fuerzas impersonales"
+     },
+     {
+      "pregunta": "La escala de los acontecimientos puede alterar radicalmente la percepción de la trascendencia y la relevancia de las acciones individuales.\n¿Te atraen más los conflictos que se desarrollan en una escala humana, o aquellos que abarcan milenios y civilizaciones enteras?",
+      "respuesta": "Conflictos que abarcan milenios.",
+      "consulta": "Conflictos que abarcan milenios."
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "estacion-hawksbill",
+      "titulo": "Estación Hawksbill",
+      "autor": "Robert Silverberg",
+      "genero": "CIENCIA FICCIÓN / FANTASTICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.549902,
+      "perfil": 0.445275,
+      "ancla": 0.72948,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Explora represión y dinámica social con ideas provocadoras y extensión media; más íntima que cósmica, pero acertada para pensar."
+      }
+     },
+     {
+      "id": "alas-nocturnas",
+      "titulo": "Alas nocturnas",
+      "autor": "Robert Silverberg",
+      "genero": "CIENCIA FICCIÓN / FANTASTICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.552558,
+      "perfil": 0.449249,
+      "ancla": 0.696432,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Explora ideas grandes sobre decadencia y orden social con tono contemplativo; muy razonable, aunque es más breve y lírico que el desarrollo analítico que buscás."
+      }
+     },
+     {
+      "id": "fundacion",
+      "titulo": "Fundación",
+      "autor": "Isaac Asimov",
+      "genero": "CIENCIA FICCIÓN / FANTASTICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.550427,
+      "perfil": 0.461863,
+      "ancla": 0.663099,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Ya lo leyó; encaja en ideas grandes pero la recomendación es redundante y no aporta algo nuevo."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 611,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Esta novela de ciencia ficción explora la colonización espacial y el futuro de la humanidad. Ambientada en un lejano planeta oceánico, la trama se centra en el encuentro entre los últimos supervivient"
+   },
+   {
+    "id": "lit-introspectivo-duelo",
+    "macro": "literatura",
+    "profundas": [
+     {
+      "pregunta": "La inmersión en el mundo interior de los personajes puede variar en intensidad, acercándonos o distanciándonos de sus vivencias.\n¿Preferís una narración que te haga sentir parte de la experiencia del personaje o una que te ofrezca una mirada más distante y reflexiva?",
+      "respuesta": "Sentir la experiencia de cerca",
+      "consulta": "Sentir la experiencia de cerca"
+     },
+     {
+      "pregunta": "La vida cotidiana, en su esencia, puede ser un espejo de lo universal o una expresión de lo singular.\n¿Te atrae más una historia que revela lo trascendente en lo ordinario o una que explora lo peculiar y personal de un individuo?",
+      "respuesta": "Lo trascendente en lo ordinario",
+      "consulta": "Lo trascendente en lo ordinario"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "los-anos",
+      "titulo": "Los años",
+      "autor": "Annie Ernaux",
+      "genero": "BIOGRAFIAS Y RELATOS",
+      "subgenero": "BIOGRAFIAS - MEMORIAS",
+      "coseno": 0.536607,
+      "perfil": 0.522543,
+      "ancla": 0.63281,
+      "juez": {
+       "puntaje": 1,
+       "por_que": "Ya lo leyó y, además, es una memoria colectiva e impersonal, no el relato íntimo y breve que pidió."
+      }
+     },
+     {
+      "id": "puerto-libre",
+      "titulo": "Puerto libre",
+      "autor": "Ángeles Mastretta",
+      "genero": "CUENTOS / RELATOS",
+      "subgenero": "GENERAL",
+      "coseno": 0.484166,
+      "perfil": 0.599227,
+      "ancla": 0.47355,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Prosa cuidada y fragmentaria, pero su tono cálido e irónico no ofrece la crudeza analítica y la distancia íntima que usted busca."
+      }
+     },
+     {
+      "id": "la-herencia-de-eszter",
+      "titulo": "La herencia de Eszter",
+      "autor": "Sándor Márai",
+      "genero": "NOVELAS",
+      "subgenero": "UNIVERSAL",
+      "coseno": 0.479458,
+      "perfil": 0.623215,
+      "ancla": 0.44132,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Breve, íntima y psicológica; pone en palabras el daño y la añoranza, aunque su tono clásico es menos confesional y directo que Ernaux."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 552,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Annie Ernaux es una escritora francesa conocida por su obra autobiográfica y sociológica. Sus textos exploran la memoria, la clase social, el género y la experiencia personal, a menudo a través de una"
+   },
+   {
+    "id": "lit-cuentos-argentinos",
+    "macro": "literatura",
+    "profundas": [
+     {
+      "pregunta": "Hay obras que invitan a una lectura más contemplativa, mientras otras nos sumergen en la vorágine de la trama, privilegiando el fluir de los acontecimientos.\n¿Preferís una experiencia que te impulse a descifrar sus capas o una que te arrastre sin respiro?",
+      "respuesta": "Descifrar y reflexionar",
+      "consulta": "Descifrar y reflexionar"
+     },
+     {
+      "pregunta": "A veces, la potencia de un relato reside en su capacidad de perturbar nuestra percepción de la realidad, mientras que otras veces se asienta en la resonancia de las emociones humanas más reconocibles.\n¿Te atrae más la exploración de lo fantástico y lo inusual, o la intensidad de los dramas personales?",
+      "respuesta": "Lo fantástico y lo extraño",
+      "consulta": "Lo fantástico y lo extraño"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "ficciones",
+      "titulo": "Ficciones",
+      "autor": "Jorge Luis Borges",
+      "genero": "CUENTOS / RELATOS",
+      "subgenero": "ARGENTINA",
+      "coseno": 0.534401,
+      "perfil": 0.419161,
+      "ancla": 0.608937,
+      "juez": {
+       "puntaje": 1,
+       "por_que": "Ya lo leyó; la recomendación no aporta nada nuevo a su pedido."
+      }
+     },
+     {
+      "id": "cuentos-fatales",
+      "titulo": "Cuentos fatales",
+      "autor": "Leopoldo Lugones",
+      "genero": "CUENTOS / RELATOS",
+      "subgenero": "ARGENTINA",
+      "coseno": 0.502414,
+      "perfil": 0.384661,
+      "ancla": 0.605454,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Encaja bien: cuentos argentinos y prosa refinada que conecta con Borges, aunque es más arcaico y menos directo/rápido que pidió."
+      }
+     },
+     {
+      "id": "doce-cuentos-peregrinos",
+      "titulo": "Doce cuentos peregrinos",
+      "autor": "Gabriel García Márquez",
+      "genero": "CUENTOS / RELATOS",
+      "subgenero": "LATINOAMERICA",
+      "coseno": 0.500302,
+      "perfil": 0.44014,
+      "ancla": 0.576139,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "No es argentino ni coincide con el tono borgeano/cortazariano que pidió; buenos cuentos pero fallan país y estilo."
+      }
+     }
+    ],
+    "flip": true,
+    "pool": 552,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Jorge Luis Borges y Julio Cortázar son autores fundamentales de la literatura latinoamericana del siglo XX, conocidos por sus cuentos. Borges explora temas metafísicos, laberintos, bibliotecas y la na"
+   },
+   {
+    "id": "lit-clasico-largo",
+    "macro": "literatura",
+    "profundas": [
+     {
+      "pregunta": "A menudo, la inmersión en la psique de los personajes se potencia de maneras distintas según la cercanía que el autor nos permita establecer con su mundo interior.\n¿Preferís una introspección que revele los conflictos desde la perspectiva íntima de un solo personaje, o una que contraponga múltiples voces para construir la complejidad?",
+      "respuesta": "Múltiples voces que dialogan.",
+      "consulta": "Múltiples voces que dialogan."
+     },
+     {
+      "pregunta": "La exploración de las motivaciones y contradicciones humanas puede ser abordada desde la pura voluntad o desde una mirada que considera la influencia de fuerzas externas.\n¿Te inclinas más por historias donde los personajes son arquitectos de su propio destino, o por aquellas donde las circunstancias modelan su ser y sus elecciones?",
+      "respuesta": "Arquitectos de su propio destino",
+      "consulta": "Arquitectos de su propio destino"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "la-mujer-justa",
+      "titulo": "La mujer justa",
+      "autor": "Sándor Márai",
+      "genero": "NOVELAS",
+      "subgenero": "GENERAL",
+      "coseno": 0.547737,
+      "perfil": 0.59818,
+      "ancla": 0.560059,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Libro introspectivo y psicológico pero no es ruso ni tan extenso ni de la envergadura social y filosófica que busca."
+      }
+     },
+     {
+      "id": "crimen-y-castigo",
+      "titulo": "Crimen y castigo",
+      "autor": "Fiódor Dostoievski",
+      "genero": "CLÁSICOS",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.540183,
+      "perfil": 0.550647,
+      "ancla": 0.642021,
+      "juez": {
+       "puntaje": 1,
+       "por_que": "Ya leyó 'Crimen y castigo': repetirlo no satisface su búsqueda de un ruso largo y distinto."
+      }
+     },
+     {
+      "id": "aqui-estoy",
+      "titulo": "Aquí estoy",
+      "autor": "Jonathan Safran Foer",
+      "genero": "NOVELAS",
+      "subgenero": "UNIVERSAL",
+      "coseno": 0.518773,
+      "perfil": 0.530847,
+      "ancla": 0.576279,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Es largo y doméstico con buena psicología, pero difiere en tono y peso filosófico del Dostoievski exigente que busca."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 577,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "La obra explora profundos dilemas morales y filosóficos a través de la historia de una familia rusa. Aborda temas como la fe, la duda, el libre albedrío y la naturaleza del mal, presentando un complej"
+   },
+   {
+    "id": "lit-romantica-historica",
+    "macro": "literatura",
+    "profundas": [
+     {
+      "pregunta": "La inmersión en la psicología de los personajes puede darse a través de una lente crítica o compasiva.\n¿Preferís una historia que exponga las fallas humanas o una que explore la complejidad de los afectos?",
+      "respuesta": "Que explore la complejidad afectiva",
+      "consulta": "Que explore la complejidad afectiva"
+     },
+     {
+      "pregunta": "La profundidad de una historia puede residir en el análisis de una situación social o en la intimidad de las relaciones personales.\n¿Te atrae más el examen de las costumbres de una época o la exploración de los lazos afectivos entre individuos?",
+      "respuesta": "La dinámica de las relaciones personales",
+      "consulta": "La dinámica de las relaciones personales"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "sensatez-y-sentimientos",
+      "titulo": "Sensatez y sentimientos",
+      "autor": "Jane Austen",
+      "genero": "CLÁSICOS",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.551825,
+      "perfil": 0.472931,
+      "ancla": 0.688279,
+      "juez": {
+       "puntaje": 5,
+       "por_que": "Otra Austen que explora la psicología romántica y el conflicto razón/sentimiento, justo lo que busca."
+      }
+     },
+     {
+      "id": "orgullo-y-prejuicio",
+      "titulo": "Orgullo y prejuicio",
+      "autor": "Jane Austen",
+      "genero": "NOVELAS",
+      "subgenero": "UNIVERSAL",
+      "coseno": 0.549598,
+      "perfil": 0.416976,
+      "ancla": 0.733763,
+      "juez": {
+       "puntaje": 1,
+       "por_que": "Ya lo leyó; no cumple su pedido de novela extensa, inmersiva y exigente."
+      }
+     },
+     {
+      "id": "mansfield-park",
+      "titulo": "Mansfield Park",
+      "autor": "Jane Austen",
+      "genero": "CLÁSICOS",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.528182,
+      "perfil": 0.512343,
+      "ancla": 0.653205,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Cumple la búsqueda de profundidad psicológica y tono grave, pero es más lenta y menos apasionada que la romántica popular que suele gustarle."
+      }
+     }
+    ],
+    "flip": true,
+    "pool": 578,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Jane Austen fue una novelista inglesa cuyas obras se centran en la dependencia de las mujeres del matrimonio para asegurar su posición social y económica. Sus novelas exploran temas de amor, amistad y"
+   },
+   {
+    "id": "lit-sin-referencia",
+    "macro": "literatura",
+    "profundas": [
+     {
+      "pregunta": "A veces, el disfrute reside en la anticipación del misterio, otras en la revelación misma.\n¿Te atrae más la construcción gradual de un enigma o la inmediatez de sus consecuencias?",
+      "respuesta": "Las repercusiones directas de los hechos.",
+      "consulta": "Las repercusiones directas de los hechos."
+     },
+     {
+      "pregunta": "La 'directa' o la 'indirecta' en la narrativa puede cambiar radicalmente cómo percibimos el conflicto y la identidad de los personajes.\n¿Preferís una historia que se centre en la introspección de los personajes o en sus acciones y el impacto de estas?",
+      "respuesta": "Las acciones y su impacto.",
+      "consulta": "Las acciones y su impacto."
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "la-mujer-del-cuaderno-rojo",
+      "titulo": "La mujer del cuaderno rojo",
+      "autor": "Antoine Laurain",
+      "genero": "NOVELAS",
+      "subgenero": "GENERAL",
+      "coseno": 0.51894,
+      "perfil": 0.645333,
+      "ancla": null,
+      "juez": {
+       "puntaje": 5,
+       "por_que": "Novela breve, ágil y ligera que cumple exactamente su pedido: trama entretenida y lectura fácil"
+      }
+     },
+     {
+      "id": "la-herencia-de-eszter",
+      "titulo": "La herencia de Eszter",
+      "autor": "Sándor Márai",
+      "genero": "NOVELAS",
+      "subgenero": "UNIVERSAL",
+      "coseno": 0.501754,
+      "perfil": 0.549255,
+      "ancla": null,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Breve pero demasiado densa y melancólica para quien busca una novela ligera y amena."
+      }
+     },
+     {
+      "id": "recursos-humanos",
+      "titulo": "Recursos humanos",
+      "autor": "Antonio Ortuño",
+      "genero": "NOVELAS",
+      "subgenero": "LATINOAMERICANA",
+      "coseno": 0.475865,
+      "perfil": 0.539283,
+      "ancla": null,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Ritmo ágil y lectura fácil; encaja con lo rápido y entretenido que pide, aunque su humor ácido puede no ser tan 'ameno'."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 552,
+    "aflojado": null,
+    "ancla_conocida": null,
+    "ancla_expandida": ""
+   },
+   {
+    "id": "lit-frase-comun-en-q4",
+    "macro": "literatura",
+    "profundas": [
+     {
+      "pregunta": "A veces, la intensidad de una obra reside en la cercanía que logramos con la subjetividad de sus personajes, como si leyéramos sus propios pensamientos.\n¿Preferís sumergirte en la perspectiva íntima del protagonista o mantener una distancia que te permita reflexionar sobre su mundo?",
+      "respuesta": "Quiero estar dentro de su cabeza",
+      "consulta": "Quiero estar dentro de su cabeza"
+     },
+     {
+      "pregunta": "La intensidad de las emociones en una historia puede presentarse de dos maneras: como una pasión desbordada y evidente, o como un torbellino interno y contenido.\n¿Preferís una introspección que explore pasiones intensas y manifiestas, o una que indague en conflictos sutiles y reprimidos?",
+      "respuesta": "Conflictos sutiles y contenidos",
+      "consulta": "Conflictos sutiles y contenidos"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "la-herencia-de-eszter",
+      "titulo": "La herencia de Eszter",
+      "autor": "Sándor Márai",
+      "genero": "NOVELAS",
+      "subgenero": "UNIVERSAL",
+      "coseno": 0.539312,
+      "perfil": 0.623215,
+      "ancla": 0.576037,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Prosa íntima y contenida, breve y psicológica; buen ajuste aunque menos claustrofóbica que El túnel."
+      }
+     },
+     {
+      "id": "la-extrana",
+      "titulo": "La extraña",
+      "autor": "Sándor Márai",
+      "genero": "NOVELAS",
+      "subgenero": "UNIVERSAL",
+      "coseno": 0.528468,
+      "perfil": 0.605281,
+      "ancla": 0.567986,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Cumple la introspección y la prosa cuidada pero es más largo y mesurado que el breve y obsesivo 'El túnel'."
+      }
+     },
+     {
+      "id": "desde-la-sombra",
+      "titulo": "Desde la sombra",
+      "autor": "Juan José Millás",
+      "genero": "NOVELAS",
+      "subgenero": "GENERAL",
+      "coseno": 0.528519,
+      "perfil": 0.575082,
+      "ancla": 0.566798,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Prosa cuidada e intensa introspección sobre la vida interior y el voyeurismo, aunque menos claustrofóbica y cruda que El túnel."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 552,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "La obra explora la psique de un pintor obsesionado, sumergiéndose en sus pensamientos más íntimos y su percepción distorsionada de la realidad. A través de una narrativa en primera persona, se desentr"
+   },
+   {
+    "id": "hist-arg-peronismo",
+    "macro": "historia",
+    "profundas": [
+     {
+      "pregunta": "Considerando que te interesa entender la historia desde múltiples ópticas, la forma en que se presentan las ideas puede influir en la profundidad de la reflexión.\n¿Preferís una lectura que narra la historia a través de relatos vívidos o una que prioriza el análisis conceptual de los hechos?",
+      "respuesta": "Análisis conceptual",
+      "consulta": "Análisis conceptual"
+     },
+     {
+      "pregunta": "A veces, la historia se siente más cercana cuando resuena con dilemas humanos y decisiones personales.\n¿Te atrae más la historia que se centra en el accionar de los individuos o la que examina las grandes fuerzas y estructuras sociales?",
+      "respuesta": "Prefiero las fuerzas colectivas.",
+      "consulta": "Prefiero las fuerzas colectivas."
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "argentina-historia-minima",
+      "titulo": "Argentina. Historia mínima",
+      "autor": "Pablo Yankelevich (coord.)",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.528889,
+      "perfil": 0.699277,
+      "ancla": 0.549444,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Síntesis académica y plural que da contexto y distintas perspectivas sin tono panfletario"
+      }
+     },
+     {
+      "id": "la-argentina-aborigen-de-los-primeros-pobladores-a-1910",
+      "titulo": "La Argentina aborigen: de los primeros pobladores a 1910",
+      "autor": "Raúl Mandrini",
+      "genero": "HISTORIA",
+      "subgenero": "INDIGENISMO - PUEBLOS ORIGINARIOS",
+      "coseno": 0.535513,
+      "perfil": 0.589057,
+      "ancla": 0.581275,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Excelente sobre pueblos originarios y formación nacional, pero no aborda el peronismo ni la política obrera del siglo XX."
+      }
+     },
+     {
+      "id": "estrellas-del-pasado",
+      "titulo": "Estrellas del Pasado",
+      "autor": "Daniel Balmaceda",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.523783,
+      "perfil": 0.649702,
+      "ancla": 0.562089,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Entretenido y anecdótico pero superficial; no ofrece análisis ni perspectivas sobre el peronismo."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 117,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Felipe Pigna es un historiador argentino conocido por su labor de divulgación histórica. Sus obras abordan la historia argentina desde una perspectiva crítica y accesible, centrándose en figuras y eve"
+   },
+   {
+    "id": "hist-arg-siglo-xix",
+    "macro": "historia",
+    "profundas": [
+     {
+      "pregunta": "A veces, la clave para comprender un período histórico radica en la cercanía o la distancia emocional que el autor toma frente a los eventos y sus protagonistas.\n¿Preferís una lectura que busque distanciarse de las pasiones de la época o una que se permita interpelar directamente los sentimientos y las decisiones de los actores históricos?",
+      "respuesta": "Una perspectiva más analítica y desapasionada.",
+      "consulta": "Una perspectiva más analítica y desapasionada."
+     },
+     {
+      "pregunta": "La historia, como un espejo, puede reflejar el pasado con una fidelidad que casi lo revive, o puede destilarlo hasta sus esencias conceptuales.\n¿Te atrae más una narrativa que se detiene en los detalles y anécdotas del período, o una que prioriza la fuerza de las ideas y los modelos explicativos?",
+      "respuesta": "Ideas y modelos explicativos",
+      "consulta": "Ideas y modelos explicativos"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "la-revolucion-del-80",
+      "titulo": "La revolución del 80",
+      "autor": "Juan Bautista Alberdi",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.575571,
+      "perfil": 0.560473,
+      "ancla": 0.728123,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "encaja con su gusto por Alberdi y el ensayo polémico, denso y de ideas; pero es más focalizado en 1880 que una historia multi-perspectiva"
+      }
+     },
+     {
+      "id": "almanaque-historico-argentino-1880-1916",
+      "titulo": "Almanaque histórico argentino 1880-1916",
+      "autor": "Guillermo Máximo Cao",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.561311,
+      "perfil": 0.681709,
+      "ancla": 0.615561,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Cubre 1880‑1916 y es un almanaque de datos/consultas, no un ensayo conceptual ni una discusión sobre la formación del Estado al estilo de Alberdi."
+      }
+     },
+     {
+      "id": "argentina-historia-minima",
+      "titulo": "Argentina. Historia mínima",
+      "autor": "Pablo Yankelevich (coord.)",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.54133,
+      "perfil": 0.699277,
+      "ancla": 0.513267,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Síntesis plural y conceptual adecuada, pero demasiado neutral y didáctica si busca la polémica al estilo de Alberdi."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 116,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Este ensayo fundamental de Juan Bautista Alberdi, publicado en 1852, sienta las bases teóricas y jurídicas para la Constitución Argentina de 1853. La obra aborda la organización política, económica y "
+   },
+   {
+    "id": "hist-mundial-guerra",
+    "macro": "historia",
+    "profundas": [
+     {
+      "pregunta": "Hay obras que priorizan la exhaustividad de los datos, mientras que otras buscan una interpretación más conceptual de los eventos.\n¿Te atrae más una narración que profundiza en cada detalle o una que sintetiza para ofrecer una visión más amplia?",
+      "respuesta": "Prefiero el detalle y la especificidad.",
+      "consulta": "Prefiero el detalle y la especificidad."
+     },
+     {
+      "pregunta": "A veces, la historia se narra desde la voz de quienes la padecieron, y otras, desde la perspectiva de quienes tomaron las decisiones o la analizaron a posteriori.\n¿Preferís una inmersión en las vivencias individuales o un análisis más abarcador de las estrategias y eventos?",
+      "respuesta": "Vivencias individuales",
+      "consulta": "Vivencias individuales"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "hitler-y-stalin-dos-dictadores-y-la-segunda-guerra-mundial",
+      "titulo": "Hitler y Stalin. Dos dictadores y la Segunda Guerra Mundial",
+      "autor": "Laurence Rees",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA UNIVERSAL",
+      "coseno": 0.476198,
+      "perfil": 0.46124,
+      "ancla": 0.591684,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Óptima para WWII y dictadores, pero no cumple la ambición de historia universal que pidió."
+      }
+     },
+     {
+      "id": "breve-historia-del-ejercito-nazi",
+      "titulo": "Breve historia del ejército nazi",
+      "autor": "Vicente Moreno Sanz",
+      "genero": "HISTORIA",
+      "subgenero": "TEMAS BELICOS",
+      "coseno": 0.431644,
+      "perfil": 0.480233,
+      "ancla": 0.506663,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Militar y sólido pero breve y muy focalizado; no ofrece la amplitud ni la profundidad extensa y panorámica que pide."
+      }
+     },
+     {
+      "id": "barbarie",
+      "titulo": "Barbarie",
+      "autor": "José G. Parada",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIOGRAFIA",
+      "coseno": 0.419654,
+      "perfil": 0.518354,
+      "ancla": 0.426815,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Trata violencia a lo largo de la historia y puede interesarle, pero es un ensayo temático y accesible, no la vasta narración profunda y detallada tipo Beevor que pidió."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 106,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Antony Beevor es un historiador militar británico conocido por sus obras detalladas y exhaustivas sobre la Segunda Guerra Mundial. Su libro 'Stalingrado' narra la brutal batalla que tuvo lugar en la c"
+   },
+   {
+    "id": "hist-mundial-antiguo",
+    "macro": "historia",
+    "profundas": [
+     {
+      "pregunta": "La historia, más allá de los hechos, se enriquece al explorar las fuerzas que mueven a los individuos o a las sociedades en su conjunto.\n¿Preferís centrarte en las decisiones individuales que forjaron el pasado, o en las grandes estructuras que las condicionaron?",
+      "respuesta": "Las decisiones de los individuos.",
+      "consulta": "Las decisiones de los individuos."
+     },
+     {
+      "pregunta": "La interpretación de la historia puede variar significativamente si se enfoca en el rigor académico o en una narración que busca conmover.\n¿Preferís una aproximación más analítica y distanciada, o una que te permita una inmersión emocional en los eventos?",
+      "respuesta": "Inmersión emocional",
+      "consulta": "Inmersión emocional"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "eso-no-estaba-en-mi-libro-de-historia-de-roma",
+      "titulo": "Eso no estaba en mi libro de Historia de Roma",
+      "autor": "Javier Ramos",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA UNIVERSAL",
+      "coseno": 0.460506,
+      "perfil": 0.502434,
+      "ancla": 0.559325,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Demasiado centrado en Roma y de tono ligero; ella pidió una historia universal y más profunda sobre la psicología de personajes."
+      }
+     },
+     {
+      "id": "roma-invicta",
+      "titulo": "Roma invicta",
+      "autor": "Javier Negrete",
+      "genero": "HISTORIA",
+      "subgenero": "TEMAS BELICOS",
+      "coseno": 0.455125,
+      "perfil": 0.518145,
+      "ancla": 0.518901,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Se enfoca en Roma y en historia político-militar, no en historia universal ni en la psicología íntima de personajes; además es más extenso y solapa con SPQR."
+      }
+     },
+     {
+      "id": "roma-victoriosa",
+      "titulo": "Roma victoriosa",
+      "autor": "Javier Negrete",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA UNIVERSAL",
+      "coseno": 0.450011,
+      "perfil": 0.505866,
+      "ancla": 0.50909,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Se centra solo en Roma y en relato institucional/divulgativo; no es historia universal ni profundiza la psicología de personajes."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 116,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Mary Beard es una destacada clasicista británica, reconocida por su trabajo en la historia y la cultura de la antigua Roma. Su obra SPQR: A History of Ancient Rome ofrece una narrativa exhaustiva y ac"
+   },
+   {
+    "id": "hist-mundial-breve",
+    "macro": "historia",
+    "profundas": [
+     {
+      "pregunta": "A veces, la historia se revela con mayor claridad cuando la observamos desde una distancia que nos permite comprender procesos amplios, mientras que en otras ocasiones, la inmersión en un evento particular nos ofrece una comprensión más profunda de sus implicaciones.\n¿Preferís una visión de la historia que abarque grandes procesos o una que se concentre en sucesos específicos?",
+      "respuesta": "Grandes procesos y panoramas amplios.",
+      "consulta": "Grandes procesos y panoramas amplios."
+     },
+     {
+      "pregunta": "La historia puede ser una lente para comprender cómo las ideas y creencias forjaron el pasado, o una fuerza motriz que nos desafía a cuestionar el presente.\n¿Preferís una reflexión que resalte las similitudes entre épocas, o una que enfatice la singularidad de cada momento histórico?",
+      "respuesta": "Similitudes entre épocas",
+      "consulta": "Similitudes entre épocas"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "la-invasion-europea-en-america-abya-yala-sojuzgada",
+      "titulo": "La invasión europea en América: Abya Yala sojuzgada",
+      "autor": "Juan José Rossi",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA UNIVERSAL",
+      "coseno": 0.489556,
+      "perfil": 0.556787,
+      "ancla": 0.515075,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Breve y revisionista como Sapiens, pero se centra solo en la invasión en América (siglo XVI), no en una historia mundial amplia."
+      }
+     },
+     {
+      "id": "sol-mitos-historia-y-sociedades",
+      "titulo": "Sol. Mitos, historia y sociedades",
+      "autor": "Emma Carenini",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA UNIVERSAL",
+      "coseno": 0.500772,
+      "perfil": 0.596782,
+      "ancla": 0.490099,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Breve y de ideas como pide, pero demasiado temático sobre mitos solares y no ofrece la panorámica universal tipo Sapiens."
+      }
+     },
+     {
+      "id": "la-era-del-descubrimiento",
+      "titulo": "La era del descubrimiento",
+      "autor": "Charles Kovacs",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA UNIVERSAL",
+      "coseno": 0.49667,
+      "perfil": 0.665777,
+      "ancla": 0.463023,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Accesible y narrativo pero demasiado juvenil y centrado en Edad Media/Renacimiento; no ofrece la panorámica de la Antigüedad al siglo XX ni el tono provocador de Sapiens."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 92,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Este libro ofrece una concisa historia de la humanidad, desde los orígenes del Homo sapiens en África hasta el presente. Explora cómo la biología y la historia han moldeado nuestra especie, analizando"
+   },
+   {
+    "id": "hist-pueblos-originarios",
+    "macro": "historia",
+    "profundas": [
+     {
+      "pregunta": "A veces, la historia se nos presenta como un río caudaloso de eventos, mientras que otras veces, emerge de las vidas y decisiones de quienes lo transitaron.\n¿Preferís una narración que te sumerja en el devenir general de los procesos históricos o una que ilumine el pasado a través de figuras concretas?",
+      "respuesta": "El pasado a través de sus protagonistas.",
+      "consulta": "El pasado a través de sus protagonistas."
+     },
+     {
+      "pregunta": "Considerando que el pasado se forja con las decisiones humanas, es crucial entender si la perspectiva se enfoca en el relato personal o en la estructura social que lo condiciona.\n¿Te interesa más la historia que se desenreda desde la mirada individual de sus protagonistas o la que se construye desde un análisis de las fuerzas colectivas?",
+      "respuesta": "Desde la mirada individual",
+      "consulta": "Desde la mirada individual"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "la-argentina-aborigen-de-los-primeros-pobladores-a-1910",
+      "titulo": "La Argentina aborigen: de los primeros pobladores a 1910",
+      "autor": "Raúl Mandrini",
+      "genero": "HISTORIA",
+      "subgenero": "INDIGENISMO - PUEBLOS ORIGINARIOS",
+      "coseno": 0.534099,
+      "perfil": 0.581351,
+      "ancla": 0.617789,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Cubre bien la historia indígena y es accesible y de extensión media, pero prioriza contextos y estructuras más que perfiles psicológicos individuales."
+      }
+     },
+     {
+      "id": "desandando-pasados-escuelas-cuerpos-museos-y-narrativas-en-dialogo-norpatagonia-siglo-xx",
+      "titulo": "Desandando pasados. Escuelas, cuerpos, museos y narrativas en diálogo (Norpatagonia, siglo XX)",
+      "autor": "Laura M. Méndez, Giulietta Piantoni y Adriana Podlubne (comps.)",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.526838,
+      "perfil": 0.623163,
+      "ancla": 0.579708,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Se trata de un colectivo académico sobre Norpatagonia del siglo XX, denso y teórico; no aborda pueblos originarios preconquista ni perfiles psicológicos de personajes que busca."
+      }
+     },
+     {
+      "id": "argentina-historia-minima",
+      "titulo": "Argentina. Historia mínima",
+      "autor": "Pablo Yankelevich (coord.)",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.524993,
+      "perfil": 0.692871,
+      "ancla": 0.502217,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Cubre la historia desde varias perspectivas pero es denso, extenso y prioriza procesos sobre perfiles psicológicos y pueblos originarios"
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 117,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Esta obra narra un viaje diplomático y etnográfico al territorio de los ranqueles en la Pampa argentina. A través de una prosa detallada y observadora, se documentan las costumbres, la organización so"
+   },
+   {
+    "id": "hist-economica",
+    "macro": "historia",
+    "profundas": [
+     {
+      "pregunta": "A menudo, la comprensión profunda de un período histórico se enriquece al examinar cómo sus conflictos resuenan o se gestan en etapas anteriores.\n¿Preferís una inmersión en un periodo fundacional o una mirada retrospectiva a la gestación de desafíos contemporáneos?",
+      "respuesta": "La gestación histórica de la actualidad.",
+      "consulta": "La gestación histórica de la actualidad."
+     },
+     {
+      "pregunta": "La historia, como un organismo vivo, se revela tanto en sus grandes hitos como en las voces individuales que la experimentan.\n¿Te atrae más la comprensión de los grandes procesos o el análisis de los matices y experiencias de los protagonistas?",
+      "respuesta": "Grandes procesos históricos",
+      "consulta": "Grandes procesos históricos"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "almanaque-historico-argentino-1880-1916",
+      "titulo": "Almanaque histórico argentino 1880-1916",
+      "autor": "Guillermo Máximo Cao",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.53547,
+      "perfil": 0.66235,
+      "ancla": 0.557854,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Demasiado acotado en tiempo y formato de consulta; no ofrece la amplitud ni la profundidad conceptual exigidas."
+      }
+     },
+     {
+      "id": "que-nos-hace-mas-nacion-desafios-del-desarrollismo-frondicista-frigerista",
+      "titulo": "¿Qué nos hace más nación? Desafíos del desarrollismo frondicista-frigerista",
+      "autor": "Horacio García Bossio",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA POLITICA ARGENTINA",
+      "coseno": 0.51891,
+      "perfil": 0.644274,
+      "ancla": 0.541157,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Riguroso y denso sobre el desarrollismo, pero demasiado focalizado en 1958–62 para quien busca un panorama amplio y comparativo de las crisis argentinas."
+      }
+     },
+     {
+      "id": "argentina-historia-minima",
+      "titulo": "Argentina. Historia mínima",
+      "autor": "Pablo Yankelevich (coord.)",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.508435,
+      "perfil": 0.682309,
+      "ancla": 0.458841,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Buena síntesis académica sobre procesos de largo plazo, pero demasiado condensada y no brinda la inmersión crítica, conceptual y extensa que exige."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 97,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Aldo Ferrer fue un economista y político argentino, reconocido por su enfoque estructuralista y desarrollista. Su obra 'La economía argentina' analiza la evolución histórica y las características estr"
+   },
+   {
+    "id": "hist-generico",
+    "macro": "historia",
+    "profundas": [
+     {
+      "pregunta": "A veces, para comprender la complejidad de un proceso histórico, es fundamental sumergirse en la perspectiva de quienes lo vivieron o, por el contrario, tomar distancia para una lectura más analítica.\n¿Preferís una narración que te acerque a la experiencia de los protagonistas o una que privilegie el análisis de los eventos?",
+      "respuesta": "Cercanía a la experiencia de los protagonistas",
+      "consulta": "Cercanía a la experiencia de los protagonistas"
+     },
+     {
+      "pregunta": "El abordaje de las grandes estructuras y los procesos de larga duración puede ofrecer una comprensión profunda, o a veces, es la mirada a lo puntual y coyuntural lo que revela las grietas y los matices de una época.\n¿Te atrae más una visión que abarque amplios periodos históricos o una que profundice en momentos específicos?",
+      "respuesta": "Amplios periodos y procesos largos",
+      "consulta": "Amplios periodos y procesos largos"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "argentina-mia-tuya-nuestra",
+      "titulo": "Argentina, mía, tuya, nuestra",
+      "autor": "Ángel Cabaña",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.632884,
+      "perfil": 0.700227,
+      "ancla": null,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Buena panorámica episódica sobre política argentina, pero demasiado divulgativa y poco conceptual."
+      }
+     },
+     {
+      "id": "argentina-historia-minima",
+      "titulo": "Argentina. Historia mínima",
+      "autor": "Pablo Yankelevich (coord.)",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.624113,
+      "perfil": 0.699277,
+      "ancla": null,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Aborda ideas y perspectivas múltiples, pero es más denso y menos polémico de lo pedido."
+      }
+     },
+     {
+      "id": "anatomia-de-una-mentira-quienes-y-por-que-justifican-la-represion-de-los-setenta",
+      "titulo": "Anatomía de una mentira. Quiénes y por qué justifican la represión de los setenta",
+      "autor": "Hernán Confino y Rodrigo González Tizón",
+      "genero": "HISTORIA",
+      "subgenero": "HISTORIA ARGENTINA",
+      "coseno": 0.592083,
+      "perfil": 0.675495,
+      "ancla": null,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Cumple la búsqueda de ideas y debate político, pero se limita a los setenta."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 117,
+    "aflojado": null,
+    "ancla_conocida": null,
+    "ancla_expandida": ""
+   },
+   {
+    "id": "div-hongos",
+    "macro": "divulgacion",
+    "profundas": [
+     {
+      "pregunta": "La forma en que se aborda la complejidad es crucial, ya sea a través de un marco histórico evolutivo o un análisis más centrado en las interconexiones presentes.\n¿Preferís una narración que explore la evolución de los sistemas vivos a lo largo del tiempo o un enfoque que diseccione cómo interactúan en el presente?",
+      "respuesta": "Un análisis de interacciones actuales",
+      "consulta": "Un análisis de interacciones actuales"
+     },
+     {
+      "pregunta": "La divulgacion cientifica puede centrarse en las maravillas y misterios de la naturaleza o en como el ingenio humano ha sabido descifrarlos y aplicarlos.\n¿Te atrae mas la maravilla inherente a los fenomenos naturales o la capacidad humana de entenderlos y utilizarlos?",
+      "respuesta": "La intriga de los fenomenos naturales",
+      "consulta": "La intriga de los fenomenos naturales"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "el-reino-vida-y-obra-de-hongos-y-humanos",
+      "titulo": "El Reino: Vida y Obra de Hongos y Humanos",
+      "autor": "María Eugenia López",
+      "genero": "CIENCIAS NATURALES",
+      "subgenero": "BIOLOGIA",
+      "coseno": 0.592912,
+      "perfil": 0.562042,
+      "ancla": 0.701725,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Alinea con su obsesión y el tono de Sheldrake; muy recomendable para hongos, pero es más focal que lo que pidió sobre ecosistemas en general."
+      }
+     },
+     {
+      "id": "hongos-fantasticos",
+      "titulo": "Hongos fantásticos",
+      "autor": "Paul Stamets / Louie Schwartzberg",
+      "genero": "CIENCIAS NATURALES",
+      "subgenero": "BIOLOGIA",
+      "coseno": 0.548379,
+      "perfil": 0.473595,
+      "ancla": 0.709719,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Bonito y micológico, pero es más visual y específico; carece del rigor y del alcance ecosistémico que buscabas tras leer a Sheldrake."
+      }
+     },
+     {
+      "id": "la-historia-de-la-tierra",
+      "titulo": "La historia de la Tierra",
+      "autor": "Robert M. Hazen",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.523209,
+      "perfil": 0.673532,
+      "ancla": 0.488652,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Buen contexto geológico pero no responde al enfoque práctico sobre animales, plantas y ecosistemas que busca y es más extenso y denso de lo pedido."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 131,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Esta obra explora el fascinante mundo de los hongos, revelando su papel fundamental en los ecosistemas terrestres y su intrincada conexión con otras formas de vida. Aborda la micología desde una persp"
+   },
+   {
+    "id": "div-plantas",
+    "macro": "divulgacion",
+    "profundas": [
+     {
+      "pregunta": "A veces, la conexión con el mundo natural se vive desde lo micro, desde el detalle asombroso, y otras desde la perspectiva más abarcadora.\n¿Qué te atrae más: la explicación de un fenómeno puntual o una visión más integral de cómo todo se conecta?",
+      "respuesta": "La trama que une a los seres vivos.",
+      "consulta": "La trama que une a los seres vivos."
+     },
+     {
+      "pregunta": "Existe una distinción en cómo nos acercamos a la divulgación científica: algunos preferimos el rigor académico y la precisión, mientras que otros valoran más una narrativa lúdica y accesible.\n¿Te inclinas más por un estilo que priorice el enfoque divulgativo y ameno o por uno que profundice en la complejidad científica de manera más formal?",
+      "respuesta": "Divulgativo y ameno",
+      "consulta": "Divulgativo y ameno"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "esta-vivo",
+      "titulo": "¡Está vivo!",
+      "autor": "Autores Varios",
+      "genero": "CIENCIAS NATURALES",
+      "subgenero": "BIOLOGIA",
+      "coseno": 0.582581,
+      "perfil": 0.702288,
+      "ancla": 0.50699,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Breve y curioso, cumple el tono solicitado pero es demasiado panorámico y poco profundo sobre cómo funcionan las plantas."
+      }
+     },
+     {
+      "id": "la-planta-del-mundo",
+      "titulo": "La planta del mundo",
+      "autor": "Stefano Mancuso",
+      "genero": "CIENCIAS NATURALES",
+      "subgenero": "BOTANICA",
+      "coseno": 0.562121,
+      "perfil": 0.617228,
+      "ancla": 0.560937,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Libro breve y evocador que explica cómo funcionan las plantas con tono parecido a Wohlleben; muy adecuado para entender vegetales, pero aborda menos la fauna y los ecosistemas en conjunto."
+      }
+     },
+     {
+      "id": "plantas-bacterias-hongos-mi-mujer-el-cocinero-y-su-amante-sobre-interacciones-biologicas-los-ciclos-de-los-elementos-y-otras-historias",
+      "titulo": "Plantas, bacterias, hongos, mi mujer, el cocinero y su amante. Sobre interacciones biológicas, los ciclos de los elementos y otras historias",
+      "autor": "Luis G. Wall",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.553313,
+      "perfil": 0.660591,
+      "ancla": 0.491291,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Breve y divulgativo sobre ciclos e interacciones que explican cómo funcionan plantas y ecosistemas; encaja aunque es menos poético que Wohlleben."
+      }
+     }
+    ],
+    "flip": true,
+    "pool": 117,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Peter Wohlleben es un silvicultor y autor alemán conocido por sus obras de divulgación científica que exploran la vida de los árboles y los bosques. Su libro 'La vida secreta de los árboles' aborda la"
+   },
+   {
+    "id": "div-mente-cerebro",
+    "macro": "divulgacion",
+    "profundas": [
+     {
+      "pregunta": "A veces, la comprensión de lo complejo reside en la capacidad de ver la totalidad o en la de desglosar sus partes.\n¿Preferís una perspectiva que integre múltiples disciplinas o una que profundice en un área específica?",
+      "respuesta": "Una visión más amplia e integradora.",
+      "consulta": "Una visión más amplia e integradora."
+     },
+     {
+      "pregunta": "La divulgación puede abordar la mente desde la exploración de sus misterios fundamentales o desde su aplicación práctica en la vida cotidiana.\n¿Te atrae más la comprensión de los mecanismos básicos de la mente o las herramientas para usar ese conocimiento en el día a día?",
+      "respuesta": "Los fundamentos y cómo funciona la mente.",
+      "consulta": "Los fundamentos y cómo funciona la mente."
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "la-vida-secreta-de-la-mente",
+      "titulo": "La vida secreta de la mente",
+      "autor": "Mariano Sigman",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "ENSAYOS",
+      "coseno": 0.636613,
+      "perfil": 0.733293,
+      "ancla": 0.615953,
+      "juez": {
+       "puntaje": 5,
+       "por_que": "Rigurosa y didáctica, con la extensión y profundidad adecuadas para un estudiante exigente."
+      }
+     },
+     {
+      "id": "decir-presente-hacer-futuro",
+      "titulo": "Decir Presente. Hacer Futuro.",
+      "autor": "Facundo Manes",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.597308,
+      "perfil": 0.565513,
+      "ancla": 0.68574,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Buen ensayo divulgativo de Manes pero centrado en políticas y educación, no en explicar con rigor la neurociencia de la conducta que busca el estudiante."
+      }
+     },
+     {
+      "id": "el-poder-de-las-palabras-como-cambiar-tu-cerebro-y-tu-vida-conversando",
+      "titulo": "El poder de las palabras. Cómo cambiar tu cerebro (y tu vida) conversando",
+      "autor": "Mariano Sigman",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.587899,
+      "perfil": 0.683584,
+      "ancla": 0.595189,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Rigurosa, clara y didáctica como pide y útil para entender conducta desde el lenguaje y la decisión, pero es más focalizada que una panorámica general."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 130,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Facundo Manes es un neurólogo y neurocientífico argentino. Su obra 'Usar el cerebro' aborda la neurociencia cognitiva, explorando el funcionamiento del cerebro humano, la memoria, las emociones y la t"
+   },
+   {
+    "id": "div-psicoanalisis-no",
+    "macro": "divulgacion",
+    "profundas": [
+     {
+      "pregunta": "Los modelos de la mente pueden privilegiar la coherencia lógica o, por el contrario, la plasticidad y la capacidad de transformación ante lo novedoso.\n¿Te atrae más la idea de un cerebro optimizado y predecible o uno que está en constante evolución y es maleable?",
+      "respuesta": "Un cerebro optimizado y predecible",
+      "consulta": "Un cerebro optimizado y predecible"
+     },
+     {
+      "pregunta": "A veces, las ideas revolucionarias pueden surgir de una profunda revisión de conceptos ya existentes o de la audacia de explorar territorios completamente nuevos.\n¿Preferís una obra que desafíe paradigmas desde la crítica de lo establecido o una que proponga nuevas visiones con una base teórica innovadora?",
+      "respuesta": "Cuestionar lo ya conocido",
+      "consulta": "Cuestionar lo ya conocido"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "el-poder-de-las-palabras-como-cambiar-tu-cerebro-y-tu-vida-conversando",
+      "titulo": "El poder de las palabras. Cómo cambiar tu cerebro (y tu vida) conversando",
+      "autor": "Mariano Sigman",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.534163,
+      "perfil": 0.665358,
+      "ancla": 0.532738,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Relevante y bien escrito sobre lenguaje y decisión, pero es más cálido y focal en la conversación que el tratado extenso, exigente y transformador que buscás."
+      }
+     },
+     {
+      "id": "hackea-tu-cerebro-neurociencia-productividad-aprendizaje",
+      "titulo": "Hackea tu cerebro. Neurociencia, productividad, aprendizaje",
+      "autor": "Nicolás Fernández Miranda",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.502765,
+      "perfil": 0.637819,
+      "ancla": 0.44917,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Práctico y motivacional sobre aprendizaje/productividad, pero demasiado superficial y aplicado para la obra extensa, rigurosa y transformadora sobre conducta que ella busca."
+      }
+     },
+     {
+      "id": "la-conciencia-en-el-cerebro",
+      "titulo": "La conciencia en el cerebro",
+      "autor": "Stanislas Dehaene",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.496092,
+      "perfil": 0.613797,
+      "ancla": 0.456759,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Denso, riguroso y desafía ideas como Kahneman; muy útil para entender bases neurales, pero se centra en conciencia más que en conducta experimental directa."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 90,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Daniel Kahneman es un psicólogo y economista, ganador del Premio Nobel de Economía, conocido por su trabajo sobre la economía del comportamiento y la toma de decisiones. Su obra 'Pensar rápido, pensar"
+   },
+   {
+    "id": "div-tecno-ia",
+    "macro": "divulgacion",
+    "profundas": [
+     {
+      "pregunta": "A menudo, la tecnología es un espejo que nos fuerza a confrontar nuestras propias incertidumbres o a reafirmar nuestras esperanzas más profundas.\n¿Preferís una reflexión que resalte las implicaciones existenciales o un análisis más anclado en lo práctico y social?",
+      "respuesta": "Análisis práctico y social",
+      "consulta": "Análisis práctico y social"
+     },
+     {
+      "pregunta": "A veces, las ideas disruptivas se presentan como una evolución gradual, mientras que otras veces exigen una ruptura radical con lo establecido.\n¿Te inclinas más por una perspectiva que explora los cambios a partir de lo que ya conocemos o por una que propone una visión completamente nueva y, quizás, más confrontativa?",
+      "respuesta": "Explorar los cambios desde lo conocido",
+      "consulta": "Explorar los cambios desde lo conocido"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "invisible-la-inteligencia-artificial-en-nuestra-vida",
+      "titulo": "Invisible: La Inteligencia Artificial en Nuestra Vida",
+      "autor": "Fredi Vivas",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "ENSAYOS",
+      "coseno": 0.584314,
+      "perfil": 0.651301,
+      "ancla": 0.692392,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Aborda datos, algoritmos y efectos sin sensacionalismo; más narrativo y menos técnico que 'Artificial'."
+      }
+     },
+     {
+      "id": "la-ultima-batalla-de-la-humanidad",
+      "titulo": "La última batalla de la humanidad",
+      "autor": "Nicanor Perlas",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.588811,
+      "perfil": 0.577142,
+      "ancla": 0.684917,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Demasiado ideológico y espiritual, extenso y manifiesto; no ofrece la divulgación crítica, equilibrada y práctica que busca."
+      }
+     },
+     {
+      "id": "automatizados",
+      "titulo": "Automatizados",
+      "autor": "Eduardo Levy Yeyati / Dario Judzik",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.523282,
+      "perfil": 0.590303,
+      "ancla": 0.580774,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Rigurosa y útil para entender impactos laborales y políticas en IA; le falta enfoque en pantallas y efectos individuales."
+      }
+     }
+    ],
+    "flip": true,
+    "pool": 130,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Esta obra explora la intersección entre la inteligencia artificial y la mente humana. Aborda cómo la IA está transformando diversos aspectos de la sociedad, desde la toma de decisiones hasta la creati"
+   },
+   {
+    "id": "div-universo",
+    "macro": "divulgacion",
+    "profundas": [
+     {
+      "pregunta": "A veces, la maravilla del universo se encuentra en la abstracción pura, y otras, en sus expresiones más concretas y palpables.\n¿Preferís que el asombro venga de ideas teóricas o de fenómenos observables?",
+      "respuesta": "Fenómenos concretos y observables",
+      "consulta": "Fenómenos concretos y observables"
+     },
+     {
+      "pregunta": "El asombro puede provenir de la precisión con la que se describen los fenómenos o de la imaginación que se despierta al explorarlos.\n¿Preferís una descripción detallada y fiel a la realidad o una interpretación que juegue más con la imaginación?",
+      "respuesta": "Fiel a la realidad",
+      "consulta": "Fiel a la realidad"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "el-infinito-en-la-palma-de-la-mano-50-maravillas-que-revelan-un-universo-extraordinario",
+      "titulo": "El infinito en la palma de la mano. 50 maravillas que revelan un universo extraordinario",
+      "autor": "Marcus Chown",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.525654,
+      "perfil": 0.734702,
+      "ancla": 0.494372,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Breve, ágil y lleno de maravillas; encaja con su pedido aunque es más recopilatorio y menos narrativo que Sagan."
+      }
+     },
+     {
+      "id": "siete-breves-lecciones-de-fisica",
+      "titulo": "Siete breves lecciones de física",
+      "autor": "Carlo Rovelli",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "ENSAYOS",
+      "coseno": 0.490431,
+      "perfil": 0.666837,
+      "ancla": 0.459632,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Breve y accesible, despierta asombro sin fórmulas; menos narrativo que Sagan."
+      }
+     },
+     {
+      "id": "el-universo-en-un-bit",
+      "titulo": "El universo en un bit",
+      "autor": "Jose Enrique Campillo",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "ENSAYOS",
+      "coseno": 0.461327,
+      "perfil": 0.627868,
+      "ancla": 0.428981,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Tema afín, pero es denso y expositivo; no es breve ni tiene el tono narrativo y asombrado que busca."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 117,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Carl Sagan fue un astrónomo, astrofísico, cosmólogo, escritor y divulgador científico estadounidense. Su obra más reconocida, 'Cosmos', explora la historia del universo, la evolución de la vida en la "
+   },
+   {
+    "id": "div-historias-cientificos",
+    "macro": "divulgacion",
+    "profundas": [
+     {
+      "pregunta": "A veces, la comprensión profunda emerge de la observación de fenómenos singulares y extremos, mientras que otras veces se construye mejor a partir de la exploración de procesos generales y fundamentales.\n¿Preferís acercarte a la mente humana a través del estudio de individuos excepcionales o comprendiendo principios universales?",
+      "respuesta": "Historias de individuos y sus descubrimientos",
+      "consulta": "Historias de individuos y sus descubrimientos"
+     },
+     {
+      "pregunta": "La narrativa científica puede optar por desglosar los mecanismos que subyacen a los fenómenos o por enfocarse en el impacto y las implicancias de esos descubrimientos.\n¿Preferís una inmersión en el 'cómo funciona' detallado o una reflexión sobre el 'qué significa' para nosotros?",
+      "respuesta": "Explorar el significado e impacto",
+      "consulta": "Explorar el significado e impacto"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "el-codigo-de-la-vida-jennifer-doudna-la-edicion-genetica-y-el-futuro-de-la-especie-humana",
+      "titulo": "El código de la vida. Jennifer Doudna, la edición genética y el futuro de la especie humana",
+      "autor": "Walter Isaacson",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.473726,
+      "perfil": 0.516256,
+      "ancla": 0.499674,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Buena biografía al estilo Isaacson, pero trata de CRISPR/genética, no de mente, cerebro y conducta que pidió."
+      }
+     },
+     {
+      "id": "el-poder-de-las-palabras-como-cambiar-tu-cerebro-y-tu-vida-conversando",
+      "titulo": "El poder de las palabras. Cómo cambiar tu cerebro (y tu vida) conversando",
+      "autor": "Mariano Sigman",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.469865,
+      "perfil": 0.676455,
+      "ancla": 0.405188,
+      "juez": {
+       "puntaje": 3,
+       "por_que": "Buena divulgación con relatos, pero más práctica y centrada en ideas; no es la narrativa biográfica extensa y exigente tipo Isaacson que buscás."
+      }
+     },
+     {
+      "id": "hackea-tu-cerebro-neurociencia-productividad-aprendizaje",
+      "titulo": "Hackea tu cerebro. Neurociencia, productividad, aprendizaje",
+      "autor": "Nicolás Fernández Miranda",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.442026,
+      "perfil": 0.635246,
+      "ancla": 0.400057,
+      "juez": {
+       "puntaje": 2,
+       "por_que": "Práctico y motivacional; no ofrece la narrativa histórica y profunda sobre científicos que pide."
+      }
+     }
+    ],
+    "flip": true,
+    "pool": 90,
+    "aflojado": null,
+    "ancla_conocida": true,
+    "ancla_expandida": "Walter Isaacson es un biógrafo y periodista estadounidense, conocido por sus detalladas biografías de figuras influyentes. Sus obras exploran la vida, el pensamiento y el impacto de innovadores en cam"
+   },
+   {
+    "id": "div-corto-sin-referencia",
+    "macro": "divulgacion",
+    "profundas": [
+     {
+      "pregunta": "A veces, la maravilla nace de una mirada amplia, que une fenómenos diversos; otras, de una inmersión profunda en un único detalle.\n¿Preferís una visión panorámica que conecte múltiples elementos o un enfoque más íntimo sobre un tema específico?",
+      "respuesta": "Una mirada que abarque mucho.",
+      "consulta": "Una mirada que abarque mucho."
+     },
+     {
+      "pregunta": "La curiosidad puede surgir tanto de la observación de fenómenos visibles y tangibles como de la exploración de procesos invisibles y abstractos.\n¿Te atrae más la descripción de lo que se puede ver y tocar o la explicación de lo que ocurre a nivel microscópico o de procesos complejos?",
+      "respuesta": "Fenómenos visibles y tangibles",
+      "consulta": "Fenómenos visibles y tangibles"
+     }
+    ],
+    "recomendaciones": [
+     {
+      "id": "esta-vivo",
+      "titulo": "¡Está vivo!",
+      "autor": "Autores Varios",
+      "genero": "CIENCIAS NATURALES",
+      "subgenero": "BIOLOGIA",
+      "coseno": 0.620213,
+      "perfil": 0.702288,
+      "ancla": null,
+      "juez": {
+       "puntaje": 5,
+       "por_que": "Cumple todo: corto, directo, visual y fascinante sobre animales, plantas y la vida en la Tierra."
+      }
+     },
+     {
+      "id": "vida-sumergida",
+      "titulo": "Vida Sumergida",
+      "autor": "Catalina Velasco",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.602152,
+      "perfil": 0.673871,
+      "ancla": null,
+      "juez": {
+       "puntaje": 4,
+       "por_que": "Breve, sorprendente y accesible para un principiante, pero se enfoca solo en los océanos y no en la vida terrestre completa."
+      }
+     },
+     {
+      "id": "plantas-bacterias-hongos-mi-mujer-el-cocinero-y-su-amante-sobre-interacciones-biologicas-los-ciclos-de-los-elementos-y-otras-historias",
+      "titulo": "Plantas, bacterias, hongos, mi mujer, el cocinero y su amante. Sobre interacciones biológicas, los ciclos de los elementos y otras historias",
+      "autor": "Luis G. Wall",
+      "genero": "DIVULGACIÓN CIENTÍFICA",
+      "subgenero": "EN GENERAL",
+      "coseno": 0.588117,
+      "perfil": 0.660591,
+      "ancla": null,
+      "juez": {
+       "puntaje": 5,
+       "por_que": "Breve y ameno; explica ciclos e interacciones con sorpresa y humor, perfecto para un primer acercamiento."
+      }
+     }
+    ],
+    "flip": false,
+    "pool": 117,
+    "aflojado": null,
+    "ancla_conocida": null,
+    "ancla_expandida": ""
+   }
+  ]
+ }
+}

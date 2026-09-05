@@ -54,6 +54,7 @@ async def guardar_estado(
     profundas: list[dict],
     pool: int | None = None,
     filtro_aflojado: str | None = None,
+    ciclo: int = 1,
 ) -> None:
     """Actualiza las respuestas de una sesion ya creada.
 
@@ -67,8 +68,21 @@ async def guardar_estado(
         await db.pool().execute(
             """
             UPDATE funes_sesiones
-            SET macro = $2, q1 = $3, q2 = $4, q3 = $5, q4 = $6,
-                profundas = $7::jsonb,
+            SET macro = COALESCE($2, macro),
+                -- NULLIF y no asignacion directa: esta funcion corre en CADA
+                -- paso, y en el reinicio desde q1 el cliente manda todo vacio.
+                -- Asignando de una, ese POST borraba las respuestas y las
+                -- preguntas del ciclo anterior. Un valor nuevo si pisa al viejo;
+                -- lo unico que se ignora es el vacio.
+                q1 = COALESCE(NULLIF($3, ''), q1),
+                q2 = COALESCE(NULLIF($4, ''), q2),
+                q3 = COALESCE(NULLIF($5, ''), q3),
+                q4 = COALESCE(NULLIF($6, ''), q4),
+                profundas = CASE WHEN $7::jsonb = '[]'::jsonb THEN profundas ELSE $7::jsonb END,
+                -- GREATEST y no ciclos+1: el cliente dice en que vuelta va, asi
+                -- que un POST repetido (reintento, doble toque) escribe el mismo
+                -- numero en vez de inventar una vuelta que nunca existio.
+                ciclos = GREATEST(ciclos, $10),
                 pool_inicial = COALESCE($8, pool_inicial),
                 filtro_aflojado = COALESCE($9, filtro_aflojado),
                 ultima_act = now()
@@ -83,9 +97,39 @@ async def guardar_estado(
             json.dumps(profundas, ensure_ascii=False),
             pool,
             filtro_aflojado,
+            max(1, int(ciclo or 1)),
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning("funes_bitacora_guardar_estado_fallo sesion=%s error=%s", sesion_id, exc)
+
+
+async def guardar_leido(sesion_id: str, libro_id: str, titulo: str,
+                        autor: str = "", opinion: str = "") -> bool:
+    """Registra un libro que la persona ya habia leido cuando se lo ibamos a ofrecer.
+
+    Va en su propia tabla y no como un veredicto de funes_recomendaciones, porque
+    no es lo mismo: esa recomendacion nunca se mostro. Guardarla ahi la contaria
+    en el embudo y ensuciaria el analisis pareado de la 1ra contra la 2da.
+
+    Y es un dato por derecho propio: acertar un libro que la persona YA leyo no es
+    errarle, es lo contrario, y hasta ahora las dos cosas se veian iguales desde
+    afuera."""
+    if not sesion_id or not libro_id:
+        return False
+    try:
+        await db.pool().execute(
+            """
+            INSERT INTO funes_leidos (sesion_id, libro_id, titulo, autor, opinion)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (sesion_id, libro_id) DO UPDATE
+                SET opinion = COALESCE(EXCLUDED.opinion, funes_leidos.opinion)
+            """,
+            sesion_id, libro_id, titulo, autor or None, opinion or None,
+        )
+        return True
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("funes_bitacora_guardar_leido_fallo sesion=%s error=%s", sesion_id, exc)
+        return False
 
 
 async def guardar_recomendacion(
@@ -102,6 +146,7 @@ async def guardar_recomendacion(
     texto_perfil: str = "",
     ancla: dict | None = None,
     peso_ancla: float | None = None,
+    profundas: list[dict] | None = None,
 ) -> int | None:
     """Guarda una recomendacion mostrada y devuelve su id.
 
@@ -133,6 +178,7 @@ async def guardar_recomendacion(
             "coseno": p.get("mezcla"),
             "coseno_perfil": p.get("perfil"),
             "coseno_ancla": p.get("ancla"),
+            "coseno_profundas": p.get("profundas"),
         })
     try:
         return await db.pool().fetchval(
@@ -140,9 +186,10 @@ async def guardar_recomendacion(
             INSERT INTO funes_recomendaciones
                 (sesion_id, orden, libro_id, titulo, autor, voz, candidatos,
                  texto_consulta, texto_afinado, motivo_rechazo, motivo_reformulado,
-                 texto_perfil, ancla_texto, ancla_expandida, ancla_conocida, peso_ancla)
+                 texto_perfil, ancla_texto, ancla_expandida, ancla_conocida, peso_ancla,
+                 profundas)
             VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10, $11,
-                    $12, $13, $14, $15, $16)
+                    $12, $13, $14, $15, $16, $17::jsonb)
             ON CONFLICT (sesion_id, orden) DO UPDATE
                 SET libro_id = EXCLUDED.libro_id, titulo = EXCLUDED.titulo,
                     autor = EXCLUDED.autor, voz = EXCLUDED.voz,
@@ -155,7 +202,19 @@ async def guardar_recomendacion(
                     ancla_texto = EXCLUDED.ancla_texto,
                     ancla_expandida = EXCLUDED.ancla_expandida,
                     ancla_conocida = EXCLUDED.ancla_conocida,
-                    peso_ancla = EXCLUDED.peso_ancla
+                    peso_ancla = EXCLUDED.peso_ancla,
+                    profundas = EXCLUDED.profundas,
+                    -- Si el (sesion_id, orden) se reusa para OTRO libro, lo que
+                    -- la persona opino del anterior deja de aplicar. Sin esto,
+                    -- un reintento por red cortada o un doble toque dejaba el
+                    -- veredicto viejo pegado al libro nuevo, y ese par mentiroso
+                    -- entraba despues al analisis pareado como si fuera real.
+                    veredicto = CASE WHEN funes_recomendaciones.libro_id = EXCLUDED.libro_id
+                                     THEN funes_recomendaciones.veredicto END,
+                    justificacion = CASE WHEN funes_recomendaciones.libro_id = EXCLUDED.libro_id
+                                         THEN funes_recomendaciones.justificacion END,
+                    clic_conseguir_en = CASE WHEN funes_recomendaciones.libro_id = EXCLUDED.libro_id
+                                             THEN funes_recomendaciones.clic_conseguir_en END
             RETURNING id
             """,
             sesion_id, orden, libro["id"], libro["titulo"], libro["autor"], voz,
@@ -166,6 +225,7 @@ async def guardar_recomendacion(
             (ancla or {}).get("expandida") or None,
             (ancla or {}).get("conocida") if ancla else None,
             peso_ancla if ancla else None,
+            json.dumps(profundas or [], ensure_ascii=False),
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning(

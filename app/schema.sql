@@ -179,7 +179,7 @@ WHERE d.id = f.id AND f.macro IS DISTINCT FROM d.macro_nuevo;
 -- esa sesion, y nadie la puede adivinar.
 CREATE TABLE IF NOT EXISTS funes_sesiones (
     id              TEXT PRIMARY KEY,              -- uuid4 del servidor, nunca el que manda el cliente
-    origen          TEXT NOT NULL DEFAULT 'link',  -- qr|amigo|flyer|link, del ?src= de GET /funes-chat
+    origen          TEXT NOT NULL DEFAULT 'link',  -- qr|amigo|flyer|link, del ?src= de GET /funes
     macro           TEXT,                          -- q0: literatura|historia|divulgacion (filtro duro)
     q1              TEXT NOT NULL DEFAULT '',
     q2              TEXT NOT NULL DEFAULT '',      -- corto|intermedio|largo; define la banda de paginas
@@ -319,9 +319,11 @@ ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS clic_conseguir_en TIM
 -- escribio la persona, no lo que el modelo entendio que era.
 ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS ancla_texto TEXT;
 ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS ancla_expandida TEXT;
--- false = el modelo no reconocio la referencia y hubo que ir a buscarla a la
--- web (40 veces mas caro). Es la senal que dice si el catalogo de referencias
--- que trae la gente le queda grande al modelo.
+-- false = el modelo no reconocio la referencia con lo que ya sabia. En ese caso
+-- se fue a buscarla a la web (40 veces mas caro) y, si eso tambien fallo, se
+-- embebio el texto crudo del lector: ese ultimo caso se distingue porque
+-- ancla_expandida queda en NULL. Es la senal que dice si el catalogo de
+-- referencias que trae la gente le queda grande al modelo.
 ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS ancla_conocida BOOLEAN;
 -- El peso con el que se mezclo. Va guardado para que las filas viejas sigan
 -- siendo interpretables el dia que lo cambiemos.
@@ -330,6 +332,69 @@ ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS peso_ancla REAL;
 -- la referencia, que desde que el ancla tiene vector propio ya no entra al
 -- vector del perfil. Sin esta columna los dos textos se confunden.
 ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS texto_perfil TEXT;
+
+-- Las 2 preguntas profundas que el LLM genero para ESTA recomendacion, con lo
+-- que la persona contesto. Vivian solo en funes_sesiones, y cuando alguien
+-- agota las 3 opciones y arranca de nuevo desde q1 la fila se reescribe con las
+-- del ciclo nuevo: las del primer ciclo se perdian para siempre. Son la mitad
+-- interesante de la conversacion (las unicas preguntas que no escribimos
+-- nosotros), asi que ahora quedan pegadas a la recomendacion que produjeron.
+ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS profundas JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+-- Cuantas veces esta persona agoto las recomendaciones y volvio a empezar desde
+-- q1. Sin este contador, una sesion de dos vueltas es indistinguible de una de
+-- una sola vuelta con respuestas raras.
+ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS ciclos INTEGER NOT NULL DEFAULT 1;
+
+-- El texto que se vectoriza, partido en dos. Hasta ahora el vector de cada libro
+-- salia de `abstracto`, un parrafo unico que mezclaba de que trata el libro con
+-- que es leerlo, y que ademas fue escrito calcando el cuestionario ("novela
+-- corta... densa... el valor central es la psicologia del personaje"). Eso tiene
+-- dos costos medidos: 694 de los 1.381 empiezan con la misma formula, y los
+-- libros que nombran todos los ejes a la vez le quedan cerca a cualquier
+-- consulta -el mas repetido entraba en el top-8 de 20 de cada 300 busquedas-.
+--
+-- `sinopsis` dice SOLO de que trata: tema, epoca, lugar, quien. Es contra lo que
+-- se compara la referencia que trae el lector en q4, que tambien es contenido.
+-- `experiencia` dice SOLO que es leerlo: ritmo, densidad, tono, para que momento.
+-- Es contra lo que se comparan las opciones que el lector elige, que estan
+-- escritas en ese mismo idioma. Comparar cada cosa con su semejante es el punto:
+-- hoy una y otra compiten dentro del mismo parrafo y se diluyen.
+--
+-- `abstracto` NO se toca ni se reemplaza: lo sigue leyendo la voz de Funes y el
+-- panel, y es el respaldo si esto sale peor.
+ALTER TABLE funes_libros ADD COLUMN IF NOT EXISTS sinopsis TEXT;
+ALTER TABLE funes_libros ADD COLUMN IF NOT EXISTS experiencia TEXT;
+ALTER TABLE funes_libros ADD COLUMN IF NOT EXISTS embedding_experiencia REAL[];
+-- Vocabulario cerrado (tema, tono, exigencia, ritmo...) para poder filtrar por
+-- algo que el catalogo hoy no tiene: en divulgacion, 87 de 187 libros tienen
+-- subgenero "EN GENERAL", asi que no hay con que separar un libro de hongos de
+-- uno de psicoanalisis salvo el vector.
+ALTER TABLE funes_libros ADD COLUMN IF NOT EXISTS rasgos JSONB;
+-- Que version del prompt escribio esas tres columnas. Sin esto no se sabe si una
+-- fila quedo vieja cuando el prompt cambia, y habria que reprocesar el catalogo
+-- entero por las dudas.
+ALTER TABLE funes_libros ADD COLUMN IF NOT EXISTS version_reescritura TEXT;
+
+-- Los libros que el lector nos dijo que ya habia leido, con lo que opino de
+-- ellos. No son recomendaciones: nunca se mostraron. Guardarlos en
+-- funes_recomendaciones los contaria en el embudo y ensuciaria el analisis
+-- pareado de la 1ra contra la 2da.
+--
+-- Y son un dato por derecho propio. Sobre 24 lectores simulados, 5 de cada 25
+-- recomendaciones reprobadas eran libros que la persona ya habia leido: pasaba
+-- siempre que nombraba un autor como referencia y le devolviamos su obra mas
+-- famosa. Eso no es errarle, es acertarle tarde, y desde afuera se veia igual
+-- que un fracaso.
+CREATE TABLE IF NOT EXISTS funes_leidos (
+    sesion_id  TEXT NOT NULL REFERENCES funes_sesiones(id) ON DELETE CASCADE,
+    libro_id   TEXT NOT NULL,
+    titulo     TEXT NOT NULL,
+    autor      TEXT,
+    opinion    TEXT,
+    creado_en  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (sesion_id, libro_id)
+);
 
 CREATE INDEX IF NOT EXISTS idx_funes_libros_macro ON funes_libros(macro) WHERE embedding IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_funes_sesiones_fecha ON funes_sesiones(creado_en);
