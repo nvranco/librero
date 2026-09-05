@@ -15,6 +15,7 @@ Lo que NO cubre: el ranking. Eso es bench/simular.py, que si cuesta plata.
 import argparse
 import asyncio
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -29,7 +30,10 @@ from app.funes_chat import nucleo  # noqa: E402
 from app.routers import funes_chat as router  # noqa: E402
 
 PERFILES = RAIZ / "bench" / "perfiles.json"
-LOCAL = "http://127.0.0.1:8000"
+# El server local para el smoke HTTP. Configurable porque hay mas de una
+# sesion levantando servers a la vez y el 8000 no siempre es el que tiene
+# el codigo que se quiere probar.
+LOCAL = os.environ.get("LIBRERO_LOCAL_URL", "http://127.0.0.1:8000")
 
 _fallos: list[str] = []
 _hechos = 0
@@ -45,10 +49,28 @@ def ok(condicion: bool, descripcion: str, detalle: str = "") -> None:
         _fallos.append(descripcion)
 
 
-def libro(id_: str, titulo: str, macro: str, paginas=None) -> dict:
-    """Un libro sintetico con lo minimo que mira _filtrar_catalogo."""
+def libro(id_: str, titulo: str, macro: str, paginas=None,
+          genero="", subgenero="", tema=None) -> dict:
+    """Un libro sintetico con lo minimo que mira _filtrar_catalogo.
+
+    genero/subgenero/tema son los campos de los que dependen los filtros duros
+    por tema. Van con default vacio a proposito: asi cada caso declara solo el
+    que le importa, y el resto queda como un libro al que le falta el dato, que
+    es la situacion que hay que probar tanto como la contraria."""
     return {"id": id_, "titulo": titulo, "autor": "N N", "macro": macro,
-            "nro_paginas": paginas, "abstracto": "", "embedding": None}
+            "nro_paginas": paginas, "abstracto": "", "embedding": None,
+            "genero": genero, "subgenero": subgenero,
+            "rasgos": {"tema": tema} if tema else {}}
+
+
+def _valida(modelo, datos: dict) -> bool:
+    """Si el modelo del router acepta estas respuestas. Los casos que importan
+    son los de rechazo, y `pytest.raises` no existe aca."""
+    try:
+        modelo(**datos)
+        return True
+    except Exception:  # noqa: BLE001
+        return False
 
 
 # ---------------------------------------------------------------- resolver()
@@ -57,8 +79,9 @@ def probar_resolver() -> None:
     print("\nresolver() y las variantes por macro")
     ok(set(nucleo.resolver("q1", {"q0": "historia"})["opciones"]) == {"argentina", "mundial"},
        "q1 de historia trae argentina/mundial")
-    ok(set(nucleo.resolver("q1", {"q0": "divulgacion"})["opciones"]) == {"mente", "vida", "tecno", "universo"},
-       "q1 de divulgacion trae los 4 temas")
+    ok(set(nucleo.resolver("q1", {"q0": "divulgacion"})["opciones"])
+       == {"mente", "vida", "tecno", "universo", "ideas"},
+       "q1 de divulgacion trae los 5 temas")
     ok("explicacion" in nucleo.resolver("q3", {"q0": "divulgacion"})["opciones"],
        "q3 de divulgacion usa la variante")
     ok("trama" in nucleo.resolver("q3", {"q0": "literatura"})["opciones"],
@@ -304,6 +327,137 @@ def probar_filtros() -> None:
        "el primer tramo antes de los dos puntos es una clave")
 
 
+# ------------------------------------------- filtros duros por tema (3 macros)
+
+def probar_filtro_tema() -> None:
+    print("\naplica(): que preguntas se le hacen a cada macro")
+    ok(nucleo.aplica("q1b", {"q0": "literatura"}), "q1b se pregunta en literatura")
+    ok(not nucleo.aplica("q1b", {"q0": "historia"}), "q1b NO se pregunta en historia")
+    ok(not nucleo.aplica("q1b", {"q0": "divulgacion"}), "q1b NO se pregunta en divulgacion")
+    ok(not nucleo.aplica("q1b", {}), "sin macro, q1b no se pregunta")
+    ok(all(nucleo.aplica(c, {"q0": m}) for c in ("q0", "q1", "q2", "q3", "q4")
+           for m in ("literatura", "historia", "divulgacion")),
+       "las otras cinco preguntas se le hacen a las tres macros")
+
+    print("\n_parsear_rasgos(): jsonb llega como texto, no como dict")
+    ok(nucleo._parsear_rasgos('{"tema": "mente"}') == {"tema": "mente"},
+       "un str de json se parsea")
+    ok(nucleo._parsear_rasgos({"tema": "vida"}) == {"tema": "vida"},
+       "un dict pasa tal cual")
+    ok(nucleo._parsear_rasgos(None) == {}, "None da {}")
+    ok(nucleo._parsear_rasgos("{roto") == {}, "json invalido da {} y no explota")
+    ok(nucleo._parsear_rasgos("[1, 2]") == {}, "un json que no es objeto da {}")
+
+    print("\n_forma_del_libro(): las 4 formas de literatura")
+    casos = [
+        ("NOVELAS", "UNIVERSAL", "novela"),
+        ("NOVELAS", "HISTORICA", "novela"),
+        ("NOVELAS", "POLICIAL", "genero"),
+        ("NOVELAS", "SUSPENSO", "genero"),
+        ("CIENCIA FICCION / FANTASTICA", "EN GENERAL", "genero"),
+        ("CLASICOS", "EN GENERAL", "clasicos"),
+        ("POESIA", "EN GENERAL", "breves"),
+        ("CUENTOS / RELATOS", "ARGENTINA", "breves"),
+        ("BIOGRAFIAS Y RELATOS", "BIOGRAFIAS - MEMORIAS", "breves"),
+        ("HUMOR", "EN GENERAL", None),
+        ("COCINA", "GENERAL", None),
+        ("", "", None),
+    ]
+    for genero, subgenero, esperado in casos:
+        got = nucleo._forma_del_libro(libro("x", "X", "literatura", genero=genero, subgenero=subgenero))
+        ok(got == esperado, f"{genero or '(sin genero)'} / {subgenero or '-'} es {esperado}", f"dio {got}")
+
+    # El orden importa: el policial vive como subgenero DE novelas, asi que si
+    # "novela" se evaluara primero se llevaria todo el genero puesto.
+    ok(nucleo._forma_del_libro(
+        libro("x", "X", "literatura", genero="CLASICOS", subgenero="POLICIAL")) == "clasicos",
+       "un clasico policial cuenta como clasico, no como genero")
+    ok(nucleo._forma_del_libro(
+        libro("x", "X", "literatura", genero="Novelas", subgenero="policial")) == "genero",
+       "la clasificacion no depende de mayusculas ni acentos")
+
+    # El respaldo por rasgos->>'tema', para el libro sin genero util. Existe por
+    # los titulos que vienen solo de Cuspide, cuya taxonomia no baja a genero.
+    ok(nucleo._forma_del_libro(
+        libro("x", "X", "literatura", genero="CRITICA LITERARIA", tema="ensayo")) == "breves",
+       "sin genero util, el tema clasifica")
+    ok(nucleo._forma_del_libro(
+        libro("x", "X", "literatura", tema="clasico")) == "clasicos",
+       "un libro sin genero ninguno se clasifica por el tema")
+    ok(nucleo._forma_del_libro(
+        libro("x", "X", "literatura", genero="NOVELAS", subgenero="POLICIAL",
+              tema="novela")) == "genero",
+       "el genero manda sobre el tema: el policial no se disuelve en novela")
+    ok(nucleo._forma_del_libro(
+        libro("x", "X", "literatura", genero="COCINA", tema="otro")) is None,
+       "tema 'otro' no rescata a nadie")
+
+    print("\nq1b en el router: obligatoria donde se pregunta, prohibida donde no")
+    lit = {"q0": "literatura", "q1": "narrativa", "q2": "corto", "q3": "trama"}
+    hist = {"q0": "historia", "q1": "argentina", "q2": "corto", "q3": "trama"}
+    ok(_valida(router.RespuestasCompletas, {**lit, "q1b": "novela"}),
+       "literatura con q1b pasa")
+    ok(not _valida(router.RespuestasCompletas, lit),
+       "literatura sin q1b se rechaza (el filtro no habria corrido)")
+    ok(_valida(router.RespuestasFijas, lit),
+       "en cambio /sesion acepta literatura sin q1b todavia (guarda el abandono)")
+    ok(_valida(router.RespuestasCompletas, hist),
+       "historia sin q1b pasa: ahi no se pregunta")
+    ok(not _valida(router.RespuestasCompletas, {**hist, "q1b": "novela"}),
+       "historia CON q1b se rechaza: cliente y servidor no estan de acuerdo")
+    ok(not _valida(router.RespuestasCompletas, {**lit, "q1b": "inventada"}),
+       "una forma inventada se rechaza")
+
+    print("\nfiltro por forma (literatura): incluye")
+    lit = ([libro(f"n{i}", f"N{i}", "literatura", 200, "NOVELAS", "UNIVERSAL") for i in range(90)]
+           + [libro(f"p{i}", f"P{i}", "literatura", 200, "NOVELAS", "POLICIAL") for i in range(90)]
+           + [libro("humor", "H", "literatura", 200, "HUMOR", "EN GENERAL")])
+    base = {"q0": "literatura", "q2": ""}
+    pool, n, aflojado = nucleo._filtrar_catalogo(lit, {**base, "q1b": "novela"})
+    ok(n == 90 and aflojado is None, "q1b=novela deja solo las novelas", f"dio {n}")
+    pool, n, _ = nucleo._filtrar_catalogo(lit, {**base, "q1b": "genero"})
+    ok(n == 90 and all(l["subgenero"] == "POLICIAL" for l in pool),
+       "q1b=genero deja solo el policial", f"dio {n}")
+    ok(not any(l["id"] == "humor" for l in pool),
+       "un libro que no cae en ninguna forma no sale nunca con el filtro puesto")
+    _, n, _ = nucleo._filtrar_catalogo(lit, {**base})
+    ok(n == 181, "sin q1b no se recorta nada", f"dio {n}")
+    _, n, aflojado = nucleo._filtrar_catalogo(lit, {**base, "q1b": "clasicos"})
+    ok(n == 181 and aflojado == "forma",
+       "un recorte por debajo del piso se afloja entero", f"dio {n}/{aflojado}")
+
+    print("\nfiltro por tema (divulgacion): excluye")
+    # 90 de cada tema y no 50: lo que sobrevive al recorte tiene que quedar por
+    # encima de _PISO_POOL, o el filtro se afloja y el caso mide otra cosa.
+    div = ([libro(f"m{i}", f"M{i}", "divulgacion", 200, tema="mente") for i in range(90)]
+           + [libro(f"v{i}", f"V{i}", "divulgacion", 200, tema="vida") for i in range(90)]
+           + [libro("otro", "O", "divulgacion", 200, tema="otro")]
+           + [libro("sin", "S", "divulgacion", 200)])
+    base = {"q0": "divulgacion", "q2": ""}
+    pool, n, aflojado = nucleo._filtrar_catalogo(div, {**base, "q1": "mente"})
+    ok(n == 92 and aflojado is None, "q1=mente descarta los de vida y deja el resto", f"dio {n}")
+    ok(any(l["id"] == "otro" for l in pool), "un libro de tema 'otro' sobrevive siempre")
+    ok(any(l["id"] == "sin" for l in pool), "un libro sin rasgos sobrevive siempre")
+    pool, n, _ = nucleo._filtrar_catalogo(div, {**base, "q1": "vida"})
+    ok(not any(l["id"].startswith("m") for l in pool), "q1=vida descarta los de mente")
+    _, n, aflojado = nucleo._filtrar_catalogo(div, {**base, "q1": "universo"})
+    ok(aflojado == "tema" and n == 182,
+       "universo cae bajo el piso y el filtro se afloja solo", f"dio {n}/{aflojado}")
+
+    print("\ncada filtro vive en su macro y no se pisa con los otros")
+    hist = [libro(f"h{i}", f"H{i}", "historia", 500, "HISTORIA", "HISTORIA ARGENTINA")
+            for i in range(90)]
+    hist += [libro(f"u{i}", f"U{i}", "historia", 500, "HISTORIA", "HISTORIA UNIVERSAL")
+             for i in range(90)]
+    _, n, _ = nucleo._filtrar_catalogo(hist, {"q0": "historia", "q1": "argentina", "q2": ""})
+    ok(n == 90, "historia sigue recortando por subgenero", f"dio {n}")
+    _, n, _ = nucleo._filtrar_catalogo(hist, {"q0": "historia", "q1": "argentina",
+                                              "q1b": "novela", "q2": ""})
+    ok(n == 90, "un q1b colado en historia no recorta nada", f"dio {n}")
+    _, n, _ = nucleo._filtrar_catalogo(lit, {"q0": "literatura", "q1": "narrativa", "q2": ""})
+    ok(n == 181, "en literatura q1 (el animo) no filtra", f"dio {n}")
+
+
 # ------------------------------------------------------- textos que se embeben
 
 def probar_textos() -> None:
@@ -383,7 +537,9 @@ def probar_validadores() -> None:
         except Exception:
             return False
 
-    base = {"q0": "literatura", "q1": "ideas", "q2": "corto", "q3": "ideas"}
+    # Literatura completa incluye q1b: desde el filtro por forma, un pedido de
+    # literatura sin la forma es un pedido incompleto.
+    base = {"q0": "literatura", "q1": "ideas", "q1b": "novela", "q2": "corto", "q3": "ideas"}
     ok(not acepta_chat({**base, "ya_mostrados": [f"id{i}" for i in range(7)]}),
        "ya_mostrados mas largo que _MAX_TOTAL_RECOMENDACIONES se rechaza")
     ok(acepta_chat({**base, "ya_mostrados": [f"id{i}" for i in range(6)]}),
@@ -421,12 +577,26 @@ async def probar_perfiles() -> None:
     print("\nbench/perfiles.json contra el catalogo real")
     datos = json.loads(PERFILES.read_text(encoding="utf-8"))
     perfiles = datos["perfiles"]
-    ok(len(perfiles) == 24, f"hay 24 perfiles", f"hay {len(perfiles)}")
+    # Divulgacion tiene uno mas desde que q1 gano su quinta opcion: una opcion
+    # sin perfil detras es una opcion sin medir. Ver el corte de linea base
+    # anotado en el _comentario de perfiles.json.
+    esperados = {"literatura": 8, "historia": 8, "divulgacion": 9}
+    ok(len(perfiles) == sum(esperados.values()),
+       f"hay {sum(esperados.values())} perfiles", f"hay {len(perfiles)}")
     ids = [p["id"] for p in perfiles]
     ok(len(set(ids)) == len(ids), "los ids no se repiten")
-    for macro in ("literatura", "historia", "divulgacion"):
+    for macro, cuantos in esperados.items():
         n = sum(1 for p in perfiles if p["macro"] == macro)
-        ok(n == 8, f"{macro} tiene 8 perfiles", f"tiene {n}")
+        ok(n == cuantos, f"{macro} tiene {cuantos} perfiles", f"tiene {n}")
+    # Y toda opcion de q1 tiene al menos un perfil que la elige: si no, un
+    # cambio en esa opcion no lo detecta nadie.
+    sin_perfil = []
+    for macro in esperados:
+        elegidas = {p["respuestas"]["q1"] for p in perfiles if p["macro"] == macro}
+        for opcion in nucleo.resolver("q1", {"q0": macro})["opciones"]:
+            if opcion not in elegidas:
+                sin_perfil.append(f"{macro}/{opcion}")
+    ok(not sin_perfil, "toda opcion de q1 tiene un perfil que la elige", ", ".join(sin_perfil))
 
     invalidas = []
     for p in perfiles:
@@ -472,8 +642,18 @@ async def probar_http() -> None:
             print(f"  (server local apagado: {exc}) — se saltea")
             return
         ok(r.status_code == 200, "GET /funes responde 200")
-        ok("PREGUNTAS" in r.text and "consultas" not in r.text,
-           "el HTML lleva las preguntas pero no los textos de busqueda")
+        # Contra el JSON inyectado y no contra la pagina entera: el template usa
+        # "consultas" como nombre de variable propia (las de las preguntas
+        # profundas), asi que buscarla en todo el HTML daba falso positivo y
+        # este caso estaba en rojo sin que nadie lo mirara -corre solo con --http-.
+        inyectado = ""
+        marca = "const PREGUNTAS = "
+        if marca in r.text:
+            desde = r.text.index(marca) + len(marca)
+            inyectado = r.text[desde:r.text.index(chr(10), desde)]
+        ok(inyectado.startswith("{") and "consultas" not in inyectado,
+           "el HTML lleva las preguntas pero no los textos de busqueda",
+           inyectado[:80])
 
         r = await c.post(f"{LOCAL}/funes/pregunta-profunda", json={**base, "q4": "x" * 400})
         ok(r.status_code == 422, "q4 larga da 422 (y el cliente hoy se queda sin botones)")
@@ -492,6 +672,7 @@ async def main() -> None:
 
     probar_resolver()
     probar_filtros()
+    probar_filtro_tema()
     probar_textos()
     probar_validadores()
 

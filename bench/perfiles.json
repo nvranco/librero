@@ -18,7 +18,21 @@
     "Los 4 con 'adversario' no miden calidad sino que no se rompa: apuntan a",
     "agujeros conocidos (q4 que expulsa titulos por una frase comun, q4 con un",
     "autor que esta en el catalogo, perfil sin ninguna senal, q2 sobre una macro",
-    "donde faltan las paginas)."
+    "donde faltan las paginas).",
+    "",
+    "'q1b' es la forma del libro y solo existe en literatura: es la pregunta que",
+    "habilita el filtro duro por genero. Se eligio la forma coherente con los",
+    "titulos de 'esperado' de cada perfil, no la mas comoda; donde el esperado",
+    "mezcla formas (lit-introspectivo-duelo) queda uno de sus titulos fuera de",
+    "alcance a proposito, porque eso es exactamente lo que el filtro hace.",
+    "",
+    "CORTE DE LINEA BASE (2026-09-05): el juego de perfiles cambio y los numeros",
+    "de corridas anteriores a esta fecha NO son comparables con los de despues.",
+    "Cambio tres cosas: los 8 de literatura ganaron 'q1b'; el catalogo movio los",
+    "libros de filosofia de literatura a divulgacion; y se sumo un noveno perfil",
+    "de divulgacion (div-ideas-filosofia) para la opcion 'ideas'. Son 25, no 24, y",
+    "divulgacion tiene 9. Comparar base contra una variante DENTRO de una misma",
+    "corrida sigue siendo valido: eso es lo que mide el banco."
   ],
   "perfiles": [
     {
@@ -36,6 +50,7 @@
       "respuestas": {
         "q0": "literatura",
         "q1": "distraccion",
+        "q1b": "genero",
         "q2": "corto",
         "q3": "trama",
         "q4": "Agatha Christie"
@@ -79,6 +94,7 @@
       "respuestas": {
         "q0": "literatura",
         "q1": "ideas",
+        "q1b": "genero",
         "q2": "intermedio",
         "q3": "ideas",
         "q4": "Cánticos de la lejana Tierra, de Arthur C. Clarke"
@@ -120,6 +136,7 @@
       "respuestas": {
         "q0": "literatura",
         "q1": "introspectivo",
+        "q1b": "breves",
         "q2": "corto",
         "q3": "prosa",
         "q4": "Annie Ernaux"
@@ -168,6 +185,7 @@
       "respuestas": {
         "q0": "literatura",
         "q1": "narrativa",
+        "q1b": "breves",
         "q2": "corto",
         "q3": "prosa",
         "q4": "Borges y Cortázar, cuentos"
@@ -215,6 +233,7 @@
       "respuestas": {
         "q0": "literatura",
         "q1": "ideas",
+        "q1b": "clasicos",
         "q2": "largo",
         "q3": "personajes",
         "q4": "Dostoievski, Los hermanos Karamazov"
@@ -258,6 +277,7 @@
       "respuestas": {
         "q0": "literatura",
         "q1": "narrativa",
+        "q1b": "novela",
         "q2": "largo",
         "q3": "personajes",
         "q4": "Jane Austen"
@@ -298,6 +318,7 @@
       "respuestas": {
         "q0": "literatura",
         "q1": "distraccion",
+        "q1b": "novela",
         "q2": "corto",
         "q3": "trama",
         "q4": ""
@@ -335,6 +356,7 @@
       "respuestas": {
         "q0": "literatura",
         "q1": "introspectivo",
+        "q1b": "novela",
         "q2": "corto",
         "q3": "prosa",
         "q4": "algo como El túnel de Sabato, esa cosa de la vida secreta de la mente de un tipo obsesionado"
@@ -962,6 +984,48 @@
           "PSIQUIATRIA"
         ],
         "nota": "Divulgacion es la macro mas chica (187) y con q2=corto el pool queda cerca del piso. Mide si se afloja la banda de paginas."
+      }
+    },
+    {
+      "id": "div-ideas-filosofia",
+      "macro": "divulgacion",
+      "persona": {
+        "quien": "Profesor de secundaria de 45, da filosofia y quiere algo para pensar fuera del programa, no un manual de catedra.",
+        "exigencia": "alta",
+        "leidos": [
+          "El malestar en la cultura, de Freud",
+          "Vigilar y castigar, de Foucault",
+          "La sociedad del cansancio, de Byung-Chul Han"
+        ]
+      },
+      "respuestas": {
+        "q0": "divulgacion",
+        "q1": "ideas",
+        "q2": "corto",
+        "q3": "ideas",
+        "q4": "La sociedad del cansancio, de Byung-Chul Han"
+      },
+      "esperado": {
+        "generos": [
+          "FILOSOFÍA",
+          "DIVULGACIÓN CIENTÍFICA"
+        ],
+        "subgeneros": [
+          "GENERAL",
+          "ETICA",
+          "ENSAYOS",
+          "EN GENERAL"
+        ],
+        "libros": [
+          "El mito de Sísifo",
+          "Cinco escritos morales",
+          "El cerebro aumentado, el hombre disminuido"
+        ],
+        "prohibido_generos": [
+          "CIENCIAS NATURALES",
+          "MEDICINA"
+        ],
+        "nota": "Mide la quinta opcion de q1, que nacio con 10 libros atras. La referencia (Han) NO esta en el catalogo a proposito: el ancla tiene que orientar sin poder devolver el libro nombrado. Con un pool de 107 y 10 libros de filosofia adentro, es la opcion mas exigente de divulgacion para el vector."
       }
     }
   ]

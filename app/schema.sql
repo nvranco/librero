@@ -160,6 +160,13 @@ WITH derivado AS (
     SELECT id, COALESCE(macro_manual, CASE
         WHEN genero    LIKE 'HISTORIA%'             THEN 'historia'
         WHEN categoria LIKE 'CIENCIAS DE LA SALUD%' THEN 'divulgacion'
+        -- Filosofia va a divulgacion y no a literatura, que es donde caia por
+        -- el ELSE. La macro de divulgacion se presenta como "ciencias,
+        -- naturaleza, ideas" y su primera pregunta tiene una opcion para las
+        -- ideas; en literatura, en cambio, un libro de filosofia solo era
+        -- alcanzable pidiendo "ensayo", que es la forma y no el tema.
+        -- Critica literaria NO se mueve: habla de literatura, no de ideas.
+        WHEN genero    LIKE 'FILOSOF%'              THEN 'divulgacion'
         ELSE 'literatura'
     END) AS macro_nuevo
     FROM funes_libros
@@ -167,6 +174,15 @@ WITH derivado AS (
 UPDATE funes_libros f SET macro = d.macro_nuevo
 FROM derivado d
 WHERE d.id = f.id AND f.macro IS DISTINCT FROM d.macro_nuevo;
+
+-- El `tema` de esos libros de filosofia viene del vocabulario de LITERATURA
+-- ('ensayo'), y en divulgacion ese valor no lo descarta ninguna opcion: el libro
+-- sobreviviria a las cinco y le aparaceria por igual a quien pregunta por
+-- plantas y a quien pregunta por el universo, que es como se fabrica un hub. Se
+-- reetiqueta al valor que si existe en divulgacion.
+UPDATE funes_libros
+SET rasgos = jsonb_set(COALESCE(rasgos, '{}'::jsonb), '{tema}', '"ideas"')
+WHERE genero LIKE 'FILOSOF%' AND rasgos->>'tema' IS DISTINCT FROM 'ideas';
 
 -- Bitacora de "Funes Chat": una fila por conversacion. No reusa `eventos`
 -- porque esa tabla cuelga de una libreria (libreria_id NOT NULL con FK) y Funes
@@ -182,12 +198,16 @@ CREATE TABLE IF NOT EXISTS funes_sesiones (
     origen          TEXT NOT NULL DEFAULT 'link',  -- qr|amigo|flyer|link, del ?src= de GET /funes
     macro           TEXT,                          -- q0: literatura|historia|divulgacion (filtro duro)
     q1              TEXT NOT NULL DEFAULT '',
+    q1b             TEXT NOT NULL DEFAULT '',  -- la forma; solo se pregunta en literatura
     q2              TEXT NOT NULL DEFAULT '',      -- corto|intermedio|largo; define la banda de paginas
     q3              TEXT NOT NULL DEFAULT '',
     q4              TEXT NOT NULL DEFAULT '',      -- texto libre del lector
     profundas       JSONB NOT NULL DEFAULT '[]'::jsonb,  -- [{pregunta, respuesta}] generadas por el LLM
     pool_inicial    INTEGER,                       -- libros que sobrevivieron los filtros duros
-    filtro_aflojado TEXT,                          -- 'paginas' si hubo que aflojar por el piso de pool
+    -- Que filtro duro hubo que soltar porque el pool caia bajo el piso:
+    -- 'paginas', o el filtro por tema de esa macro ('subgenero' en historia,
+    -- 'tema' en divulgacion, 'forma' en literatura). NULL si no se aflojo nada.
+    filtro_aflojado TEXT,
     creado_en       TIMESTAMPTZ NOT NULL DEFAULT now(),
     ultima_act      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -345,6 +365,11 @@ ALTER TABLE funes_recomendaciones ADD COLUMN IF NOT EXISTS profundas JSONB NOT N
 -- q1. Sin este contador, una sesion de dos vueltas es indistinguible de una de
 -- una sola vuelta con respuestas raras.
 ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS ciclos INTEGER NOT NULL DEFAULT 1;
+
+-- q1b: la forma del libro. Se pregunta SOLO en literatura, asi que en las otras
+-- dos macros queda en '' para siempre, que es lo correcto y no un dato faltante.
+-- Se llama q1b y no q5 para que quede al lado de la pregunta de la que cuelga.
+ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS q1b TEXT NOT NULL DEFAULT '';
 
 -- El texto que se vectoriza, partido en dos. Hasta ahora el vector de cada libro
 -- salia de `abstracto`, un parrafo unico que mezclaba de que trata el libro con

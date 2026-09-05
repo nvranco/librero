@@ -81,6 +81,16 @@ VARIANTES = {
                         "_PESO_PROFUNDAS": 0.0},
     "sin_centrar": {"_CENTRAR": False},
     "sin_filtro_hist": {"_FILTRO_SUBGENERO": False},
+    # Los dos filtros duros nuevos, cada uno apagado por separado. Se miden asi
+    # -y no prendiendolos sobre el motor viejo- porque ya estan puestos: la
+    # pregunta es cuanto se pierde al sacarlos, y cada uno vive en una macro
+    # distinta, asi que apagar uno solo no toca a los otros 16 perfiles.
+    # sin_filtro_forma mueve los 8 de literatura; sin_filtro_tema, los 8 de
+    # divulgacion. La vara de este ultimo es div-psicoanalisis-no.
+    "sin_filtro_forma": {"_FILTRO_FORMA": False},
+    "sin_filtro_tema": {"_FILTRO_TEMA": False},
+    "sin_filtros_tema": {"_FILTRO_FORMA": False, "_FILTRO_TEMA": False,
+                         "_FILTRO_SUBGENERO": False},
     "solo_centrado": {"_FILTRO_SUBGENERO": False},
     "solo_filtro": {"_CENTRAR": False},
     "sin_diversidad": {"_PESO_DIVERSIDAD": 0.0},

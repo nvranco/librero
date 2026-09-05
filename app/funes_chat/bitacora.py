@@ -75,6 +75,7 @@ async def guardar_estado(
                 -- preguntas del ciclo anterior. Un valor nuevo si pisa al viejo;
                 -- lo unico que se ignora es el vacio.
                 q1 = COALESCE(NULLIF($3, ''), q1),
+                q1b = COALESCE(NULLIF($11, ''), q1b),
                 q2 = COALESCE(NULLIF($4, ''), q2),
                 q3 = COALESCE(NULLIF($5, ''), q3),
                 q4 = COALESCE(NULLIF($6, ''), q4),
@@ -98,6 +99,7 @@ async def guardar_estado(
             pool,
             filtro_aflojado,
             max(1, int(ciclo or 1)),
+            str(respuestas.get("q1b") or ""),
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning("funes_bitacora_guardar_estado_fallo sesion=%s error=%s", sesion_id, exc)

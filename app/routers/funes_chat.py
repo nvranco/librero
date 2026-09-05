@@ -99,11 +99,16 @@ class RespuestasFijas(BaseModel):
     # se enteraria, sin ningun error visible.
     q0: str = ""
     q1: str = ""
+    # Solo aplica en literatura; en las otras dos macros viene vacia y tiene que
+    # venir vacia (ver _opcion_conocida). validate_default porque el caso que hay
+    # que atrapar es justamente el campo AUSENTE -literatura sin forma-, y
+    # pydantic saltea los validadores cuando el valor sale del default.
+    q1b: str = Field("", validate_default=True)
     q2: str = ""
     q3: str = ""
     q4: str = Field("", max_length=300)
 
-    @field_validator("q0", "q1", "q2", "q3")
+    @field_validator("q0", "q1", "q1b", "q2", "q3")
     @classmethod
     def _opcion_conocida(cls, valor: str, info) -> str:
         """Rechaza opciones inventadas en vez de descartarlas en silencio.
@@ -119,6 +124,12 @@ class RespuestasFijas(BaseModel):
         # elegida: mandar "argentina" habiendo elegido literatura es tan
         # invalido como mandar cualquier invento. Si q0 vino roto, resolver()
         # cae en la macro por defecto y el pedido falla igual por el error de q0.
+        # Una pregunta que a esta macro no se le hace tampoco puede venir
+        # contestada: mandar q1b habiendo elegido historia significa que el
+        # cliente y el servidor no estan de acuerdo sobre que se pregunto, y eso
+        # hay que verlo, no absorberlo.
+        if not nucleo.aplica(info.field_name, info.data):
+            raise ValueError(f"{info.field_name} no aplica a esta macro.")
         opciones = nucleo.resolver(info.field_name, info.data)["opciones"]
         if valor not in opciones:
             raise ValueError(f"Opcion desconocida para {info.field_name}: {valor!r}")
@@ -140,6 +151,18 @@ class RespuestasCompletas(RespuestasFijas):
     def _no_vacia(cls, valor: str, info) -> str:
         if not valor:
             raise ValueError(f"Falta {info.field_name}.")
+        return valor
+
+    @field_validator("q1b")
+    @classmethod
+    def _no_vacia_si_aplica(cls, valor: str, info) -> str:
+        """q1b va aparte porque es obligatoria solo donde se pregunta.
+
+        En historia y divulgacion vacia es lo correcto; en literatura, vacia
+        significa que el filtro por forma no corrio y el lector recibiria un
+        pool sin recortar sin que nadie se entere."""
+        if not valor and nucleo.aplica("q1b", info.data):
+            raise ValueError("Falta q1b.")
         return valor
 
 
@@ -209,10 +232,14 @@ class PedidoClic(BaseModel):
 
 
 def _respuestas(cuerpo: RespuestasFijas) -> dict:
-    return {
-        "q0": cuerpo.q0, "q1": cuerpo.q1, "q2": cuerpo.q2,
-        "q3": cuerpo.q3, "q4": cuerpo.q4,
-    }
+    """Las respuestas fijas como dict, para pasarselas al motor.
+
+    Se derivan de nucleo.PREGUNTAS y no se listan a mano: cuando se listaban,
+    agregar una pregunta en nucleo.py y olvidarse de tocar esta funcion la hacia
+    desaparecer en silencio -el motor la recibia vacia, el filtro que dependia
+    de ella no corria, y la recomendacion salia igual sin ningun error-. Es el
+    mismo motivo por el que el template lee ORDEN del servidor."""
+    return cuerpo.model_dump(include=set(nucleo.PREGUNTAS))
 
 
 @router.get("/funes", response_class=HTMLResponse)

@@ -28,10 +28,19 @@ sys.path.insert(0, str(RAIZ_APP))
 os.environ.setdefault("DATABASE_URL", "postgresql://postgres:postgres@127.0.0.1:5433/librero")
 os.environ.setdefault("ADMIN_TOKEN", "x")
 
+# Toda columna que no este aca NO viaja, y en produccion queda como estaba
+# (NULL en las nuevas). Es la trampa que ya nos comio una vez: `rasgos` existia
+# en las dos bases y el filtro por tema no descartaba nada en produccion, sin
+# ningun error, porque la columna llegaba vacia.
 COLUMNAS = [
     "id", "titulo", "autor", "abstracto", "embedding", "isbn", "fecha_publicacion",
     "categoria", "genero", "subgenero", "nro_paginas", "confianza_abstracto",
     "nota", "fuente", "macro", "macro_manual",
+    # Lo que dejo la reescritura de abstractos. `rasgos` es el que usa el filtro
+    # duro por tema de divulgacion; los otros tres viajan con el para que las
+    # dos bases digan lo mismo.
+    "sinopsis", "experiencia", "embedding_experiencia", "rasgos",
+    "version_reescritura",
 ]
 LOTE = 50
 
@@ -79,7 +88,12 @@ async def main() -> None:
         con_emb = await destino.fetchval(
             "SELECT count(*) FROM funes_libros WHERE embedding IS NOT NULL"
         )
-        print(f"\ndestino: {total} libros, {con_emb} con embedding")
+        # rasgos aparte: es de lo que depende el filtro por tema, y su modo de
+        # falla es silencioso (columna vacia, cero errores, filtro que no filtra).
+        con_rasgos = await destino.fetchval(
+            "SELECT count(*) FROM funes_libros WHERE rasgos IS NOT NULL"
+        )
+        print(f"\ndestino: {total} libros, {con_emb} con embedding, {con_rasgos} con rasgos")
         for r in await destino.fetch(
             "SELECT macro, count(*) n FROM funes_libros GROUP BY 1 ORDER BY 2 DESC"
         ):

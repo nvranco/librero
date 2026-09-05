@@ -97,6 +97,11 @@ _DOS_VECTORES = False
 # Si q1 puede recortar el catalogo por subgenero ademas de orientar el vector.
 # Hoy solo lo declara historia (ver PREGUNTAS["q1"]).
 _FILTRO_SUBGENERO = True
+# Los otros dos filtros duros por tema, uno por macro. Van en flags separados y
+# no en uno solo porque el banco mide de a un cambio por corrida, y porque cada
+# uno se puede apagar sin tocar a los otros dos si alguna vez da negativo.
+_FILTRO_TEMA = True
+_FILTRO_FORMA = True
 
 # Cuanto se le descuenta a un candidato por parecerse a lo que ya se mostro en
 # esta charla. Sin esto, quien nombra un autor en q4 se lleva tres libros de ese
@@ -177,30 +182,41 @@ PREGUNTAS = {
         # distinto en cada macro, y forzar el mismo para las tres deja
         # preguntas rotas: a quien eligio divulgacion, "una narrativa que me
         # atrape y me haga perder la nocion del tiempo" no le dice nada. El
-        # catalogo lo confirma. Los 187 abstractos de divulgacion se separan
-        # por tema (mente 94, seres vivos 54, cuerpo 51, universo 35) y no por
-        # estado de animo; los 368 de historia se parten al medio por recorte
+        # catalogo lo confirma. Los 197 abstractos de divulgacion se separan
+        # por tema (mente 66, vida 35, tierra 25, tecno 16, cuerpo 15, universo
+        # 11, ideas 10) y no por estado de animo; los 368 de historia se parten
+        # al medio por recorte
         # geografico (argentina 169 / el resto 199) y no por subgenero, que
         # ahi es casi inutil (historia economica: 3 libros, historiografia: 4).
         #
-        # Ojo con leer los numeros de mas: estas opciones ORIENTAN el vector,
-        # NO filtran. El unico filtro duro por tema es q0. Por eso una opcion
-        # con pocos libros atras es viable, porque solo inclina el coseno; si
-        # alguna vez pasaran a filtrar habria que medirlas contra _PISO_POOL.
+        # Estas opciones ya no solo orientan el vector: en historia y en
+        # divulgacion tambien FILTRAN (ver los comentarios de cada variante), y
+        # en literatura el filtro lo hace q1b. O sea que una opcion con pocos
+        # libros atras dejo de ser gratis: cada una se mide contra _PISO_POOL.
         "variantes": {
             "literatura": {
                 "titulo": "El Estado Exploratorio",
                 "pregunta": "¿Qué buscás en tu próxima lectura?",
                 "opciones": {
-                    "ideas": "Quiero explorar ideas nuevas o entender cómo funciona una dinámica social o personal.",
+                    "ideas": "Quiero explorar ideas nuevas o entender cómo funciona una dinámica social.",
                     "narrativa": "Busco una narrativa que me atrape y me haga perder la noción del tiempo.",
                     "introspectivo": "Me interesa algo introspectivo, para reflexionar sobre mi entorno o mi rutina.",
-                    "distraccion": "Busco una lectura amena, que me entretenga de principio a fin.",
+                    "distraccion": "Quiero una lectura amena y liviana, para leer distendido.",
                 },
                 # "ideas" en voz de lector traia manuales de psicopedagogia:
                 # "explorar ideas nuevas" se parece mas a un manual que a una
                 # novela. Nombrar la forma del libro (novela, relato) es lo que
                 # lo devuelve al estante correcto.
+                #
+                # Las etiquetas de arriba se separaron entre si por legibilidad,
+                # no por ranking: medido con bench/opciones_por_macro.py, las
+                # cuatro ya traian libros distintos (1/5 y 0/5 de solapamiento en
+                # los pares que se leian parecido). El problema era que "ideas"
+                # decia "dinamica social o personal" y "introspectivo" decia "mi
+                # entorno o mi rutina", asi que la persona elegia creyendo que
+                # daba igual y se llevaba otro libro. Idem con "distraccion",
+                # que prometia entretener sostenido igual que "narrativa"; ahora
+                # habla de como se lee y no de cuanto entretiene.
                 "consultas": {
                     "ideas": "Una novela o un ensayo literario que explora ideas y pone en juego una dinámica social o personal, y que deja pensando.",
                     "narrativa": "Una novela absorbente, de trama sostenida y ritmo parejo, de las que se leen de un tirón.",
@@ -255,6 +271,7 @@ PREGUNTAS = {
                     "vida": "Los seres vivos: plantas, bichos, ecosistemas.",
                     "tecno": "La tecnología: los datos, la inteligencia artificial, las pantallas.",
                     "universo": "El universo y las leyes que lo rigen.",
+                    "ideas": "Las ideas: cómo pensamos, qué está bien, qué es vivir.",
                 },
                 # Medido: la etiqueta corta de "vida" daba coseno 0,443 y traia
                 # psicologia; esta redaccion da 0,600 y trae libros de bichos y
@@ -265,9 +282,71 @@ PREGUNTAS = {
                     "vida": "Un libro sobre la vida en la Tierra, los animales, las plantas y cómo funcionan los ecosistemas.",
                     "tecno": "Un libro de divulgación sobre la tecnología y sus efectos: los datos, la inteligencia artificial, las pantallas y cómo nos cambian.",
                     "universo": "Un libro de divulgación sobre el universo, la física y las leyes que rigen la materia.",
+                    "ideas": "Un ensayo de filosofía y de pensamiento sobre las ideas, la ética y el sentido de la vida: cómo pensamos, qué está bien y cómo se discute.",
+                },
+                # En divulgacion esta pregunta tambien FILTRA, pero al reves que
+                # en historia: descarta lo ajeno en vez de exigir el tema.
+                #
+                # El motivo es que exigirlo no se podria activar nunca. El unico
+                # campo con senal es rasgos->>'tema' (genero/subgenero no
+                # sirven: 87 de 187 son "EN GENERAL", y tecno y universo no
+                # existen como rama), y ahi el tema mas grande son 66 libros:
+                # todos los pools por inclusion caen bajo _PISO_POOL, o sea que
+                # el filtro se aflojaria siempre. Seria codigo muerto que parece
+                # funcionar. Descartando lo ajeno, en cambio, las cinco opciones
+                # quedan sobre el piso: 122, 90, 111, 81 y 107.
+                #
+                # Lo que NO se descarta es tan deliberado como lo que si. "otro"
+                # y los libros sin rasgos sobreviven siempre. "cuerpo" convive
+                # con mente y con vida, "tierra" con vida, y los 66 de mente se
+                # quedan en tecno porque "las pantallas y como nos cambian" es
+                # mente y tecno a la vez. Eso deja a tecno con un pool dominado
+                # por mente, que es el punto flojo conocido: con 16 libros de
+                # tecnologia ningun filtro lo arregla, lo tiene que arreglar el
+                # catalogo.
+                "filtro": "tema",
+                #
+                # "ideas" es la quinta opcion y la mas nueva. Conserva mente y
+                # tecno porque la filosofia de la mente y la de la tecnica son
+                # la misma conversacion vista de otro lado; descarta lo que se
+                # mide con instrumentos. Del otro lado, solo "vida" descarta
+                # ideas: en mente y en tecno un ensayo cae bien, y universo ya
+                # esta bajo el piso y sumarle exclusiones no lo mejora.
+                "temas_ajenos": {
+                    "mente": ["vida", "tierra", "universo", "numeros"],
+                    "vida": ["mente", "tecno", "universo", "numeros", "ideas"],
+                    "tecno": ["vida", "tierra", "cuerpo", "universo"],
+                    "universo": ["mente", "vida", "cuerpo"],
+                    "ideas": ["vida", "tierra", "universo", "numeros", "cuerpo"],
                 },
             },
         },
+    },
+    "q1b": {
+        # La unica pregunta que no se le hace a todo el mundo. Existe porque en
+        # literatura q1 pregunta por estado de animo, y el animo no separa
+        # estantes: quien pide "una lectura amena que me entretenga" puede
+        # recibir a Dostoievski. El genero del catalogo si los separa, en cuatro
+        # montones grandes (novela 341, genero 167, breves 135, clasicos 116),
+        # todos comodos sobre _PISO_POOL.
+        #
+        # Se llama q1b y no q2 para no renumerar: funes_sesiones tiene columnas
+        # fijas q1..q4 y una bitacora de sesiones ya guardadas.
+        "titulo": "La Forma",
+        "pregunta": "¿Y qué clase de libro tenés ganas de leer?",
+        "opciones": {
+            "novela": "Una novela, con su historia y sus personajes.",
+            "genero": "Policial, suspenso, fantástico o ciencia ficción.",
+            "clasicos": "Un clásico, de los que sobrevivieron a su época.",
+            "breves": "Cuentos, poesía, teatro, ensayo o memorias.",
+        },
+        "solo_macros": ["literatura"],
+        "filtro": "forma",
+        # No entra al vector, por el mismo motivo que q0: el catalogo ya quedo
+        # recortado por este eje, y meter ademas "una novela" en el texto que se
+        # embebe filtraria dos veces por lo mismo y le comeria lugar a q1 y q3,
+        # que son las que dicen algo que el filtro no dice.
+        "en_consulta": False,
     },
     "q2": {
         "titulo": "La Densidad y Extensión",
@@ -382,6 +461,20 @@ def resolver(clave: str, respuestas: dict) -> dict:
     return {**pregunta, **variante}
 
 
+def aplica(clave: str, respuestas: dict) -> bool:
+    """Si esta pregunta hay que hacerla, dada la macro que eligio el lector.
+
+    Casi todas aplican siempre; las que no lo declaran con `solo_macros`. Se
+    resuelve aca y no con `variantes` porque resolver() cae a la variante de
+    _MACRO_POR_DEFECTO cuando una macro no tiene la suya, asi que una pregunta
+    declarada solo como variante de literatura igual se le serviria a historia y
+    divulgacion. El cliente tiene el espejo de esta funcion."""
+    solo = PREGUNTAS.get(clave, {}).get("solo_macros")
+    if not solo:
+        return clave in PREGUNTAS
+    return str(respuestas.get("q0") or "").strip() in solo
+
+
 _SYSTEM_ANCLA = (
     "Sos un bibliotecario. Te dan uno o mas autores u obras que un lector "
     "menciona como referencia de lo que quiere leer.\n\n"
@@ -398,32 +491,46 @@ _SYSTEM_ANCLA = (
 
 
 _SYSTEM_VOZ = (
-    "Sos Funes, un analista teorico que recomienda libros. Nunca decis que "
-    "elegiste un libro con filtros, opciones, base de datos, algoritmo o "
-    "busqueda: para vos el libro emerge de una lectura de la situacion del "
-    "lector, no de una consulta tecnica. Nunca repitas literalmente lo que "
-    "el usuario eligio en el formulario ni menciones que hubo un formulario.\n\n"
-    "Tu intervencion tiene siempre dos ideas, cada una en su propio mensaje "
-    "(el cliente las muestra como mensajes de chat separados, uno debajo del "
-    "otro):\n"
-    "1) Una premisa teorica corta (1 oracion) que referencia algun concepto "
-    "sociologico o filosofico pertinente a la busqueda del lector (cansancio, "
-    "hiperconectividad, distraccion, identidad, urbanismo, autoexplotacion, "
-    "lo que corresponda), sin diagnosticos cerrados ni jerga vacia.\n"
-    "2) La revelacion del libro (titulo y autor) enmarcada como una "
-    "consecuencia natural de esa premisa, no como un resultado de sistema, en "
-    "1 o 2 oraciones cortas. Tono rioplatense, analitico pero calido, nunca "
-    "grandilocuente.\n\n"
-    "Formato de salida: escribi cada mensaje en su propia linea, separados "
-    "por un simple salto de linea ('\\n'). NUNCA partas un mensaje en mitad "
-    "de una oracion, de una sigla o de un nombre compuesto — un salto de "
-    "linea solo puede ir entre dos ideas completas. Por ejemplo, si el autor "
-    "se llama 'H. G. Wells', el nombre completo tiene que quedar en un solo "
-    "mensaje, nunca cortado despues de 'H.' o 'G.'. Escribi en espanol "
-    "rioplatense, 2 a 3 oraciones cortas en total repartidas en esos "
-    "mensajes, sin markdown, sin listas, sin comillas alrededor del titulo "
-    "del libro."
+    "Sos Funes, un librero que acaba de elegir un libro para alguien con quien "
+    "estuvo charlando. Nunca decis que lo elegiste con filtros, opciones, base "
+    "de datos, algoritmo o busqueda: para vos el libro sale de haber escuchado "
+    "a esa persona. Nunca menciones que hubo un formulario ni nombres las "
+    "preguntas como preguntas.\n\n"
+    "Tu intervencion son TRES mensajes, cada uno en su propia linea (el "
+    "cliente los muestra como mensajes de chat separados, uno debajo del "
+    "otro):\n\n"
+    "1) EL LIBRO, sin preambulo. Exactamente esta forma:\n"
+    "   Entonces, te recomiendo TITULO, de AUTOR.\n"
+    "   Nada mas. Sin adjetivos, sin premisa previa, sin comillas.\n\n"
+    "2) DE QUE VA, en 1 o 2 oraciones cortas. Que pasa en el libro: la "
+    "situacion, el conflicto, quien es el que mira. Contalo como se lo "
+    "contarias a alguien parado en el mostrador, no como una contratapa. De "
+    "todo lo que hay en la sinopsis interna, elegi el angulo que mas le puede "
+    "importar a ESTA persona en particular. Pero aca todavia NO expliques por "
+    "que se lo recomendas: esto es el libro, no el argumento.\n\n"
+    "3) POR QUE ES PARA VOS, en 2 o 3 oraciones cortas y en criollo. Aca si "
+    "conectas: que hace ese libro con lo que ESA persona dijo. Usa lo que te "
+    "den: si menciono un libro o un autor de referencia, apoyate en el (por "
+    "parecido o por contraste, lo que sea cierto); si dijo cuanto queria leer "
+    "o que le importa de un libro, que se note que lo tuviste en cuenta. Este "
+    "mensaje puede ser mas abstracto que el anterior: hablar de la clase de "
+    "lectura que es y de que se lleva quien la hace.\n\n"
+    "Podes retomar sus palabras: es lo que hace que se sienta escuchado. Lo "
+    "que no podes hacer es citarlas como opciones de una lista.\n\n"
+    "REGLA QUE NO SE NEGOCIA: si el libro NO cumple con algo que la persona "
+    "pidio, no lo maquilles ni des vuelta sus palabras para que parezca que si. "
+    "Callatelo, o decilo derecho ('no es corto, pero...'). Preferimos que se "
+    "note el error a que la explicacion sea falsa: esa persona nos esta "
+    "prestando su criterio para corregirnos.\n\n"
+    "Nunca inventes datos del libro que no esten en la sinopsis que te pasan. "
+    "Nada de trama, final ni personajes que no aparezcan ahi.\n\n"
+    "Formato: los tres mensajes separados por un solo salto de linea ('\\n'). "
+    "NUNCA partas un mensaje en mitad de una oracion, de una sigla o de un "
+    "nombre compuesto: si el autor se llama 'H. G. Wells', el nombre entero "
+    "queda en un solo mensaje. Espanol rioplatense, sin markdown, sin listas, "
+    "sin comillas alrededor del titulo. Breve: es una charla, no un monologo."
 )
+
 
 _SYSTEM_PREGUNTA = (
     "Sos Funes, un analista teorico que conversa con un lector antes de "
@@ -535,6 +642,24 @@ async def cantidad_libros() -> int | None:
     return _cant_cache
 
 
+def _parsear_rasgos(crudo) -> dict:
+    """Los rasgos de un libro como dict, venga como venga.
+
+    asyncpg devuelve jsonb como str mientras no se registre un codec, pero un
+    dict tambien es valido (por si algun dia se registra, o en los tests). Todo
+    lo demas -None, JSON invalido, un JSON que no es objeto- vale {}: no tener
+    rasgos nunca puede descartar un libro."""
+    if isinstance(crudo, dict):
+        return crudo
+    if not crudo:
+        return {}
+    try:
+        datos = json.loads(crudo)
+    except (ValueError, TypeError):
+        return {}
+    return datos if isinstance(datos, dict) else {}
+
+
 async def _libros() -> list[dict]:
     """Carga perezosa y cacheada en memoria desde `funes_libros` (Postgres).
     Requiere que app.db.conectar() ya se haya llamado (lo hace el lifespan
@@ -582,6 +707,12 @@ async def _libros() -> list[dict]:
                 libro["embedding_experiencia"] = array.array("f", libro["embedding_experiencia"])
                 libro["_norma_experiencia"] = (
                     sum(x * x for x in libro["embedding_experiencia"]) ** 0.5)
+            # rasgos es jsonb, pero asyncpg lo devuelve como TEXTO porque no hay
+            # codec de json registrado (ver app/db.py). Si no se parsea aca, el
+            # filtro por tema no falla: hace `"mente" in <str>` y da cualquier
+            # cosa. Un libro con rasgos rotos queda con {}, que es lo mismo que
+            # no tenerlos, y el filtro nunca lo descarta por eso.
+            libro["rasgos"] = _parsear_rasgos(libro.get("rasgos"))
             libros.append(libro)
 
         _calcular_centrados(libros)
@@ -761,6 +892,124 @@ def _menciono_el_libro(titulo: str, q4_normalizada: str) -> bool:
     return any(f" {c} " in q4_normalizada for c in _claves_de_titulo(titulo))
 
 
+# Los generos y subgeneros que arman cada una de las cuatro formas de
+# literatura. Se comparan normalizados (sin acentos, en minusculas), asi que
+# aca se escriben como estan en el catalogo y da igual como vengan los datos.
+#
+# El orden importa: un libro se clasifica por la PRIMERA forma que lo reclama, y
+# "genero" va antes que "novela" porque el policial y el suspenso viven como
+# subgenero DE novelas. Al reves, todo el policial caeria en novela.
+_FORMAS_LITERATURA = ("clasicos", "genero", "novela", "breves")
+_GENEROS_FORMA = {
+    "clasicos": ("clasicos",),
+    "genero": ("ciencia ficcion fantastica",),
+    "breves": ("cuentos relatos", "poesia", "teatro", "ensayo",
+               "biografias y relatos"),
+}
+_SUBGENEROS_FORMA = {"genero": ("policial", "suspenso", "terror")}
+
+# Respaldo por rasgos->>'tema', para el libro al que el genero no lo clasifica.
+# Va DESPUES del genero y nunca antes, porque miden cosas distintas: `tema` dice
+# que forma de prosa es (novela, cuento, ensayo) y no si esa novela es policial.
+# Medido: de los 167 libros del balde "genero", 150 tienen tema "novela"; usar
+# el tema primero disolveria el balde entero dentro de "novela".
+#
+# De respaldo, en cambio, rescata 51 de los 67 libros que el genero deja sin
+# clasificar -35 de ellos ensayos, que el balde "breves" promete en su etiqueta
+# y no estaba entregando-. Y es el unico campo que va a tener el catalogo nuevo
+# para los titulos que vienen solo de Cuspide, cuya taxonomia no baja a genero.
+# "otro" no mapea a nada a proposito: es el libro que no es ninguna de las
+# cuatro formas, y ahi quedarse afuera es la respuesta correcta.
+_TEMA_FORMA = {
+    "novela": "novela",
+    "genero": "genero",
+    "clasico": "clasicos",
+    "cuento": "breves", "poesia": "breves", "teatro": "breves",
+    "ensayo": "breves", "memoria": "breves",
+}
+
+# Las preguntas que pueden declarar un filtro duro por tema, en el orden en
+# que se prueban. Son excluyentes entre si -cada una vive en una macro
+# distinta- asi que el orden no decide nada, pero se corta en la primera.
+_FILTROS_DE_TEMA = ("q1", "q1b")
+
+
+def _forma_del_libro(libro: dict) -> str | None:
+    """Cual de las cuatro formas de literatura es este libro, o None.
+
+    Se mira primero el genero/subgenero y solo despues el tema de `rasgos`. El
+    orden no es cosmetico: ver el comentario de _TEMA_FORMA.
+
+    None es un veredicto, no un error: quedan 16 de los 826 sin forma (los que
+    estan mal clasificados -autoayuda, cocina, un diccionario- mas los que el
+    LLM etiqueto "otro"). Con el filtro prendido no salen nunca, que es lo mismo
+    que ya pasa en historia con un subgenero desconocido, y aca ademas saca
+    basura."""
+    genero = _normalizar_texto(libro.get("genero") or "")
+    subgenero = _normalizar_texto(libro.get("subgenero") or "")
+    for forma in _FORMAS_LITERATURA:
+        if genero in _GENEROS_FORMA.get(forma, ()):
+            return forma
+        if subgenero in _SUBGENEROS_FORMA.get(forma, ()):
+            return forma
+    # "novela" se define por descarte dentro de las novelas: cualquier NOVELAS
+    # que no se haya llevado "genero" mas arriba.
+    if genero.startswith("novela"):
+        return "novela"
+    return _TEMA_FORMA.get((libro.get("rasgos") or {}).get("tema"))
+
+
+def _recorte_por_tema(libros: list[dict], respuestas: dict) -> tuple[list[dict] | None, str | None]:
+    """El catalogo recortado por el filtro duro de tema que corresponda a esta
+    macro, o (None, None) si esta macro no declara ninguno.
+
+    Devolver el recorte sin aplicarlo es a proposito: quien llama es el que sabe
+    contra que piso compararlo y como aflojar.
+
+    Las tres macros usan el campo que les sirve y son excluyentes entre si
+    -historia el subgenero, literatura el genero, divulgacion los rasgos-, asi
+    que en una conversacion se aplica a lo sumo uno. Por eso se recorren las
+    preguntas y se corta en la primera que reclama: el filtro de historia y el
+    de divulgacion cuelgan de q1, el de literatura de q1b, y buscarlos por el
+    valor de "filtro" evita tener que saber de cual cuelga cada uno."""
+    for clave in _FILTROS_DE_TEMA:
+        if not aplica(clave, respuestas):
+            continue
+        recorte = _recorte_de(clave, libros, respuestas)
+        if recorte[0] is not None:
+            return recorte
+    return None, None
+
+
+def _recorte_de(clave: str, libros: list[dict],
+                respuestas: dict) -> tuple[list[dict] | None, str | None]:
+    """El recorte que pide una pregunta concreta. Ver _recorte_por_tema."""
+    pregunta = resolver(clave, respuestas)
+    modo = pregunta.get("filtro")
+    elegida = str(respuestas.get(clave) or "").strip()
+
+    if modo == "subgenero" and _FILTRO_SUBGENERO:
+        permitidos = (pregunta.get("subgeneros") or {}).get(elegida)
+        if permitidos:
+            permitidos = {_normalizar_texto(x) for x in permitidos}
+            return [l for l in libros
+                    if _normalizar_texto(l.get("subgenero") or "") in permitidos], "subgenero"
+
+    if modo == "tema" and _FILTRO_TEMA:
+        ajenos = set((pregunta.get("temas_ajenos") or {}).get(elegida) or ())
+        if ajenos:
+            # Por exclusion: sobrevive todo lo que no sea de un tema ajeno,
+            # incluido lo que no tiene tema. Ver el comentario del mapa.
+            return [l for l in libros
+                    if (l.get("rasgos") or {}).get("tema") not in ajenos], "tema"
+
+    if modo == "forma" and _FILTRO_FORMA:
+        if elegida in _FORMAS_LITERATURA:
+            return [l for l in libros if _forma_del_libro(l) == elegida], "forma"
+
+    return None, None
+
+
 def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict], int, str | None]:
     """Aplica los filtros duros antes del coseno y devuelve
     (libros, tamano_del_pool, filtro_aflojado).
@@ -800,22 +1049,16 @@ def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict],
     # Va DESPUES de la macro y ANTES de la banda de paginas, o sea de lo mas
     # elegido explicitamente a lo mas derivado por nosotros, que es el mismo
     # orden en el que despues se afloja al reves.
-    aflojado_subgenero = None
-    pregunta_q1 = resolver("q1", respuestas)
-    if _FILTRO_SUBGENERO and pregunta_q1.get("filtro") == "subgenero":
-        permitidos = (pregunta_q1.get("subgeneros") or {}).get(
-            str(respuestas.get("q1") or "").strip())
-        if permitidos:
-            permitidos = {p.strip().upper() for p in permitidos}
-            recortado = [l for l in libros
-                         if (l.get("subgenero") or "").strip().upper() in permitidos]
-            # Un subgenero vacio o desconocido no descarta al libro solo si el
-            # recorte quedaria demasiado chico: preferimos un pool con algun
-            # intruso a un top-8 elegido entre veinte libros.
-            if len(recortado) >= _PISO_POOL:
-                libros = recortado
-            else:
-                aflojado_subgenero = "subgenero"
+    aflojado_tema = None
+    recortado, etiqueta = _recorte_por_tema(libros, respuestas)
+    if recortado is not None:
+        # El dato faltante no descarta al libro solo si el recorte quedaria
+        # demasiado chico: preferimos un pool con algun intruso a un top-8
+        # elegido entre veinte libros.
+        if len(recortado) >= _PISO_POOL:
+            libros = recortado
+        else:
+            aflojado_tema = etiqueta
 
     # Fuera lo que la persona ya nos dijo que leyo. Va por titulo y autor y no
     # por id: si dijo que leyo un libro, tampoco quiere otra edicion del mismo.
@@ -826,7 +1069,7 @@ def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict],
 
     banda = _BANDAS_PAGINAS.get(str(respuestas.get("q2") or "").strip())
     if not banda:
-        return libros, len(libros), aflojado_subgenero
+        return libros, len(libros), aflojado_tema
 
     minimo, maximo = banda
     con_banda = [
@@ -837,7 +1080,7 @@ def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict],
     ]
     if len(con_banda) < _PISO_POOL:
         return libros, len(libros), "paginas"
-    return con_banda, len(con_banda), aflojado_subgenero
+    return con_banda, len(con_banda), aflojado_tema
 
 
 def _construir_texto_perfil(respuestas: dict) -> str:
@@ -1486,14 +1729,41 @@ async def _reformular_rechazo(motivo: str) -> str:
     return ""
 
 
+def _dicho_por_el_lector(respuestas: dict) -> str:
+    """Lo que la persona eligio, con las palabras que leyo en pantalla.
+
+    La voz recibia _construir_texto_consulta(), que esta escrito en idioma de
+    catalogo ("Una novela o un relato introspectivo, de tono intimo...") porque
+    su laburo es parecerse a un abstracto para el coseno. Sirve para buscar y no
+    para conversar: con eso adelante, Funes no tenia forma de retomar nada de lo
+    que la persona efectivamente toco, y las recomendaciones sonaban a que
+    podrian haberse escrito sin conocerla. Aca se rearman las etiquetas tal cual
+    se mostraron, que es lo unico que esa persona vio."""
+    partes = []
+    for clave in PREGUNTAS:
+        elegida = str(respuestas.get(clave) or "").strip()
+        # q4 es texto libre y va aparte, presentada como lo que es: la lectura
+        # que la persona nombro, no una opcion que eligio de una lista.
+        if not elegida or clave == "q4":
+            continue
+        # resolver() y no PREGUNTAS[clave]: q1 tiene un juego de opciones por
+        # macro, y el de la macro equivocada no matchearia con lo elegido.
+        etiqueta = (resolver(clave, respuestas).get("opciones") or {}).get(elegida)
+        partes.append(f"- {etiqueta or elegida}")
+    return "\n".join(partes)
+
+
 async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> str:
-    contexto = _construir_texto_consulta(respuestas)
+    dicho = _dicho_por_el_lector(respuestas)
+    referencia = str(respuestas.get("q4") or "").strip()
     resumen_profundas = "\n".join(
         f"P: {p.get('pregunta', '')}\nR: {p.get('respuesta', '')}" for p in profundas
     )
     mensaje_usuario = (
-        f"El lector describio lo que busca asi: {contexto}\n\n"
-        f"Ademas charlaron esto:\n{resumen_profundas}\n\n"
+        f"Esto es lo que la persona eligio, con las mismas palabras que leyo:\n"
+        f"{dicho}\n\n"
+        + (f"Nombro esta lectura como referencia: {referencia}\n\n" if referencia else "")
+        + f"Ademas charlaron esto:\n{resumen_profundas}\n\n"
         f"El libro que le corresponde es: \"{libro['titulo']}\", de {libro['autor']}.\n"
         f"Sinopsis interna (no citarla textual, es solo contexto tuyo): {libro['abstracto']}\n\n"
         "Escribi tu intervencion siguiendo las reglas del system prompt."
