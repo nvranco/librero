@@ -8,10 +8,12 @@ los `max_length`, un cliente puede mandar `ya_mostrados` con 50 ids y sacarse 50
 recomendaciones, o un q4 de un megabyte que se va derecho al embedding.
 """
 
+import hashlib
 import json
 import logging
 import secrets
 import uuid
+from pathlib import Path
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request
@@ -32,6 +34,31 @@ templates = Jinja2Templates(directory="app/templates")
 
 def _js(valor) -> str:
     return json.dumps(valor).replace("</", "<\\/")
+
+
+_OG = Path("app/static/funes-og.png")
+_og_version: tuple[float, str] | None = None
+
+
+def _version_og() -> str:
+    """Un hash corto del contenido de la imagen de la preview, para colgarlo de
+    su URL.
+
+    Meta cachea la imagen por DIRECCION, aparte del HTML: pedirle que vuelva a
+    leer la pagina refresca el titulo y el texto, pero la imagen se la queda la
+    que ya bajo. Sin esto, cambiar el archivo no cambia lo que se ve al compartir
+    el link, y la unica salida es renombrarlo a mano cada vez.
+
+    Se recalcula solo cuando cambia la fecha del archivo, asi que no cuesta nada
+    por request."""
+    global _og_version
+    try:
+        marca = _OG.stat().st_mtime
+    except OSError:
+        return "1"
+    if _og_version is None or _og_version[0] != marca:
+        _og_version = (marca, hashlib.sha1(_OG.read_bytes()).hexdigest()[:10])
+    return _og_version[1]
 
 
 def _base_absoluta(request: Request) -> str:
@@ -205,6 +232,7 @@ async def pagina(request: Request):
             "cant_libros_js": _js(await nucleo.cantidad_libros()),
             "origen_js": _js(origen),
             "base_url": _base_absoluta(request),
+            "og_version": _version_og(),
         },
     )
 
