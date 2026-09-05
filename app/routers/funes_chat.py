@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from app import db
 from app.config import ADMIN_TOKEN, FUNES_CONTACTO
-from app.funes_chat import bitacora, limite, mercadolibre, nucleo, qr
+from app.funes_chat import bitacora, limite, nucleo, precios, qr
 from app.funes_chat.nucleo import ErrorFunesChat
 
 logger = logging.getLogger("librero.funes_chat")
@@ -390,7 +390,7 @@ async def precio(request: Request, cuerpo: PedidoPrecio):
     libro = await nucleo.buscar_libro(cuerpo.libro_id)
     if libro is None:
         raise HTTPException(status_code=404, detail="Libro no encontrado.")
-    return await mercadolibre.precio(libro)
+    return await precios.precio(libro)
 
 
 # El nonce del OAuth vive en memoria porque el flujo dura segundos y se corre a
@@ -412,7 +412,7 @@ async def ml_callback(code: str = "", state: str = ""):
     _estado_oauth.pop(state, None)
     if not code:
         raise HTTPException(status_code=400, detail="Falta el code.")
-    ok = await mercadolibre.canjear_codigo(code)
+    ok = await precios.canjear_codigo(code)
     cuerpo = (
         "MercadoLibre quedo conectado. Ya podes cerrar esta pestaña."
         if ok else
@@ -458,14 +458,14 @@ def _validar_admin(token: str) -> None:
 async def ml_conectar(token: str):
     """Arranca el OAuth de MercadoLibre. Se abre a mano, una sola vez."""
     _validar_admin(token)
-    if not mercadolibre.hay_credenciales():
+    if not precios.hay_credenciales():
         raise HTTPException(
             status_code=400,
             detail="Faltan ML_CLIENT_ID / ML_CLIENT_SECRET / ML_REDIRECT_URI en el entorno.",
         )
     estado = str(uuid.uuid4())
     _estado_oauth[estado] = 0.0
-    return RedirectResponse(mercadolibre.url_autorizacion(estado), status_code=307)
+    return RedirectResponse(precios.url_autorizacion(estado), status_code=307)
 
 
 @router.post("/funes/admin/{token}/recargar-catalogo")
@@ -539,6 +539,59 @@ async def admin_bitacora(token: str):
         "concentracion": [dict(f) for f in concentracion],
         "pareado_1ra_vs_2da": dict(pareado) if pareado else {},
     }
+
+
+@router.get("/funes/admin/{token}/conversaciones")
+async def admin_conversaciones(token: str, limite: int = 5, sesion: str = ""):
+    """Las ultimas conversaciones completas, tal como las vivio el lector.
+
+    El resto del panel devuelve agregados, que sirven para medir pero no para
+    entender. Cuando alguien usa Funes y algo sale raro, lo que hace falta es
+    leer ESA charla: que escribio en q4, que le preguntamos, que libros dijo que
+    ya habia leido y que contesto a cada recomendacion.
+
+    Es de solo lectura y va detras del mismo token que el resto del panel."""
+    _validar_admin(token)
+    limite = max(1, min(int(limite), 25))
+
+    if sesion:
+        sesiones = await db.pool().fetch(
+            "SELECT * FROM funes_sesiones WHERE id = $1", sesion)
+    else:
+        # Por ultima actividad y no por creado_en: interesa la que se movio
+        # recien, que es la que uno viene a mirar.
+        sesiones = await db.pool().fetch(
+            "SELECT * FROM funes_sesiones ORDER BY ultima_act DESC LIMIT $1", limite)
+
+    salida = []
+    for s in sesiones:
+        recomendaciones = await db.pool().fetch(
+            """
+            SELECT orden, libro_id, titulo, autor, voz, veredicto, justificacion,
+                   motivo_rechazo, motivo_reformulado, ancla_texto, ancla_expandida,
+                   ancla_conocida, texto_perfil, texto_consulta, texto_afinado,
+                   profundas, candidatos, clic_conseguir_en, creado_en
+            FROM funes_recomendaciones WHERE sesion_id = $1 ORDER BY orden
+            """, s["id"])
+        leidos = await db.pool().fetch(
+            "SELECT titulo, autor, opinion, creado_en FROM funes_leidos "
+            "WHERE sesion_id = $1 ORDER BY creado_en", s["id"])
+
+        fila = dict(s)
+        # El top-8 con sus cosenos es lo mas pesado de todo y casi nunca es lo
+        # que uno viene a mirar; se resume salvo que se pida una sesion puntual.
+        recs = []
+        for r in recomendaciones:
+            d = dict(r)
+            if not sesion and d.get("candidatos"):
+                cands = json.loads(d["candidatos"]) if isinstance(d["candidatos"], str) else d["candidatos"]
+                d["candidatos"] = f"({len(cands)} candidatos; pedi ?sesion={s['id']} para verlos)"
+            recs.append(d)
+        fila["recomendaciones"] = recs
+        fila["leidos"] = [dict(x) for x in leidos]
+        salida.append(fila)
+
+    return {"conversaciones": salida}
 
 
 @router.post("/funes/mas-info")
