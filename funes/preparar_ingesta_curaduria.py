@@ -199,25 +199,42 @@ def _misma_obra(a: tuple[str, str], b: tuple[str, str]) -> bool:
     return _autores_compatibles(a[1], b[1])
 
 
+def _es_recorte(nuevo: str, viejo: str) -> bool:
+    """Si `nuevo` es `viejo` al que le cortaron el final.
+
+    Se compara sin acentos ni mayusculas porque el titulo nuevo suele traer los
+    acentos que al viejo le faltan; lo que se mira es si perdio texto. Se pide
+    que el viejo sea sensiblemente mas largo para no confundir con una edicion
+    que de verdad se llama distinto."""
+    a, b = nucleo._normalizar_texto(nuevo), nucleo._normalizar_texto(viejo)
+    return bool(a) and b.startswith(a) and len(b) > len(a) + 4
+
+
+def _puntaje_fila(f) -> tuple:
+    """Que tan completa esta una fila. Decide cual sobrevive cuando dos son la
+    misma obra: primero la confianza del abstracto, despues cuantos campos trae,
+    y al final el largo del abstracto."""
+    orden = {"alta": 2, "media": 1, "baja": 0}
+    completos = sum(1 for c in ("isbn", "pag_ok", "pag_scrap", "anio_obra",
+                                "genero", "subgenero", "autor_presentable") if f[c])
+    return (orden.get(f["confianza"], 0), completos, len(f["abstracto"] or ""))
+
+
 def _mejor(uno: dict, otro: dict) -> dict:
     """De dos filas de la misma obra, con cual se queda.
 
     Gana la de confianza mas alta; a igual confianza, la que tenga mas campos
     completos. No se mezclan las dos: el abstracto y su embedding tienen que
     venir de la misma pasada o el vector deja de describir al texto."""
-    orden = {"alta": 2, "media": 1, "baja": 0}
-    def puntaje(f):
-        completos = sum(1 for c in ("isbn", "pag_ok", "pag_scrap", "anio_obra",
-                                    "genero", "subgenero", "autor_presentable")
-                        if (f[c] if isinstance(f, dict) else f[c]))
-        return (orden.get(f["confianza"], 0), completos, len(f["abstracto"] or ""))
-    return uno if puntaje(uno) >= puntaje(otro) else otro
+    return uno if _puntaje_fila(uno) >= _puntaje_fila(otro) else otro
 
 
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pisar-existentes", action="store_true",
-                        help="incluir tambien los que ya estan en funes_libros (ya_en_funes=1)")
+                        help="(sin efecto: el dedupe decide solo cual pisa)")
+    parser.add_argument("--aplicar", action="store_true",
+                        help="ademas de armar funes_ingesta, volcarla a funes_libros LOCAL")
     args = parser.parse_args()
 
     if not CURADURIA.exists():
@@ -244,8 +261,35 @@ async def main() -> None:
 
     await db.conectar()
     try:
+        # Se empareja contra TODO funes_libros, incluidas las filas que dejo una
+        # corrida anterior de este mismo script. Es lo que mantiene los ids
+        # estables: en un re-run, cada fila de la ingesta reencuentra su propia
+        # version anterior -mismo titulo, mismo autor, mismo ISBN- y recupera su
+        # id en vez de inventarse uno nuevo.
         ya_cargados = [dict(f) for f in await db.pool().fetch(
             "SELECT id, titulo, autor, isbn FROM funes_libros")]
+
+        # Pero re-DERIVAR sobre un catalogo ya aplicado no es inocuo, y esto
+        # existe porque paso: en la primera corrida "Diario de Ana Frank" y "El
+        # diario de Ana Frank" emparejaron con el MISMO libro viejo y quedaron
+        # fusionados en uno; en la segunda, como los dos ya existian por
+        # separado, cada uno emparejo con el suyo y el duplicado volvio. Un
+        # merge que da un resultado distinto segun cuantas veces se corrio no es
+        # un merge, asi que se corta.
+        aplicado = await db.pool().fetchval(
+            "SELECT count(*) FROM funes_libros WHERE fuente = $1", FUENTE)
+        if aplicado and args.aplicar:
+            respaldos = [f["table_name"] for f in await db.pool().fetch(
+                "SELECT table_name FROM information_schema.tables "
+                "WHERE table_name LIKE 'funes_libros_%' ORDER BY 1")]
+            raise SystemExit(
+                f"\nfunes_libros ya tiene {aplicado} libros de esta curaduria.\n"
+                "Volver a aplicar sobre eso puede reintroducir duplicados que la\n"
+                "primera corrida habia fusionado. Restaura primero:\n\n"
+                "    DROP TABLE funes_libros;\n"
+                f"    CREATE TABLE funes_libros AS SELECT * FROM {respaldos[-1] if respaldos else '<respaldo>'};\n\n"
+                f"respaldos disponibles: {', '.join(respaldos) or 'ninguno'}\n"
+                "(sin --aplicar el script corre igual y solo rearma funes_ingesta)")
         for v in ya_cargados:
             v["_clave"] = _clave_obra(v["titulo"], v["autor"])
         # El ISBN identifica una edicion sin ambiguedad, asi que sirve donde el
@@ -259,6 +303,15 @@ async def main() -> None:
         usados = {v["id"] for v in ya_cargados}
         preparados, rechazados = [], []
         fusiones_internas, pisados, por_autor_faltante = [], [], []
+        recortes: list = []
+        # id ya reclamado -> (posicion en `preparados`, fila cruda que lo gano).
+        # Sin esto, dos filas distintas de la ingesta pueden emparejar con el
+        # MISMO libro ya cargado -"Diario de Ana Frank" y "El diario de Ana
+        # Frank" lo hicieron, una por titulo+autor y la otra por ISBN- y quedan
+        # dos filas con el mismo id. Postgres lo rechaza al volcar ("ON CONFLICT
+        # DO UPDATE cannot affect row a second time"), que al menos es ruidoso;
+        # lo silencioso seria que una pisara a la otra.
+        reclamados: dict = {}
 
         # --- Dedupe DENTRO de la curaduria, con los titulos ya limpios.
         unicos: list = []
@@ -331,6 +384,15 @@ async def main() -> None:
                 # Pisar no puede significar empeorar un campo: lo que el nuevo
                 # no trae se conserva del viejo.
                 autor = autor or gemelo["autor"]
+                # Y tampoco puede acortar el titulo. El catalogo viejo se curo a
+                # mano y a veces tiene el titulo completo donde el scraping tiene
+                # solo la primera palabra: "DeMente. El cerebro, un hueso duro de
+                # roer" contra "DEMENTE". Si el titulo nuevo es el viejo cortado,
+                # gana el viejo; si son distintos de verdad, gana el nuevo, que
+                # es el que tiene los acentos puestos.
+                if _es_recorte(titulo, gemelo["titulo"]):
+                    recortes.append((titulo, gemelo["titulo"]))
+                    titulo = gemelo["titulo"]
             if not id_:
                 base = slugify(titulo) or "libro"
                 id_ = base
@@ -342,7 +404,7 @@ async def main() -> None:
                     n += 1
             usados.add(id_)
 
-            preparados.append({
+            registro = {
                 "id": id_,
                 "titulo": titulo,
                 "autor": autor,
@@ -363,7 +425,17 @@ async def main() -> None:
                 "macro_manual": f["macro"],
                 "rasgos": f["rasgos"],
                 "version_reescritura": f["version"],
-            })
+            }
+            if id_ in reclamados:
+                posicion, previa = reclamados[id_]
+                fusiones_internas.append(
+                    (titulo, preparados[posicion]["titulo"], f["titulo"]))
+                if _puntaje_fila(f) > _puntaje_fila(previa):
+                    preparados[posicion] = registro
+                    reclamados[id_] = (posicion, f)
+                continue
+            reclamados[id_] = (len(preparados), f)
+            preparados.append(registro)
 
         print(f"preparados: {len(preparados)} | rechazados: {len(rechazados)}")
         print(f"\nPISAN a un libro ya cargado: {len(pisados)}")
@@ -379,6 +451,11 @@ async def main() -> None:
             print(f"\nFUSIONADOS dentro de la curaduria: {len(fusiones_internas)}")
             for limpio, a, b in fusiones_internas:
                 print(f"   {limpio[:40]:42} <- {a[:30]!r} + {b[:30]!r}")
+        if recortes:
+            print(f"\nTITULO conservado del catalogo viejo, porque el nuevo lo "
+                  f"acortaba ({len(recortes)}):")
+            for corto, largo in recortes[:8]:
+                print(f"   {corto[:34]:36} <- se conserva {largo[:44]}")
         if por_autor_faltante:
             print(f"\nFUSIONADOS porque a un lado le falta el autor "
                   f"({len(por_autor_faltante)}) — revisar que sean el mismo libro:")
@@ -400,8 +477,55 @@ async def main() -> None:
         print("   (funes_libros NO se toco, y Railway tampoco)")
 
         await auditar(preparados)
+
+        if args.aplicar:
+            await aplicar()
+        else:
+            print("\n(Para volcarla a funes_libros local: --aplicar. Railway no se toca")
+            print(" desde aca en ningun caso.)")
     finally:
         await db.cerrar()
+
+
+async def aplicar() -> None:
+    """Vuelca funes_ingesta a funes_libros, en la base LOCAL.
+
+    Antes hace una copia de funes_libros. No es paranoia: el volcado PISA 269
+    libros del catalogo viejo, y si el dedupe se equivoco en uno la unica forma
+    de verlo es comparar contra el estado anterior. La copia se llama con la
+    fecha para que queden varias y se sepa cual es cual."""
+    import datetime
+
+    # Con la hora y no solo la fecha: dos corridas el mismo dia se pisaban el
+    # respaldo, y la segunda guardaba el estado YA aplicado, o sea nada util.
+    respaldo = f"funes_libros_antes_{datetime.datetime.now():%Y%m%d_%H%M}"
+    antes = await db.pool().fetchval("SELECT count(*) FROM funes_libros")
+    await db.pool().execute(f"DROP TABLE IF EXISTS {respaldo}")
+    await db.pool().execute(
+        f"CREATE TABLE {respaldo} AS SELECT * FROM funes_libros")
+    print(f"\nrespaldo: {respaldo} ({antes} libros)")
+
+    columnas = [f["column_name"] for f in await db.pool().fetch(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_name = 'funes_ingesta' AND column_name <> 'creado_en' "
+        "ORDER BY ordinal_position")]
+    lista = ", ".join(columnas)
+    set_ = ", ".join(f"{c} = EXCLUDED.{c}" for c in columnas if c != "id")
+    await db.pool().execute(
+        f"INSERT INTO funes_libros ({lista}) SELECT {lista} FROM funes_ingesta "
+        f"ON CONFLICT (id) DO UPDATE SET {set_}")
+
+    despues = await db.pool().fetchval("SELECT count(*) FROM funes_libros")
+    print(f"funes_libros: {antes} -> {despues}  (+{despues - antes} nuevos, "
+          f"{await db.pool().fetchval('SELECT count(*) FROM funes_ingesta') - (despues - antes)} pisados)")
+    for f in await db.pool().fetch(
+            "SELECT coalesce(macro_manual, macro) m, count(*) n, "
+            "count(rasgos) r, count(embedding) e FROM funes_libros GROUP BY 1 ORDER BY 2 DESC"):
+        print(f"   {f['m']:12} {f['n']:5} libros | {f['r']:5} con rasgos | {f['e']:5} vectorizados")
+    # La macro se recalcula en el proximo arranque (schema.sql), pero como se
+    # escribio macro_manual en todas las filas nuevas, el COALESCE las respeta.
+    print("\nAtencion: `macro` se recalcula al arrancar la app. Las filas nuevas")
+    print("traen macro_manual, asi que el COALESCE de schema.sql las respeta.")
 
 
 async def auditar(preparados: list[dict]) -> None:

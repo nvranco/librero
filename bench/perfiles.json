@@ -41,7 +41,11 @@
     "",
     "Tercer corte (2026-09-06): divulgacion pasa de 5 puertas a 4 y su filtro de",
     "exclusion a inclusion, asi que div-tecno-ia contesta 'universo'. Los numeros",
-    "de divulgacion anteriores a esta fecha no son comparables."
+    "de divulgacion anteriores a esta fecha no son comparables.",
+    "",
+    "Los titulos esperados se actualizaron cuando entro el catalogo curado: la",
+    "curaduria piso su version de algunos libros y su titulo presentable es otro",
+    "(\"Alejandria. En busca de la ciudad perdida\" pasó a \"Alejandria\")."
   ],
   "perfiles": [
     {
@@ -622,7 +626,7 @@
           "HISTORIOGRAFIA"
         ],
         "libros": [
-          "Alejandría. En busca de la ciudad perdida",
+          "Alejandría",
           "Antiguo Egipto",
           "Alejandro en el fin del mundo"
         ],
@@ -886,7 +890,7 @@
         "libros": [
           "Cerebros en construcción",
           "El cerebro matemático. Cómo nacen, viven y a veces mueren los números en nuestra mente",
-          "DeMente. El cerebro, un hueso duro de roer"
+          "Demente"
         ],
         "prohibido_subgeneros": [
           "BOTANICA",
@@ -958,7 +962,7 @@
         ],
         "libros": [
           "Automatizados",
-          "Big data. Breve manual para conocer la ciencia de datos que ya invadió nuestras vidas"
+          "Big data"
         ],
         "prohibido_subgeneros": [
           "BOTANICA",
