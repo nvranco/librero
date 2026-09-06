@@ -20,3 +20,8 @@ app/funes_chat/muestra.json
 # 1-2 GB, sitemaps y logs. Son insumo local de la curacion, no del repo.
 # `*.sqlite3` no alcanza: WAL deja tambien -wal y -shm al lado.
 funes/_scraping/
+
+# Herramientas de scraping de catalogo (Yenny/Cuspide) y sus datos.
+# Es utilitario local para juntar catalogo crudo, no parte de la app que
+# se despliega: no entra al repo.
+funes/scrapers/

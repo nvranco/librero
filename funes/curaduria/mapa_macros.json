@@ -1,0 +1,104 @@
+{
+  "_comentario": [
+    "Mapeo de la taxonomia de Cuspide (BISAC/Thema) a las 3 macros de Funes.",
+    "Se mapea por ID de categoria porque el nombre cambia y el id no.",
+    "Un producto puede colgar de varias ramas: gana la primera macro que matchee",
+    "en el orden historia -> divulgacion -> literatura, porque literatura es la",
+    "mas amplia y se comeria a las otras dos si se evaluara primero.",
+    "",
+    "OJO: la macro NO se escribe en la columna `macro` de funes_libros sino en",
+    "`macro_manual`. La columna `macro` la recalcula app/schema.sql en CADA",
+    "arranque con un CASE atado al vocabulario de El Ateneo, y todo lo que no",
+    "matchea cae a 'literatura' en silencio. `macro_manual` es la valvula de",
+    "escape que ese CASE respeta (va dentro de un COALESCE)."
+  ],
+  "literatura": {
+    "_por_que": "Ficcion y estudios literarios son literatura sin discusion. Filosofia se movio a divulgacion (ver mas abajo): el motor le agrego una quinta opcion a la pregunta de divulgacion ('las ideas') y schema.sql ya manda genero LIKE 'FILOSOF%' para alla. Critica literaria (dentro del id 789) NO se mueve: habla de literatura, no de ideas.",
+    "ids": [
+      822,
+      789
+    ],
+    "nombres": [
+      "Ficcion",
+      "Literatura, estudios literarios y biografias"
+    ]
+  },
+  "historia": {
+    "_por_que": "Historia y arqueologia es el nucleo. Politica y gobierno se suma porque en El Ateneo la historia vive bajo DERECHO Y CIENCIAS SOCIALES junto con POLITICA, y sin eso se pierden los libros de historia politica argentina, que son el nicho mas cargado del catalogo actual (143 de HISTORIA ARGENTINA).",
+    "ids": [
+      852,
+      2604
+    ],
+    "nombres": [
+      "Historia y arqueologia",
+      "Sociedad y ciencias sociales > Politica y gobierno"
+    ]
+  },
+  "divulgacion": {
+    "_por_que": "Espeja la categoria de El Ateneo 'CIENCIAS DE LA SALUD, NATURALES Y DIVULGACION CIENTIFICA', que incluye psicologia (1.888 titulos en Yenny) y medicina. Por eso Psicologia entra aca y no en literatura. Filosofia se sumo despues: el motor le agrego la opcion 'las ideas' a su pregunta de q1 (tema `ideas` en vocabulario_rasgos.json) y schema.sql ya la reconoce por `genero`. OJO tamano: el plan de curaduria mide 1.679 titulos de filosofia en Cuspide con ficha completa -- va a ser, de lejos, la mas grande de las cinco opciones de esta macro en cuanto se cargue ese lote.",
+    "ids": [
+      1000,
+      2050,
+      3683,
+      1495,
+      2354
+    ],
+    "nombres": [
+      "Ciencias y matematicas",
+      "Ciencias de la Tierra",
+      "Medicina y salud",
+      "Sociedad y ciencias sociales > Psicologia",
+      "Filosofia y religion > Filosofia"
+    ]
+  },
+  "excluidas": {
+    "_por_que": "No son libros, o son libros que Funes no recomienda. Los comics tienen lift 0,0x medido contra el catalogo curado (IVREA 1.226 titulos y 0 aciertos; Panini 527 y 0). Infantil y Juvenil se excluye por producto, no por calidad: Funes le habla a un adulto que describe un estado de animo lector, y hoy tiene 15 libros infantiles sobre 1.381.",
+    "ids": [
+      1733,
+      910,
+      22
+    ],
+    "nombres": [
+      "Narrativas ilustradas (comics/manga)",
+      "Infantil y Juvenil",
+      "No categorizado"
+    ],
+    "rutas_contienen": [
+      "Pasatiempos, acertijos y juegos",
+      "Artesanias, artes decorativas y manualidades",
+      "Articulos de papeleria y miscelanea",
+      "Agendas, calendarios y libretas",
+      "Libros de regalo"
+    ]
+  },
+  "editoriales_lista_negra": {
+    "_por_que": "Print-on-demand y autoedicion. Medido: 8.624 titulos cuya unica editorial es una de estas, y solo 5 estan en el catalogo curado (lift 0,11x). DOCUPRINT sola son 4.525 titulos (mandalas, pegacolor, homilias) con 1 acierto.",
+    "nombres": [
+      "DOCUPRINT ON DEMAND",
+      "EDITORIAL ADARVE",
+      "DUNKEN",
+      "DUNKEN SRL",
+      "APULEYO EDICIONES",
+      "TALON DE AQUILES",
+      "AVANT",
+      "ED. CANAL DE DISTRIBUCION",
+      "TEQUISTE",
+      "EDICIONES LILIUM",
+      "ALIAR 2015",
+      "EDITORIAL VERBUM"
+    ]
+  },
+  "veto": {
+    "_por_que": "Ramas donde estar YA descalifica al libro, aunque tambien cuelgue de una rama buena. Se agregaron al mirar el top de canon de divulgacion en la capa 2: eran manuales de vacunacion de animales domesticos, anatomia veterinaria y microbiologia, que quedaban primeros por ser viejos y seguir en catalogo. Son textos tecnicos de estudio, no divulgacion para un lector general. No alcanzaba con ponerlas en 'excluidas' porque esos libros cuelgan tambien de 'Medicina y salud', que si mapea a divulgacion: la exclusion pedia que TODAS sus ramas fueran excluidas.",
+    "ids": [
+      6082,
+      54952,
+      110211
+    ],
+    "nombres": [
+      "Medicina y salud > Veterinaria",
+      "Medicina y salud > Enfermeria y servicios auxiliares",
+      "Ciencias de la Tierra > Planificacion regional y zonal"
+    ]
+  }
+}

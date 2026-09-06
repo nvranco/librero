@@ -61,6 +61,29 @@ DIR_SCRAPING = RAIZ / "funes" / "_scraping"
 DIR_LOGS = DIR_SCRAPING / "logs"
 DIR_EXPORTADO = DIR_SCRAPING / "exportado"
 
+def _cargar_env() -> None:
+    """Carga el .env aca y no en cada script.
+
+    Estos son scripts sueltos, no la app: nadie les carga la configuracion. Al
+    principio el .env lo leia solo `correr_todo.py`, asi que correr
+    `yenny.py fichas` directo fallaba pidiendo un contacto que ya estaba
+    configurado —el modo neutro nunca se enteraba de que era neutro—. Va aca
+    porque este es el modulo que lee esas variables, y asi cualquier punto de
+    entrada las ve.
+    """
+    archivo = RAIZ / ".env"
+    if not archivo.exists():
+        return
+    for linea in archivo.read_text(encoding="utf-8").splitlines():
+        linea = linea.strip()
+        if not linea or linea.startswith("#") or "=" not in linea:
+            continue
+        clave, valor = linea.split("=", 1)
+        os.environ.setdefault(clave.strip(), valor.strip())
+
+
+_cargar_env()
+
 SITIOS = ("yenny", "cuspide")
 
 BASES = {
@@ -739,35 +762,168 @@ def configurar_log(sitio: str, corrida_id: str) -> logging.Logger:
     return logger
 
 
-@dataclass
-class Progreso:
-    """Avance en pantalla. Sin esto una corrida de 50 minutos es una pantalla muda."""
+def _habilitar_ansi() -> bool:
+    """En la consola de Windows los codigos ANSI vienen apagados por defecto.
 
-    total: int
-    cada: int = 25
+    Git Bash y Windows Terminal ya los soportan; cmd.exe necesita que alguien
+    prenda ENABLE_VIRTUAL_TERMINAL_PROCESSING. Si no se puede, se devuelve False
+    y las barras degradan a una linea suelta por refresco, que es feo pero se lee.
+    """
+    if not sys.stdout.isatty():
+        return False
+    if os.name != "nt":
+        return True
+    try:
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        modo = ctypes.c_uint32()
+        manejador = kernel32.GetStdHandle(-11)
+        if not kernel32.GetConsoleMode(manejador, ctypes.byref(modo)):
+            return True  # probablemente Git Bash: no es consola nativa pero entiende ANSI
+        return bool(kernel32.SetConsoleMode(manejador, modo.value | 0x0004))
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _glifos() -> tuple[str, str]:
+    """Elige los caracteres de la barra segun lo que la consola pueda imprimir.
+
+    La consola de Windows arranca en cp1252, que no tiene los bloques Unicode:
+    imprimirlos revienta con UnicodeEncodeError y te tumba la corrida a los tres
+    segundos. Se intenta pasar stdout a UTF-8 y, si no se puede, se cae a ASCII.
+    """
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+    except Exception:  # noqa: BLE001
+        pass
+    codificacion = getattr(sys.stdout, "encoding", "") or ""
+    try:
+        "█░".encode(codificacion)
+        return "█", "░"
+    except (UnicodeEncodeError, LookupError):
+        return "#", "-"
+
+
+LLENO, VACIO = _glifos()
+
+
+def _duracion(segundos: float) -> str:
+    segundos = max(int(segundos), 0)
+    if segundos >= 3600:
+        return f"{segundos // 3600}h{(segundos % 3600) // 60:02d}m"
+    return f"{segundos // 60}m{segundos % 60:02d}s"
+
+
+@dataclass
+class Barra:
+    """Una barra de progreso. La comparten los dos scrapers via el Tablero.
+
+    `total` es mutable a proposito: en Yenny recien se conoce despues del censo,
+    asi que la barra arranca indeterminada y se completa cuando hay dato. Mentir
+    un total inventado daria un ETA falso, que es peor que no tener ETA.
+    """
+
+    nombre: str
+    total: int = 0
     hechas: int = 0
     productos: int = 0
     fallos: int = 0
+    detalle: str = ""
+    fin: bool = False
     _inicio: float = field(default_factory=time.monotonic)
 
-    def paso(self, *, productos: int = 0, fallos: int = 0) -> None:
+    def paso(self, *, productos: int = 0, fallos: int = 0, detalle: str = "") -> None:
         self.hechas += 1
         self.productos += productos
         self.fallos += fallos
-        if self.hechas % self.cada == 0 or self.hechas == self.total:
-            self.imprimir()
+        if detalle:
+            self.detalle = detalle
 
-    def imprimir(self) -> None:
-        transcurrido = max(time.monotonic() - self._inicio, 0.001)
-        ritmo = self.hechas / transcurrido
-        faltan = max(self.total - self.hechas, 0)
-        eta = int(faltan / ritmo) if ritmo > 0 else 0
-        pct = (100 * self.hechas / self.total) if self.total else 0
-        print(
-            f"[{self.hechas}/{self.total}] {pct:.0f}% | {self.productos:,} prod "
-            f"| {self.fallos} fallos | {ritmo:.1f} pág/s | ETA {eta // 60}m{eta % 60:02d}s",
-            flush=True,
+    @property
+    def ritmo(self) -> float:
+        return self.hechas / max(time.monotonic() - self._inicio, 0.001)
+
+    @property
+    def eta(self) -> float:
+        if self.fin or not self.total or self.ritmo <= 0:
+            return 0.0
+        return max(self.total - self.hechas, 0) / self.ritmo
+
+    def render(self, ancho: int = 24) -> str:
+        if self.total:
+            frac = min(self.hechas / self.total, 1.0)
+            llenos = int(frac * ancho)
+            barra = LLENO * llenos + VACIO * (ancho - llenos)
+            pct = f"{frac * 100:3.0f}%"
+        else:
+            # Indeterminada: un bloque que se desplaza mientras no sepamos el total.
+            pos = self.hechas % max(ancho - 3, 1)
+            barra = VACIO * pos + LLENO * 3 + VACIO * (ancho - pos - 3)
+            pct = "  ? "
+        estado = "listo" if self.fin else f"ETA {_duracion(self.eta)}"
+        # Miles con punto, como se escribe en castellano.
+        prod = f"{self.productos:,}".replace(",", ".")
+        return (
+            f"{self.nombre:<8s} [{barra}] {pct} | {prod:>8s} prod "
+            f"| {self.fallos:>2d} err | {self.ritmo:4.1f} p/s | {estado:<12s} {self.detalle[:34]}"
         )
+
+
+class Tablero:
+    """Varias barras vivas a la vez, redibujadas en el lugar.
+
+    Existe para el macrocomando: los dos scrapers corren en paralelo y cada uno
+    necesita su renglon propio. Redibuja con un timer y no en cada evento —
+    con ~12.000 eventos, redibujar en cada uno gasta mas en pintar que en scrapear.
+    """
+
+    def __init__(self, *, refresco: float = 0.5) -> None:
+        self.barras: list[Barra] = []
+        self._refresco = refresco
+        self._ansi = _habilitar_ansi()
+        self._dibujadas = 0
+        self._inicio = time.monotonic()
+        self._corriendo = False
+
+    def barra(self, nombre: str, total: int = 0) -> Barra:
+        b = Barra(nombre=nombre, total=total)
+        self.barras.append(b)
+        return b
+
+    def dibujar(self) -> None:
+        if not self.barras:
+            return
+        if not self._ansi:
+            # Consola sin ANSI: una linea suelta por refresco, sin sobreescribir.
+            for b in self.barras:
+                print("  " + b.render(), flush=True)
+            return
+        salida = []
+        if self._dibujadas:
+            salida.append(f"\033[{self._dibujadas}A")
+        for b in self.barras:
+            salida.append("\033[2K  " + b.render() + "\n")
+        sys.stdout.write("".join(salida))
+        sys.stdout.flush()
+        self._dibujadas = len(self.barras)
+
+    async def refrescar(self) -> None:
+        """Corutina de fondo: dibuja hasta que se la cancele."""
+        self._corriendo = True
+        try:
+            while self._corriendo:
+                self.dibujar()
+                await asyncio.sleep(self._refresco)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            self.dibujar()
+
+    def detener(self) -> None:
+        self._corriendo = False
+        self.dibujar()
+        print(f"\n  total: {_duracion(time.monotonic() - self._inicio)}", flush=True)
 
 
 def agregar_flags_comunes(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

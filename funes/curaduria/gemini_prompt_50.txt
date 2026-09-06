@@ -1,0 +1,638 @@
+Tu tarea es escribir "abstractos" (resúmenes) para 50 libros de un catálogo de una librería argentina, investigando CADA UNO en internet antes de escribir. Es una prueba de calidad: quiero medir qué tan bien buscás y verificás, así que sé muy literal con las instrucciones.
+
+## Regla más importante
+
+Para CADA uno de los 50 libros, hacé como mínimo una búsqueda real antes de escribir, aunque conozcas la obra de memoria. No repitas de memoria el argumento de un clásico famoso sin confirmarlo: necesito saber si tu conocimiento coincide con una fuente real, no solo si "sabés" el libro. Si no podés confirmar de qué libro se trata (autor, edición, contenido), NO inventes: marcalo con confianza baja y no escribas abstracto.
+
+Para cada libro, además de los campos de abajo, agregá un campo `"metodo"` que diga honestamente `"busqueda"` (encontraste y usaste una fuente externa real) o `"conocimiento_previo"` (no encontraste una fuente confiable y te basaste en lo que ya sabías del libro). No mientas en este campo: es la parte que más me importa de esta prueba.
+
+## Jerarquía de fuentes
+
+De mayor a menor confianza: (1) página de la editorial, (2) Wikipedia (es/en) de la obra específica, (3) catálogos bibliotecarios (Biblioteca Nacional, Library of Congress, Open Library, Google Books), (4) reseñas de prensa seria. NO valen: reseñas de usuarios (Goodreads, Amazon), blogs personales, resúmenes de IA, copy de otro e-commerce.
+
+## El molde del abstracto
+
+Un párrafo, 110 a 130 palabras (aceptable 70-170), castellano rioplatense neutro. Cubrí en orden aproximado: (1) de qué trata — concreto: nombres, lugares, conflicto, nada de generalidades; (2) qué clase de libro es; (3) cómo se lee — extensión, densidad, ritmo; (4) tono y prosa; (5) a quién le sirve.
+
+Ejemplo real ya calibrado (1984, de este mismo catálogo):
+
+"Una distopía sobre la vigilancia total y la manipulación del lenguaje y la verdad por parte de un estado totalitario. Winston Smith trabaja reescribiendo la historia oficial mientras intenta sostener, en secreto, un pensamiento propio y un amor prohibido. Es una novela de ideas políticas y filosóficas sobre el poder, la identidad y la resistencia interior, con ritmo de thriller psicológico y un final perturbador. Extensión larga, lectura densa e inquietante que invita a cuestionar el control social y los mecanismos de propaganda contemporáneos."
+
+Reglas anti-fórmula: variá el arranque entre los 50 (no repitas la misma estructura de primera frase); NO uses "el valor central es...", "lo mejor del libro es...", "para quien busca..." como plantilla fija; sin nombrar la editorial; sin el año; "este libro"/"esta obra" como máximo una vez por abstracto.
+
+## Ruido de datos: desconfiá de la ficha
+
+- La sinopsis del catálogo A VECES ES DE OTRO LIBRO (pasó con ediciones que mezclan dos obras, o con un ISBN que en realidad corresponde a un libro distinto del que dice el título). Si la sinopsis no coincide con lo que confirma tu búsqueda, ignorala por completo.
+- El campo "por que entro al catalogo" a veces también tiene errores (fue escrito por otro proceso automático, no es un dato verificado) — no lo tomes como verdad si tu búsqueda dice otra cosa.
+- El "género del catálogo" no es confiable como clasificación de contenido.
+- El año que trae la ficha es el de ESA edición, no el de la obra. `anio_obra` es el año de publicación ORIGINAL de la obra, según tu búsqueda.
+- Si la ficha marca un dato como "FALTA EN EL CATALOGO", intentá completarlo por búsqueda; si no lo confirmás, dejalo en null.
+
+## Los `rasgos` (vocabulario cerrado — usá SOLO estas opciones)
+
+- `tema`: UNA sola opción de la lista de la macro de ESE libro:
+  - literatura: novela, genero, clasico, cuento, poesia, teatro, ensayo, memoria, otro
+  - historia: argentina, mundial, americana, belica, originarios, otro
+  - divulgacion: mente, vida, tecno, universo, cuerpo, tierra, numeros, otro
+- `tono`: 2 o 3 de esta lista: intimo, melancolico, luminoso, ironico, duro, divertido, sereno, urgente, nostalgico, critico, didactico, epico, romantico, oscuro
+- `exigencia`: 1 (se lee sin esfuerzo), 2 (pide atención) o 3 (difícil o técnico)
+- `ritmo`: "lento" | "parejo" | "rapido"
+- `humor`: true | false
+- `final`: "cerrado" | "abierto" | null (si no es un relato)
+- `epoca`: el siglo o período del que habla (ej. "siglo XX", "1976-1983"), o null
+- `lugar`: país o región de la que habla (ej. "Argentina", "Europa"), o null
+- `para`: una frase de menos de 12 palabras que empiece con "para quien"
+
+Si un valor no encaja exacto, elegí el más cercano de la lista — no inventes valores fuera de ella.
+
+## Formato de salida — MUY IMPORTANTE
+
+Devolvé tu respuesta COMPLETA dentro de UN SOLO bloque de código (```json ... ```), sin ningún texto antes ni después del bloque, para que la pueda copiar y pegar directo. Si por límite de longitud no podés terminar los 50 en una respuesta, cerrá el bloque de código igual con los que hayas completado y avisame afuera del bloque cuántos van y cuáles faltan, para pedirte el resto en otro mensaje.
+
+Forma exacta (un objeto por libro, en una lista bajo la clave "libros"):
+
+```json
+{"libros": [
+  {
+    "n": "1",
+    "metodo": "busqueda",
+    "confianza": "alta",
+    "abstracto": "…110-130 palabras…",
+    "autor": "nombre completo verificado",
+    "anio_obra": 1969,
+    "titulo_original": "si aplica, o null",
+    "nro_paginas": 320,
+    "rasgos": {
+      "tema": "novela", "tono": ["intimo", "sereno"], "exigencia": 2,
+      "ritmo": "parejo", "humor": false, "final": "cerrado",
+      "epoca": "siglo XX", "lugar": "Argentina",
+      "para": "para quien busca una novela intima sobre la memoria"
+    },
+    "fuentes": ["https://..."],
+    "nota": "opcional: cualquier cosa rara que hayas encontrado (sinopsis cruzada, dato dudoso, etc.)"
+  }
+]}
+```
+
+Si `confianza` es `"baja"`, no hace falta ningún otro campo salvo `n`, `metodo` y `confianza` (y `nota` si querés explicar por qué).
+
+## Los 50 libros
+
+A continuación la ficha de cada uno, con el dato que ya tenemos del catálogo (puede tener errores, como se explicó arriba) y qué nos falta. El número entre corchetes es el "n" que tenés que usar en tu respuesta.
+
+[1] EL PRIMER AMOR
+    autor (segun el catalogo): ALBERONI, FRANCESCO
+    macro: divulgacion
+    isbn: 9788474326581
+    editorial(es) segun el catalogo: GEDISA
+    genero del catalogo: NOVELAS / GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 192
+    ano de ESTA edicion en catalogo (NO el de la obra): 1997
+    por que entro al catalogo: Clásico de la literatura rusa, obra maestra del romanticismo.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis
+
+[2] NAUFRAGIOS
+    autor (segun el catalogo): CABEZA DE VACA, ALVAR NUEZ
+    macro: historia
+    isbn: 9789500307178
+    editorial(es) segun el catalogo: LOSADA
+    genero del catalogo: CLÁSICOS / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 184
+    ano de ESTA edicion en catalogo (NO el de la obra): 2007
+    por que entro al catalogo: Cronica de Indias fundamental sobre el fracaso conquistador.
+    sinopsis del catalogo (OJO: bytes rotos de origen, puede faltar alguna letra, y puede ser de OTRO libro homonimo): lvar Núñez Cabeza de Vaca viajó por primera vez a América en 1527 con la desgraciada expedición de Pánfilo de Narváez a la península de Florida, de la cual tardó diez años en volver tras haber protagonizado una increíble aventura, narrada en Naufragios.
+No obstante las penurias que había soportado regresó al Nuevo Mundo en 1540 como Adelantado del Río de la Plata; estuvo cinco años en el Paraguay, pero las intrigas locales pudieron más que su habilidad política y terminó de vuelta en España encadenado y procesado. Su segunda obra, Comentarios, es precisamente la versión que lvar Núñez le dictó a Pedro Hernández, sobre todo lo sucedido durante la misión en el Paraguay.
+En 1551 se lo condenó
+
+[3] SENTIDO Y SENSIBILIDAD
+    autor (segun el catalogo): AUSTEN, JANE
+    macro: literatura
+    isbn: 9788497941853
+    editorial(es) segun el catalogo: ALMA|ARTE GRAFICO - AGEA AGATA UTE|DEL FONDO|EDIMAT LIBROS|PLANETA
+    paginas (de ESTA edicion, no necesariamente la obra): 352
+    ano de ESTA edicion en catalogo (NO el de la obra): 2016
+    por que entro al catalogo: Austen temprana con lectoras nuevas en cada generacion.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Otoo de 1880, el doctor John Watson vuelve de Afganistan. Gravemente herido y desesperado por olvidar una terrible expedicion que le ha hecho dudar de su cordura, no tarda en verse al borde de la indigencia. Es entonces cuando conoce al extraordinario Sherlock Holmes, que investiga una serie de muertes en el barrio londinense de Shadwell. A eso hay que aadir unos inquietantes rumores sobre extraas sombras reptantes que aterrorizan a cualquiera que se acerque demasiado.Aunque la deduccion inicial de Holmes es que existe una conexion entre las muertes y un siniestro narcotraficante que busca expandir su imperio criminal, con el tiempo no le queda otro remedio que aceptar, y a Watson con el, qu
+
+[4] PALESTINA
+    autor (segun el catalogo): Azmi Bishara
+    macro: historia
+    isbn: 9789873895944
+    editorial(es) segun el catalogo: LOS LIBROS DE LA CATARATA|PLANETA CÓMIC|SUR|TREA, S L
+    genero del catalogo: POLITICA / INTERNACIONAL- GEOPOLITICA
+    paginas (de ESTA edicion, no necesariamente la obra): 224
+    ano de ESTA edicion en catalogo (NO el de la obra): 2021
+    por que entro al catalogo: Historia documentada de un conflicto geopolítico actual y sensible.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): «Palestina. Historia documentada de 100 años de guerra» es un relato exhaustivo y cuidadosamente documentado sobre uno de los conflictos más complejos, prolongados y sensibles de la historia contemporánea. A través de un recorrido cronológico y analítico, el libro ofrece una visión detallada de los acontecimientos más relevantes que han marcado el devenir de Palestina desde el fin del Imperio Otomano hasta nuestros días.La obra aborda con profundidad las causas históricas del conflicto, incluyendo el papel de las potencias coloniales tras la Primera Guerra Mundial, la Declaración Balfour, el Mandato británico, la partición de Palestina por la ONU y las sucesivas guerras árabe-israelíes. Adem
+
+[5] LA LETRA ESCARLATA
+    autor (segun el catalogo): HAWTHORNE, NATHANIEL
+    macro: literatura
+    isbn: 9788490749289
+    editorial(es) segun el catalogo: ARTE GRAFICO - AGEA AGATA UTE|COLIHUE|DEL FONDO|IMAGINADOR|VERBUM
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 288
+    ano de ESTA edicion en catalogo (NO el de la obra): 2013
+    por que entro al catalogo: Novela puritana clasica, lectura escolar y adulta viva.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): «Hawthorne pinta una historia reveladora de aceptacion, verguenza, culpa y feroz ostracismo social que rodea a una mujer. Una A por adulterio marca a Hester Prynne como una marginada de la sociedad de la Boston colonial. Aunque los padres puritanos de la ciudad la obligaron a usar una insignia roja brillante de la verguenza, Hester se resiste firmemente a sus esfuerzos por descubrir la identidad del padre de su bebe. El regreso de su esposo ausente durante mucho tiempo trae una nueva presion sobre la joven madre, ya que el esposo agraviado emprende un complot a largo plazo para revelar al compaero de Hester en adulterio y obligarlo a compartir su desgracia. Magistral en su simbolismo y convi
+
+[6] BREVE HISTORIA DE LA QUIMICA
+    autor (segun el catalogo): ASIMOV, ISAAC
+    macro: divulgacion
+    isbn: 9788420664217
+    editorial(es) segun el catalogo: ALIANZA
+    genero del catalogo: DIVULGACIÓN CIENTÍFICA / ENSAYOS
+    ano de ESTA edicion en catalogo (NO el de la obra): 2011
+    por que entro al catalogo: Asimov es un referente en divulgación científica, obra perdurable.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis, paginas
+
+[7] EL SI DE LAS NIÑAS
+    autor (segun el catalogo): FERNANDEZ DE MORATIN, LEANDRO
+    macro: literatura
+    isbn: 9789500306249
+    editorial(es) segun el catalogo: COLIHUE|LOSADA
+    paginas (de ESTA edicion, no necesariamente la obra): 112
+    ano de ESTA edicion en catalogo (NO el de la obra): 1998
+    por que entro al catalogo: Comedia neoclasica de referencia en las letras espanolas.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Leandro Fernández de Moratín (1760-1828) es la figura más representativa de la tendencia afrancesada que dominó las letras españolas en el período comprendido entre los siglos XVIII y XIX. Firme defensor de los ideales clásicos vislumbró, sin embargo, no pocas vetas que explotaría luego el romanticismo; sus conflictos escénicos anticipan la emoción de esa escuela. Odas, epístolas, diarios integran una obra cuyo desarrollo mayor se dio indudablemente a través del teatro, ya fuera como teórico e historiador, como adaptador, o como autor de El viejo y la niña (1790), El barón (1803), La mojigata (1804) y El sí de las niñas (1806), la más difundida de sus piezas y fuera de toda duda la mejor de 
+
+[8] EL LABERINTO DE LOS ESPIRITUS
+    autor (segun el catalogo): RUIZ ZAFON, CARLOS
+    macro: literatura
+    isbn: 9789504955023
+    editorial(es) segun el catalogo: BOOKET|PLANETA
+    genero del catalogo: NOVELAS / GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 928
+    ano de ESTA edicion en catalogo (NO el de la obra): 2016
+    por que entro al catalogo: Cierre solido de la saga del Cementerio de los Libros.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): En la Barcelona de finales de los aos 1950, Daniel Sempere ya no es aquel nio que descubrio un libro que habria de cambiarle la vida entre los pasadizos de El Cementerio de los Libros Olvidados. El misterio de la muerte de su madre ha abierto un abismo en su alma del que Bea, su esposa, y sufiel amigo Fermin intentan salvarlo. Justo cuando Daniel cree que esta a un paso de resolver el enigma, una conjura mucho mas profunda y oscura despliega su red desde las entraas del regimen. Es entonces cuando aparece Alicia Grisun alma nacida de las sombras de la guerra, para conducirlosal corazon de las tinieblas y develar la historia secreta dela familia… aunque a un terrible precio. El Laberinto de l
+
+[9] ACERCA DEL ALMA
+    autor (segun el catalogo): (sin dato)
+    macro: literatura
+    isbn: 9788413377001
+    editorial(es) segun el catalogo: COLIHUE|ENEIDA|GREDOS|LOSADA|VERBUM
+    genero del catalogo: CLÁSICOS / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 240
+    ano de ESTA edicion en catalogo (NO el de la obra): 2004
+    por que entro al catalogo: Tratado aristotelico basico sobre el alma.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Este es uno de los tratados más importantes de aristóteles, y aunque su tema principal es el alma, algunos estudiosos lo han visto como un estudio sobre biopsicología, esto es, describir lo que sería la psicología en un marco biológico. Aristóteles sostiene que el alma es la forma o esencia de cualquier cosa viviente, no una sustancia distinta del cuerpo en el que está, y establece los tipos de almas que poseen los seres vivos, que se diferencian por sus operaciones, de tal manera que, por ejemplo, las plantas, que tienen la capacidad de alimentarse y reproducirse, poseerían el mínimo de lo que debe tener cualquier organismo. Los animales inferiores, por su parte, dispondrían, además, de per
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): autor
+
+[10] EL ADOLESCENTE
+    autor (segun el catalogo): DOSTOIEVSKI, FIODOR M.
+    macro: literatura
+    isbn: 9788426155344
+    editorial(es) segun el catalogo: JUVENTUD
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 652
+    ano de ESTA edicion en catalogo (NO el de la obra): 2001
+    por que entro al catalogo: Novela tardia de Dostoievski, menos leida pero central.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Las novelas de Dostoyevski parten de una experiencia vivida dramáticamente y que el autor transforma magistralmente en una ficción que no deja de ser siempre un trasunto de la realidad. Este realismo es el que caracteriza a El adolescente, novela que tiene como principal protagonista a un joven ruso que admira u odia a su padre según sean las influencias contradictorias que recibe. La vida del adolescente y de un retablo de personajes, maravillosamente caracterizados por Dostoyevski, que bullen en torno a él, va creando un crescendo en la novela, que es lo que mueve al lector a no abandonar la lectura hasta la última página.
+
+[11] DIEZ DIAS QUE ESTREMECIERON AL MUNDO
+    autor (segun el catalogo): REED, JOHN
+    macro: historia
+    isbn: 9789505630943
+    editorial(es) segun el catalogo: COLIHUE
+    genero del catalogo: HISTORIA / HISTORIA UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 480
+    ano de ESTA edicion en catalogo (NO el de la obra): 2017
+    por que entro al catalogo: Relato clásico y fundamental de la Revolución Rusa.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis
+
+[12] LA VIDA ES SUEÑO
+    autor (segun el catalogo): CALDERON DE LA BARCA, PEDRO
+    macro: literatura
+    isbn: 9789871165650
+    editorial(es) segun el catalogo: AGEBE|COLIHUE|JUVENTUD|SALIM
+    genero del catalogo: TEATRO / CON GUIA DE LECTURA
+    paginas (de ESTA edicion, no necesariamente la obra): 128
+    ano de ESTA edicion en catalogo (NO el de la obra): 1982
+    por que entro al catalogo: Cumbre del teatro barroco espanol.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Pedro Calderón de la Barca es el nombre del teatro barroco español, y La vida es sueño, la expresión por excelencia de ese teatro.
+Representadas en corrales y en la corte, las obras de Calderón transitaron primero los cánones consagrados de la época y revirtieron después hacia la espectacularidad de los autos sacramentales y las historias mitológicas. Y estas dos etapas de su escritura expresan, en un siglo crítico para España (agitado por los debates que instaló la Contrarreforma), el furor poético, la vitalidad y la desmesura que hicieron posible que el arte abandonara de una vez la antigua preceptiva y se instalara de lleno en la modernidad, superados los titubeos renacentistas. Segismund
+
+[13] LOS HERMANOS KARAMAZOV
+    autor (segun el catalogo): DOSTOIEVSKI, FIODOR M.
+    macro: literatura
+    isbn: 9788426105981
+    editorial(es) segun el catalogo: COLIHUE|JUVENTUD
+    paginas (de ESTA edicion, no necesariamente la obra): 752
+    ano de ESTA edicion en catalogo (NO el de la obra): 2002
+    por que entro al catalogo: Cumbre de Dostoievski, se estudia y se vende sin pausa.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Primera parte de un proyecto que comprendía dos novelas, Los hermanos Karamázov habría de resultar la última y más colosal obra de Fiódor Dostoievski, quien murió a poco de publicarla. Pensada como una hagiografía del personaje principal, Aliosha Karamázov, la historia parte del motivo recurrente en el cuento popular de los tres hermanos, de los cuales el menor es el tonto que a la larga resulta el más virtuoso y más sabio. El tema del parricidio articula toda la trama en medio de las convulsiones políticas e históricas que vive Rusia en la década de 1870, un momento en que los hombres se han propuesto conquistar la felicidad universal quitando del medio un piecita inútil de la civilización,
+
+[14] CIVILIZACION
+    autor (segun el catalogo): BURUCUA, JOSE EMILIO
+    macro: historia
+    isbn: 9789877194975
+    editorial(es) segun el catalogo: FONDO DE CULTURA ECONOMICA
+    genero del catalogo: HISTORIA / HISTORIA UNIVERSAL
+    ano de ESTA edicion en catalogo (NO el de la obra): 2024
+    por que entro al catalogo: Obra reciente de un historiador argentino destacado.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): «En una era de derrumbes y calamidades, frente a la deriva descivilizadora de los acontecimientos actuales, este libro propone una exploracion exhaustiva del concepto de civilizacion, desde su protohistoria nebulosa en la que se expresaba la idea de algo muy semejante a lo que se llamaria con esa palabra a partir de mediados del siglo XVIII hasta la modernidad globalizada de nuestros dias. Si bien los fenomenos catastroficos del colonialismo y el imperialismo buscaron su legitimacion en la presunta y falaz superioridad de la civilizacion occidental y cristiana, Jose Emilio Burucua establece un hiato profundo entre el origen europeo e iluminista del concepto y su voluntad de convertirlo, modi
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): paginas
+
+[15] ANNA KARENINA
+    autor (segun el catalogo): TOLSTOI, LEON
+    macro: literatura
+    isbn: 9788417928933
+    editorial(es) segun el catalogo: ALMA|PENGUIN CLASICOS|PLUTON
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 900
+    ano de ESTA edicion en catalogo (NO el de la obra): 2019
+    por que entro al catalogo: Gran novela del adulterio, referencia y venta firmes.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): «Todas las familias felices se parecen unas a otras, cada familia desdichada lo es a su manera.» La historia de Anna Karénina, junto a la de Madame Bovary, es la del adulterio más célebre de la literatura. El enamoramiento de la protagonista, casada con el alto funcionario Karénin, por el atractivo militar Vronski y el estrepitoso romance que con él vive son el eje de una novela que es mucho más que la pulida tragedia de una caída en desgracia: es un esmerado y delicado retrato de todo un tiempo y un lugar, la vivisección de una sociedad en la que la felicidad de algunos convive con la desdicha de otros. El presente volumen se abre con la espléndida introducción del que fuera catedrático en 
+
+[16] DULCE PAJARO DE JUVENTUD
+    autor (segun el catalogo): WILLIAMS, TENNESSEE
+    macro: literatura
+    isbn: 9789500398459
+    editorial(es) segun el catalogo: LOSADA
+    paginas (de ESTA edicion, no necesariamente la obra): 168
+    ano de ESTA edicion en catalogo (NO el de la obra): 2004
+    por que entro al catalogo: Drama mayor de Tennessee Williams sobre el tiempo.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): En Dulce pájaro de juventud Tennessee Williams nos demuestra hasta qué punto somos incapaces de escapar ‘al enemigo, el tiempo’. Dirigida por Elia Kazan, se estrenó en 1959 en el Martin Beck Theatre de Nueva York con Paul Newman y Geraldine Page en los principales papeles.
+Escaleras al techo (1945) es una pieza peculiar y diferente, al mismo tiempo una historia de amor, una comedia y un experimento en metateatro con un toque de ciencia ficción.
+El cuaderno de trigorin (1981) es una adaptación libre del clásico La gaviota de Antón Chéjov, transformado por el arte de Tennessee Williams en un poderoso drama contemporáneo.
+
+[17] UNA HABITACION PROPIA
+    autor (segun el catalogo): WOOLF, VIRGINIA
+    macro: literatura
+    isbn: 9788419558992
+    editorial(es) segun el catalogo: ALMA|ARPA EDITORES|DEL FONDO|PLATAFORMA
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 176
+    ano de ESTA edicion en catalogo (NO el de la obra): 2019
+    por que entro al catalogo: Ensayo icono del feminismo, sigue vendiendo mucho.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Publicado en 1929, este ensayo revolucionario es un manifiesto literario y feminista que combina crítica, ironía y una prosa envolvente. Virginia Woolf traza la historia silenciada de las mujeres en la literatura y señala con precisión las estructuras que han limitado su libertad intelectual. Con su inconfundible estilo, nos invita a cuestionar los relatos dominantes y a imaginar un futuro en el que las escritoras puedan desarrollar su talento sin restricciones. La presente traducción de la escritora y traductora Clara Pastor recupera el tono incisivo y ligero tan característico de Woolf. Como en el texto original, escuchamos la voz que hay detrás de la autora y las asociaciones inesperadas 
+
+[18] JACQUES DERRIDA : DEMOCRACIA Y SOBERANIA
+    autor (segun el catalogo): LLEVADOT PASCUAL, LAURA
+    macro: historia
+    isbn: 9788417835811
+    editorial(es) segun el catalogo: GEDISA
+    genero del catalogo: FILOSOFÍA / GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 136
+    ano de ESTA edicion en catalogo (NO el de la obra): 2024
+    por que entro al catalogo: Estudio reciente sobre el pensamiento político de Derrida.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): El pensamiento político de Jacques Derrida (1930-2004) se articula a partir de la noción de aporía. Su crítica a la soberanía, al Estado nación, a la violencia fundadora de toda ley, a la comunidad excluyente, al logo(falo)centrismo, a la representación? no deriva en un anarquismo ingenuo sino más bien en una exigencia ético-política. Se trata de, a pesar de vivir en los Estados que tenemos y de no haber superado la democracia representativa, permanecer abiertos a la heterogeneidad, a todo aquello que el Estado y su construcción jurídica excluyen. Si algo define la democracia, para Derrida, es el hecho de ser el único sistema abierto, el único capaz de permitir el derecho a la alteridad. Es 
+
+[19] CIEN SONETOS DE AMOR
+    autor (segun el catalogo): NERUDA, PABLO
+    macro: literatura
+    isbn: 9789878220765
+    editorial(es) segun el catalogo: ALMA|BOOKET|LOSADA
+    genero del catalogo: POESIA / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 128
+    ano de ESTA edicion en catalogo (NO el de la obra): 1995
+    por que entro al catalogo: Poesia amorosa de Neruda con venta permanente.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Cuspide,desde la perspectiva de la plenitud de la edad, de la poesia amorosa nerudiana, estos Cien sonetos de amor sorprenden ante todo por el contraste entre la palpitacion de la palabra y la imagen, y la deliberada eleccion de una desnudez que rehuye los prestigios sonoros o constructivos del soneto clasico. Con mucha humildad.escribe Neruda.hice estos sonetos de madera, les di esta opaca y pura substancia, que contrapone a las rimas que sonaron como platera, cristal o caonazo de los poetas que anteriormente abordaron el soneto. Del mismo modo, es evitado el principio del mantenimiento de un patrn mtrico y rtmico invariable, y, con mayor razn todava, la estructura silogstica y simtrica en 
+
+[20] VEINTE POEMAS DE AMOR Y UNA CANCION DESESPERADA
+    autor (segun el catalogo): NERUDA, PABLO
+    macro: literatura
+    isbn: 9788418395796
+    editorial(es) segun el catalogo: ALMA|BOOKET
+    genero del catalogo: POESIA / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 96
+    ano de ESTA edicion en catalogo (NO el de la obra): 2022
+    por que entro al catalogo: Poesia amorosa mas vendida en lengua espanola.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Los Veinte poemas son un libro doloroso y pastoril que contiene mis ms atormentadas pasiones adolescentes, mezcladas con la naturaleza arrolladora del sur de mi patria. Es un libro de amor porque a pesar de su aguda melancola est presente en l el goce de la existencia. Con estas palabras define Pablo Neruda este libro que el lector tiene en sus manos, aparecido en abril de 1924, cuando su autor tena veinte aos de edad. Han pasado desde entonces ms de setenta aos, los ms prodigiosos setenta aos de vida de un libro de poesa en nuestro siglo. «Viente poemas de amor y una cancin desesperada» es la base de la fortuna literaria de Pablo Neruda. Mientras las vanguardias se extendan en el mundo arts
+
+[21] MAS ALLA DEL BIEN Y DEL MAL
+    autor (segun el catalogo): NIETZSCHE, FRIEDRICH
+    macro: literatura
+    isbn: 9788419599940
+    editorial(es) segun el catalogo: ALMA|DEL FONDO|LEA
+    genero del catalogo: CLÁSICOS / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 320
+    ano de ESTA edicion en catalogo (NO el de la obra): 2015
+    por que entro al catalogo: Obra filosofica central de Nietzsche.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Más allá del bien y del mal es la obra filosófica más provocativa y estimulante de Nietzsche que cuestiona siglos de tradición, pensamiento y moralidad occidentales. Publicado por primera vez en 1886, se basa y amplía las ideas de su trabajo anterior, Así habló Zaratustra, pero con un enfoque más crítico y polémico. En su libro, Nietzsche acusa a los filósofos del pasado de carecer de sentido crítico y de aceptar ciegamente premisas dogmáticas en su consideración de la moralidad. Específicamente, los acusa de fundar grandes sistemas metafísicos sobre la fe de que el hombre bueno es lo opuesto al hombre malvado, en lugar de una expresión diferente de los mismos impulsos básicos que encuentran
+
+[22] WALDEN
+    autor (segun el catalogo): THOREAU, HENRY DAVID
+    macro: historia
+    isbn: 9788413624389
+    editorial(es) segun el catalogo: ALIANZA
+    genero del catalogo: NOVELAS / UNIVERSAL
+    ano de ESTA edicion en catalogo (NO el de la obra): 2022
+    por que entro al catalogo: Clásico de la literatura y el pensamiento trascendentalista, perdura.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis, paginas
+
+[23] EL HORROR DE DUNWICH
+    autor (segun el catalogo): LOVECRAFT, H.P.
+    macro: literatura
+    isbn: 9789876131582
+    editorial(es) segun el catalogo: ANDROMEDA|GARGOLA|LA FRAGUARINA
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 92
+    ano de ESTA edicion en catalogo (NO el de la obra): 2012
+    por que entro al catalogo: Relato pilar del universo lovecraftiano.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Considerado uno de los relatos más perturbadores de Lovecraft y elegido por los lectores de la revista Weird Tales entre los mejores de 1929, El horror de Dunwich se sitúa como una de las obras mayores del ciclo de los Mitos de Cthulhu. La historia se desarrolla en uno de los escenarios preferidos por el escritor: Nueva Inglaterra y, más específicamente, en el pequeño pueblo imaginario de Dunwich, donde el paisaje rural y la comunidad que lo habita adquieren protagonismo como centro de la acción. En esa región maldecida, siguiendo el refrán ‘pueblo chico, infierno grande’, aparece en escena un monstruo a la manera de Lovecrafc… sobre el que nada diremos para no cometer el terrible error de a
+
+[24] LA MARCHA DE LOS DIEZ MIL
+    autor (segun el catalogo): Jenofonte
+    macro: historia
+    isbn: 9788435023108
+    editorial(es) segun el catalogo: EDHASA
+    genero del catalogo: HISTORIA / HISTORIA UNIVERSAL
+    por que entro al catalogo: Jenofonte y su Anabasis: relato fundante de Occidente
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis, paginas, ano de la obra
+
+[25] CONCLAVE
+    autor (segun el catalogo): HARRIS, ROBERT
+    macro: literatura
+    isbn: 9789502809960
+    editorial(es) segun el catalogo: GRIJALBO
+    genero del catalogo: NOVELAS / HISTÓRICA
+    paginas (de ESTA edicion, no necesariamente la obra): 336
+    ano de ESTA edicion en catalogo (NO el de la obra): 2016
+    por que entro al catalogo: Thriller vaticano solido, con adaptacion reciente.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): El Papa ha muerto.En la Capilla Sixtina,a puertas cerradas,ciento dieciocho cardenales procedentes de todos los rincones del planeta emitirán su voto en la elección más secreta del mundo.Son hombres de fe. Pero t ienen ambiciones. Y rivales.En las próximas setenta y dos horas uno de ellos se convertirá en el líder espiritual con más poder de la Tierra.
+
+[26] MEDITACIONES
+    autor (segun el catalogo): AURELIO, MARCO
+    macro: literatura
+    isbn: 9788490745113
+    editorial(es) segun el catalogo: PENGUIN CLASICOS|TAURUS|VERBUM
+    genero del catalogo: RELAJACION/TERAPIAS ALTERNATIVAS / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 192
+    ano de ESTA edicion en catalogo (NO el de la obra): 2019
+    por que entro al catalogo: Estoicismo de cabecera, con venta creciente hoy.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Bastaría una pequeña selección de las meditaciones de marco aurelio para ubicarlo en el lugar significativo que ostenta en la historia de la antigüedad. Su obra ha sido libro de cabecera de muchos gobernantes y sabios a través de siglos. Su vigencia es indudable:
+
+«es preciso tener siempre presente esto: cuál es la naturaleza del conjunto y cuál es la mía, y cómo se comporta esta respecto a aquella y qué parte, de qué conjunto es; tener presente también que nadie te impide obrar siempre y decir lo que es consecuente con la naturaleza, de la cual eres parte».
+
+«concibe sin cesar el mundo como un ser viviente único, que contiene una sola sustancia y un alma única, y cómo todo se refiere a una 
+
+[27] EL ALCALDE DE ZALAMEA
+    autor (segun el catalogo): CALDERON DE LA BARCA, PEDRO
+    macro: literatura
+    isbn: 9789871165520
+    editorial(es) segun el catalogo: AGEBE|CASTALIA|DIPON|LEER Y CREAR - COLIHUE
+    genero del catalogo: CLÁSICOS / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 128
+    ano de ESTA edicion en catalogo (NO el de la obra): 2005
+    por que entro al catalogo: Comedia de honor central del Siglo de Oro.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Mientras el siglo XVII español marca el ocaso político y económico del esplendor español, la literatura ofrece sus aristas más sublimes. La comedia, que alcanza entonces su cima, rompe las reglas del neoaristotelismo y permite conjugar elementos trágicos y cómicos. La obra de Calderón de la Barca expresa la madurez del género con su perfección técnica, la acentuación del artificio y la valorización del ingenio propia del Barroco.
+El alcalde de Zalamea se inscribe con matices dentro de las tragedias de honra y también en las comedias villanescas que realzan las virtudes del ámbito aldeano frente a la sociedad cortesana. Temas como el honor, el amor y la justicia se despliegan en la pluralidad
+
+[28] ESTUDIO EN ESCARLATA
+    autor (segun el catalogo): CONAN DOYLE, ARTHUR
+    macro: literatura
+    isbn: 9788415618874
+    editorial(es) segun el catalogo: AGEBE|AIQUE EDITOR|ALMA|DEL FONDO|EL ATENEO|GARGOLA|PENGUIN CLASICOS
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 288
+    ano de ESTA edicion en catalogo (NO el de la obra): 2003
+    por que entro al catalogo: Primera novela de Holmes, lectura perdurable del policial.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): ‘-íDe ninguna manera! Yo descubrí que usted había venido de Afganistán. Por la fuerza de un largo hábito, el curso de mis pensamientos es tan rígido en mi cerebro, que llegué a esa conclusión sin tener siquiera conciencia de las etapas intermedias. Sin embargo, pasé por esas etapas. El curso de mi razonamiento fue el siguiente: ‘He aquí a un caballero que responde al tipo del hombre de Medicina, pero que tiene un aire marcial. Es, por consiguiente, un médico militar con toda evidencia. Acaba de llegar de países tropicales, porque su cara es de un fuerte color oscuro, color que no es el natural de su cutis, porque sus muñecas son blancas. Ha pasado por sufrimientos y enfermedad, como lo prego
+
+[29] EL HOMBRE INVISIBLE
+    autor (segun el catalogo): WELLS, H.G.
+    macro: literatura
+    isbn: 9788419599087
+    editorial(es) segun el catalogo: ALMA|BRUGUERA|LA FRAGUARINA|RIOS DE TINTA|SALIM
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 160
+    ano de ESTA edicion en catalogo (NO el de la obra): 2013
+    por que entro al catalogo: Fabula cientifica de Wells con circulacion firme.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): «»El desconocido llegó un día huracanado de primeros de febrero, abriéndose paso a través de un viento cortante y de una densa nevada, la última del año. Llegó a pie desde la estación del ferrocarril de Bramblehurst. Llevaba en la mano bien enguantada una pequeña maleta negra. Iba envuelto de los pies a la cabeza, el ala de su sombrero de fieltro le tapaba todo el rostro y sólo dejaba al descubierto la punta de su nariz. La nieve se había ido acumulando sobre sus hombros y sobre la pechera de su atuendo y había formado una capa blanca en la parte superior de su carga. Más muerto que vivo, entró tambaleándose en la fonda Coach and Horses y, después de soltar su maleta, gritó:
+-¡Un fuego, por 
+
+[30] VISIONES DEL FUTURO
+    autor (segun el catalogo): MASLOW, ABRAHAM
+    macro: divulgacion
+    isbn: 9788472454163
+    editorial(es) segun el catalogo: KAIROS
+    genero del catalogo: PSICOLOGÍA / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 310
+    ano de ESTA edicion en catalogo (NO el de la obra): 2001
+    por que entro al catalogo: Maslow es figura clave en psicología, obra póstuma relevante.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Abraham Maslow, uno de los psicólogos más importantes del siglo XX, dedicó toda su vida al desarrollo de unas teorías que han revolucionado la psicología, la orientación psicopedagógica, el trabajo social, la teología, el marketing y la dirección de empresas.
+En Visiones del futuro, Edward Hoffman, distinguido biógrafo de Maslow, ha seleccionado ensayos, conferencias, cartas y fragmentos del diario íntimo de Maslow, reuniendo en un único tomo sus escritos más incisivos y profundos. En ellos, Maslow vierte sus ideas sobre temas que abarcan desde la autorrealización y el bienestar, hasta la política y la dirección de empresas. Hoffman, por su parte, aporta introducciones muy útiles a la vida y
+
+[31] MICRO Y NANOPLASTICOS
+    autor (segun el catalogo): Oceano
+    macro: divulgacion
+    isbn: 9788400114268
+    editorial(es) segun el catalogo: CONSEJO SUPERIOR DE INVESTIGACIONES CIENTIFICAS|LOS LIBROS DE LA CATARATA
+    genero del catalogo: DIVULGACIÓN CIENTÍFICA / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 96
+    ano de ESTA edicion en catalogo (NO el de la obra): 2025
+    por que entro al catalogo: Divulgación científica sobre un problema ambiental actual y relevante.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Los plásticos, por su versatilidad, durabilidad y bajo coste, se han convertido en materiales fundamentales en nuestra vida cotidiana. Sin embargo, su uso masivo y una gestión inadecuada de sus residuos han dado lugar a una de las amenazas medioambientales más graves de nuestro tiempo: la contaminación por plásticos. Tras ser desechados en el entorno natural, se desintegran mediante distintos procesos, lo que da lugar a fragmentos cada vez más pequeños: microplásticos, e incluso en tamaños aún menores: nanoplásticos. Estas diminutas partículas presentan propiedades diferentes a las del plástico original, lo que podría influir en su comportamiento en el ambiente y en los organismos vivos, es 
+
+[32] CASTA DE LA CRUELDAD
+    autor (segun el catalogo): MORALES, HUGO
+    macro: historia
+    isbn: 9789876843850
+    editorial(es) segun el catalogo: COLIHUE
+    genero del catalogo: POLITICA / NACIONAL
+    paginas (de ESTA edicion, no necesariamente la obra): 160
+    ano de ESTA edicion en catalogo (NO el de la obra): 2024
+    por que entro al catalogo: Análisis político actual sobre la realidad nacional.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis
+
+[33] COLMILLO BLANCO
+    autor (segun el catalogo): LONDON, JACK
+    macro: literatura
+    isbn: 9789871165636
+    editorial(es) segun el catalogo: AGEBE|DEL FONDO|GARGOLA|LOSADA|MESTAS|SALIM
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 206
+    ano de ESTA edicion en catalogo (NO el de la obra): 2000
+    por que entro al catalogo: Clasico de aventuras de London, lectores de todas las edades.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): La llamada de la selva fue un éxito rotundo que motivó a su autor, ante el clamor popular, a escribir más adelante, en 1906, su otra obra maestra Colmillo Blanco. Su publicación supuso un extraordinario éxito a nivel mundial, especialmente entre los lectores más jóvenes, y su autor se consagró con ella como una de las figuras más populares de la literatura estadounidense. La historia de esta novela de aventuras transcurre en el Territorio del Yukón, en el incipiente Canadá de finales del siglo XIX, durante la célebre Fiebre del oro de Klondike.
+Se narra en ella la impresionante historia de la domesticación de un perro lobo salvaje, en contraposición a la historia narrada anteriormente en La 
+
+[34] NOVELAS EJEMPLARES
+    autor (segun el catalogo): DE CERVANTES SAAVEDRA        D, MIGUEL
+    macro: literatura
+    isbn: 9788490742075
+    editorial(es) segun el catalogo: LA ESTACION|VERBUM
+    genero del catalogo: CLÁSICOS / EN GENERAL
+    ano de ESTA edicion en catalogo (NO el de la obra): 2014
+    por que entro al catalogo: Cervantes inaugura el relato breve en castellano
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): “mi intento ha sido poner en la plaza de nuestra república una mesa de trucos, donde cada uno pueda llegar a entretenerse, sin daño de barras; digo, sin daño del alma ni del cuerpo, porque los ejercicios honestos y agradables antes aprovechan que dañan”. Ni más. Ni menos. No hay en la obra de cervantes una “mesa de trucos” como la que ofrecen las novelas ejemplares. En todos sus textos, en todos los géneros a los que se acercó cervantes, a todos los que dedicó su pluma y su talento, su tiempo y su vida, en todos ellos es posible descubrir los cambios que han impuesto los aires de libertad que deja cervantes correr en su escritura.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): paginas
+
+[35] RESISTENCIA, REBELION Y CONTRARREVOLUCION
+    autor (segun el catalogo): CALIFA, JUAN SEBASTIAN
+    macro: historia
+    isbn: 9789876287029
+    editorial(es) segun el catalogo: EDHASA
+    genero del catalogo: HISTORIA / HISTORIA ARGENTINA
+    paginas (de ESTA edicion, no necesariamente la obra): 256
+    ano de ESTA edicion en catalogo (NO el de la obra): 2023
+    por que entro al catalogo: Investigación reciente sobre aspectos de la historia argentina.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis
+
+[36] ELOGIO DE LA LOCURA
+    autor (segun el catalogo): (sin dato)
+    macro: literatura
+    isbn: 9789876660136
+    editorial(es) segun el catalogo: AGEBE|ALIANZA|COLIHUE|EDIMAT LIBROS|LOSADA
+    genero del catalogo: CLÁSICOS / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 144
+    ano de ESTA edicion en catalogo (NO el de la obra): 2007
+    por que entro al catalogo: Satira humanista central del Renacimiento.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Elogio de la Locura de Erasmo de Rotterdam es un texto múltiple. Sátira mordaz, discurso religioso, crítica de toda teología sistemática, exhortación mística, esta obra es quizá el mejor ejemplo del modo ecléctico e irreverente con que el humanismo renacentista entendía la relación entre erudición, fe y saber. Enunciado en primera persona por la Locura, personaje o máscara, figura en gran medida ambigua que desgrana verdades y ríe burlonamente de los hombres de su tiempo, el Elogio pondrá en cuestión la escolástica medieval, recomendará la lectura en lengua original del texto bíblico, o bien rechazará una religiosidad ligada a las apariencias mundanas postulando una relación inmediata y subj
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): autor
+
+[37] RAUL ALFONSIN
+    autor (segun el catalogo): GERCHUNOFF, PABLO
+    macro: historia
+    isbn: 9789876286862
+    editorial(es) segun el catalogo: EDHASA
+    genero del catalogo: POLITICA / NACIONAL
+    paginas (de ESTA edicion, no necesariamente la obra): 462
+    ano de ESTA edicion en catalogo (NO el de la obra): 2022
+    por que entro al catalogo: Biografía reciente de una figura clave de la política argentina.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Cuando cumple treinta y un años, Raúl Alfonsín es un hombre casado y con seis hijos. Acaba de ser electo diputado provincial; sabe que su vida será mayormente una vida política. Es el año 1958. En las décadas siguientes adquirirá cada vez mayor relevancia. Primero dentro del radicalismo; luego en todo el país. Diputado nacional en 1962; referente de los derechos humanos durante de la dictadura; Presidente en el regreso a la democracia en 1983; impulsor del llamado ´Pacto de Olivos´ con Carlos Menem y factotum de la reforma constitucional de 1994. Tras la crisis de 2001, será un actor decisivo en la salida de la Convertibilidad. En este excepcional ensayo histórico, Pablo Gerchunoff analiza y
+
+[38] NADA (NOVELA GRAFICA)
+    autor (segun el catalogo): (sin dato)
+    macro: literatura
+    isbn: 9788413416885
+    editorial(es) segun el catalogo: AUSTRAL|BOOKET|PLANETA CÓMIC
+    genero del catalogo: POESIA / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 208
+    ano de ESTA edicion en catalogo (NO el de la obra): 2019
+    por que entro al catalogo: Novela de posguerra espanola de referencia.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Pocos años después de haberse terminado la terrible guerra civil, a medianoche de un día de octubre, Andrea llega en tren a Barcelona para estudiar Letras en la Universidad. Atraviesa maravillada las anchas calles vacías de la ciudad en un viejo coche de caballos hasta llegar a la casa de la calle de Aribau donde viven sus parientes. La expectación que siente en esos momentos mágicos iniciales se va a borrar de golpe al abrirse la puerta del piso, y a partir de ese momento todo le va a parecer una pesadilla. Se van a suceder para la joven los días sin importancia en la atmósfera asfixiante de ese espacio familiar. El dolor de la soledad de Andrea va unido a su figura, sombra apenas reflejada
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): autor
+
+[39] LA VUELTA AL MUNDO EN OCHENTA DIAS
+    autor (segun el catalogo): (sin dato)
+    macro: literatura
+    isbn: 9788467768640
+    editorial(es) segun el catalogo: CARROGGIO|GET A BOOK|PLUTON|SUSAETA
+    genero del catalogo: CLÁSICOS / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 32
+    ano de ESTA edicion en catalogo (NO el de la obra): 2016
+    por que entro al catalogo: Aventura clasica de venta ininterrumpida.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): Phileas Fogg, un gentleman británico adinerado y pedante, escrupulosamente puntual y tan osado como flemático, decide un buen día abandonar su ordenadísima vida para lanzarse a una de las mayores aventuras imaginables. ¿El motivo? Cumplir con una apuesta con sus colegas del Reform Club sobre la posibilidad de dar la vuelta al mundo en ochenta días. Fogg arriesga la mitad de su fortuna y se pone en ruta acompañado de su recién contratado mayordomo francés, el joven Picaporte, y vigilado por el detective Fix, quien, ignorando la verdadera identidad del viajero, lo persigue creyendo que es un ladrón de bancos que se da a la fuga. A lo largo del trayecto los planes se torcerán por diversas circu
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): autor
+
+[40] EL CORAZON DE LAS TINIEBLAS
+    autor (segun el catalogo): CONRAD, JOSEPH
+    macro: literatura
+    isbn: 9789509051195
+    editorial(es) segun el catalogo: CASTALIA|ENEIDA|GARGOLA|JUVENTUD|LOSADA
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 144
+    ano de ESTA edicion en catalogo (NO el de la obra): 2008
+    por que entro al catalogo: Denuncia del colonialismo, lectura y cita permanentes.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): A través de la descripción de la travesía de Marlow por el río Congo, en pos del enigmático señor Kurtz, Conrad nos desubre los horrores que, en nombre de la civilización, han ido perpetrando los colonizadores. Publicada originalmente en 1902, El corazón de las tinieblas es una de las novelas más estremecedoras de todos los tiempos, en parte porque tranciende la circunstancia histórica y social para convertirse en una exploración de las raíces de lo humano, las catacumbas del ser en el que anida una vocación de irracionalidad destructiva y la civilización consiguen atenuar, pero nunca erradicar. Así en El corazón de las tinieblas encontraremos aventuras, caníbales, selva virgen, hechiceros, 
+
+[41] EL MATRIMONIO DEL CIELO Y EL INFIERNO
+    autor (segun el catalogo): BLAKE, WILLIAM
+    macro: literatura
+    isbn: 9789876660402
+    editorial(es) segun el catalogo: AGEBE|COLIHUE
+    genero del catalogo: CLÁSICOS / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 80
+    ano de ESTA edicion en catalogo (NO el de la obra): 2015
+    por que entro al catalogo: Poema visionario clave del romanticismo ingles.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis
+
+[42] ORGULLO Y PREJUICIO
+    autor (segun el catalogo): AUSTEN, JANE
+    macro: literatura
+    isbn: 9789874715111
+    editorial(es) segun el catalogo: ALMA|CONTINENTE|DEBOLSILLO|DEL FONDO|EOLAS|ESPASA CALPE|GARGOLA|LEA|LOSADA|MAYA|NUMEN / SILVER DOLPHIN|PENGUIN CLASICOS|PLAZA & JANES EDITORES|PLUTON|SALIM|VR YA
+    paginas (de ESTA edicion, no necesariamente la obra): 448
+    ano de ESTA edicion en catalogo (NO el de la obra): 2008
+    por que entro al catalogo: La novela mas leida de Austen, venta imparable.
+    sinopsis del catalogo (OJO: bytes rotos de origen, puede faltar alguna letra, y puede ser de OTRO libro homonimo): Con su amable ironía, sus diálogos chispeantes, su desenlace romántico y sus enérgicas heroínas, Orgullo y prejuicio es la novela más popular de Jane Austen. La historia de amor de Elizabeth Bennet y Fitzwilliam Darcy, que primero se rechazan, luego se desafían y al cabo se cautivan el uno al otro, es también una novela sobre la búsqueda de la felicidad y la afirmación de la identidad en un mundo de estrictas normas sociales donde una mujer tiene que casarse bien para salir adelante. Todo empezó por querer leer un buen libroâ¦ ¿Era mucho pedir? En 1935, de camino a Londres, Allen Lane se detuvo en un andén del ferrocarril para buscar algo interesante que leer durante el viaje. La oferta se 
+
+[43] 1984
+    autor (segun el catalogo): ORWELL, GEORGE
+    macro: literatura
+    isbn: 9788413372464
+    editorial(es) segun el catalogo: ALMA|DEBOLSILLO|DEL FONDO|GARGOLA|LOSADA|LUMEN|PENGUIN CLASICOS|PLANETA|VERBUM
+    genero del catalogo: NOVELAS / UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 408
+    ano de ESTA edicion en catalogo (NO el de la obra): 2013
+    por que entro al catalogo: Distopia insuperada, se estudia y se vende sin parar.
+    sinopsis del catalogo (OJO: bytes rotos de origen, puede faltar alguna letra, y puede ser de OTRO libro homonimo): En el año 1984, Londres forma parte de un estado totalitario en el que se controla de manera asfixiante la vida de los ciudadanos. Como parte de esa maquinaria, Winston Smith reescribe la historia para adaptarla a las necesidades del Partido. Sin embargo, interiormente empieza a rebelarse contra un mundo que exige obediencia absoluta al Hermano Mayor. En su anhelo de verdad y libertad inicia un romance secreto con una compañera de trabajo, Julia, pero sabe que incluso el amor está amenazado. Todo empezó por querer leer un buen libroâ¦ ¿Era mucho pedir? En 1935, de camino a Londres, Allen Lane se detuvo en un andén del ferrocarril para buscar algo interesante que leer durante el viaje. La of
+
+[44] MOMENTOS ESTELARES DE LA HUMANIDAD
+    autor (segun el catalogo): ZWEIG, STEFAN
+    macro: literatura
+    isbn: 9789878928814
+    editorial(es) segun el catalogo: ALMA|DUOMO|EL ACANTILADO|GODOT
+    genero del catalogo: HISTORIA / HISTORIA UNIVERSAL
+    paginas (de ESTA edicion, no necesariamente la obra): 280
+    ano de ESTA edicion en catalogo (NO el de la obra): 2003
+    por que entro al catalogo: Miniaturas historicas de Zweig, exito sostenido.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): La obra más querida de Stefan Zweig cobra vida en esta edición ilustrada. Stefan Zweig, una de las mejores plumas de la literatura europea, heredera de la prosa depurada y elegante del siglo XIX, nos brinda sus Momentos estelares de la humanidad, un libro para todo tipo de lectores que instruye y deleita a partes iguales. Gran observador, relata con maestría en esta crónica catorce momentos que han supuesto un punto de inflexión en la Historia: el ocaso del imperio de Occidente, la derrota de Napoleón, la conquista del Polo Sur, el primer cable de telégrafo en cruzar el océano atlántico, entre otros. Todos ellos, en palabras de Zweig, ´momentos preñados de fatalidad, en los que una decisión 
+
+[45] EL LIBRO DEL TE
+    autor (segun el catalogo): KAKUZO, OKAKURA
+    macro: literatura
+    isbn: 9788476518182
+    editorial(es) segun el catalogo: CLARIDAD|JOSE J DE OLA/ETA|KAIROS|QUADRATA
+    genero del catalogo: ORIENTALISMO / FILOSOFIA ORIENTAL
+    paginas (de ESTA edicion, no necesariamente la obra): 112
+    ano de ESTA edicion en catalogo (NO el de la obra): 2005
+    por que entro al catalogo: Okakura, ensayo fundacional sobre estetica oriental
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): El libro del Té es un texto que puede ser considerado ya como un clásico moderno. Sin apasionamientos ni sentimentalismos fáciles, se señalan con delicadeza y precisión las diferencias existentes entre la mentalidad de Oriente y de Occidente; se analizan los orígenes, los ideales estéticos, la influencia de la religión y de la filosofía taoísta, todo lo que confluye en la ceremonia del té y hace de ella a la vez un arte y un culto. Se explica la importancia de los arreglos florales, la distribución de espacios, ese insólito equilibrio entre la gracia y la serenidad, entre lo presente y lo sugerido, todos y cada uno de los valores fundamentales que cultivan y perpetúan todavía hoy, en cada un
+
+[46] MIAU
+    autor (segun el catalogo): PEREZ GALDOS, BENITO
+    macro: literatura
+    isbn: 9788441413825
+    editorial(es) segun el catalogo: EDAF
+    genero del catalogo: ANIMALES DOMESTICOS / GATOS
+    paginas (de ESTA edicion, no necesariamente la obra): 500
+    ano de ESTA edicion en catalogo (NO el de la obra): 2007
+    por que entro al catalogo: Galdos en su mejor momento, novela de funcionarios.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): En 1888, inmediatamente después de Fortunata, y Jacinta y cuando se halla en el mejor momento de su actividad creadora, publica Galdós Miau^ novela centrada en la figura de un funcionario cesante, condición de gran actualidad en aquel momento de alternancia de partidos. El tipo había sido ya descrito por Mesonero Romanos y Gil de Zarate, y el propio Galdós ya lo había tratado en La desheredada (1881), y, como personaje secundario, Villaamil ya aparece en Fortunata y Jacinta.
+Pero, como ocurre a veces en la narrativa galdosiana, un personaje secundario de una novela acaba por convertirse en principal de otra posterior. Miau es, pues, la historia de este Villaamil apenas esbozado en Fortunata.
+
+[47] HISTORIA DE LA GUERRA DEL PELOPONESO
+    autor (segun el catalogo): Tucidides
+    macro: historia
+    isbn: 9788426142047
+    editorial(es) segun el catalogo: JUVENTUD
+    genero del catalogo: HISTORIA / HISTORIA UNIVERSAL
+    por que entro al catalogo: Tucidides fundo la historia politica y se sigue leyendo
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis, paginas, ano de la obra
+
+[48] ALICIA A TRAVES DEL ESPEJO
+    autor (segun el catalogo): CARROLL, LEWIS
+    macro: literatura
+    isbn: 9788418008641
+    editorial(es) segun el catalogo: AGEBE|ALMA|ANDROMEDA|SALIM
+    paginas (de ESTA edicion, no necesariamente la obra): 160
+    ano de ESTA edicion en catalogo (NO el de la obra): 2009
+    por que entro al catalogo: Continuacion de Alicia, clasico de circulacion permanente.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis
+
+[49] EL HOMBRE AUTORREALIZADO
+    autor (segun el catalogo): MASLOW, ABRAHAM
+    macro: divulgacion
+    isbn: 9788472452282
+    editorial(es) segun el catalogo: KAIROS
+    genero del catalogo: PSICOLOGÍA / EN GENERAL
+    paginas (de ESTA edicion, no necesariamente la obra): 292
+    ano de ESTA edicion en catalogo (NO el de la obra): 2007
+    por que entro al catalogo: Obra fundamental de la psicología humanista.
+    sinopsis del catalogo (puede ser de OTRO libro homonimo): El hombre autorrealizado ha sido considerado como uno de los libros más importantes de la nueva cultura. La tesis de Maslow es que los seres humanos comienzan a dirigirse hacia la autorrealización en cuanto quedan satisfechas sus necesidades básicas de comida, ropa y vivienda. Maslow contrapone la psicología de adaptación al medio ambiente (que le parece estática, incompleta y sobrepasada) con una psicología dinámica que entiende que el hombre sólo está sano cuando se autorrealiza creativamente.
+El presupuesto básico de la autorrealización es que, suprimidos los mecanismos de defensa, el animal humano no tiende a la autodestrucción sino a una nueva expresividad creadora que sobrepasa la anti
+
+[50] MUERTE LUCIDA . LA NUEVA CIENCIA DE LA VIDA Y LA MUERTE
+    autor (segun el catalogo): PARNIA, SAM
+    macro: divulgacion
+    isbn: 9788411213400
+    editorial(es) segun el catalogo: KAIROS
+    genero del catalogo: DIVULGACIÓN CIENTÍFICA / ENSAYOS
+    paginas (de ESTA edicion, no necesariamente la obra): 448
+    ano de ESTA edicion en catalogo (NO el de la obra): 2025
+    por que entro al catalogo: Divulgación científica sobre un tema intrigante y actual.
+    FALTA EN EL CATALOGO (confirmalo por busqueda si podes): sinopsis

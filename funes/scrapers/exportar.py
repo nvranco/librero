@@ -29,6 +29,27 @@ sys.path.insert(0, str(RAIZ))
 
 from funes.scrapers import comun  # noqa: E402
 
+# Separadores de linea Unicode que `json.dumps` NO escapa (son >= 0x20) pero que
+# `str.splitlines()`, `pandas.read_json(lines=True)` y varias herramientas de
+# JSONL si tratan como salto de linea. Con uno solo adentro de una sinopsis, el
+# registro se parte en dos y el archivo deja de ser un JSON por linea.
+# Medido: 45 apariciones de \x85 en 41.499 sinopsis de Cuspide. El archivo se lee
+# bien iterando por \n, pero es una trampa puesta para el que venga despues.
+SEPARADORES_TRAICIONEROS = {
+    "\x85": "\\u0085",    # NEL
+    " ": "\\u2028",  # LINE SEPARATOR
+    " ": "\\u2029",  # PARAGRAPH SEPARATOR
+}
+
+
+def _a_jsonl(registro: dict) -> str:
+    """Serializa un registro a una linea de JSONL de verdad: una sola linea."""
+    linea = json.dumps(registro, ensure_ascii=False)
+    for crudo, escapado in SEPARADORES_TRAICIONEROS.items():
+        if crudo in linea:
+            linea = linea.replace(crudo, escapado)
+    return linea
+
 
 def exportar_sitio(sitio: str, *, solo_con_isbn: bool = False, etapa: str = "") -> Path:
     base = comun.ruta_base(sitio)
@@ -94,7 +115,7 @@ def exportar_sitio(sitio: str, *, solo_con_isbn: bool = False, etapa: str = "") 
                 "capturado_en": d["capturado_en"],
                 "crudo": crudo,
             }
-            f.write(json.dumps(registro, ensure_ascii=False) + "\n")
+            f.write(_a_jsonl(registro) + "\n")
             n += 1
     con.close()
     print(f"{sitio}: {n:,} registros -> {salida}")
@@ -124,6 +145,20 @@ def resumen_sitio(sitio: str) -> None:
             f"{r[0]}={r[1]:,}" for r in con.execute("SELECT etapa, COUNT(*) FROM productos GROUP BY etapa")
         )
         print(f"  por etapa            : {por_etapa}")
+
+        # Aviso de calidad, no un filtro: el scraping guarda lo que el sitio dice.
+        # Pero `nro_paginas` alimenta el filtro duro de bandas de Funes, y Cuspide
+        # usa 10 como centinela de "no se" en ~14% de sus fichas. Un libro con 10
+        # paginas falsas cae en la banda "corto" y se le recomienda a alguien que
+        # pidio una lectura breve. Que se vea aca es mas barato que descubrirlo
+        # despues de vectorizar.
+        con_pag = uno("SELECT COUNT(*) FROM productos WHERE nro_paginas IS NOT NULL")
+        if con_pag:
+            dudosas = uno("SELECT COUNT(*) FROM productos WHERE nro_paginas IS NOT NULL AND nro_paginas <= 10")
+            if dudosas:
+                pct = 100 * dudosas / con_pag
+                print(f"  OJO nro_paginas <= 10: {dudosas:,} de {con_pag:,} ({pct:.1f}%) — centinela, "
+                      f"no paginas reales; filtrar en la curacion")
     estados = ", ".join(
         f"{r[0]}={r[1]}" for r in con.execute("SELECT estado, COUNT(*) FROM unidades GROUP BY estado")
     )

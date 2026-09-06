@@ -1,0 +1,60 @@
+{
+  "_de_donde_sale": [
+    "Vocabulario cerrado de `funes_libros.rasgos`, copiado literal de",
+    "funes/reescribir_abstractos.py, que es lo que ya se aplico a los 1.366",
+    "libros del catalogo actual. Se replica sin cambiar una letra a proposito:",
+    "si la curaduria inventa sus propios valores, los dos lotes dejan de ser",
+    "comparables y el filtro por tema del motor se parte en dos vocabularios.",
+    "",
+    "Siempre en minuscula y sin acentos. El validador del otro lado normaliza y",
+    "lo que no esta en la lista cae a 'otro' en tema y se descarta en tono: un",
+    "sinonimo no da error, se pierde en silencio."
+  ],
+
+  "_por_que_importa_en_divulgacion": [
+    "Es la macro donde el motor no tiene con que filtrar: 87 de los 187 libros",
+    "actuales tienen subgenero 'EN GENERAL'. Con `tema` puesto se puede activar",
+    "ahi el mismo filtro duro que ya funciona en historia. Segun la sesion del",
+    "motor, etiquetar bien los ~300 elegidos de divulgacion vale mas que sumar",
+    "500 libros sin etiquetar."
+  ],
+
+  "temas": {
+    "divulgacion": ["mente", "vida", "tecno", "universo", "cuerpo", "tierra", "numeros", "ideas", "otro"],
+    "historia": ["argentina", "mundial", "americana", "belica", "originarios", "otro"],
+    "literatura": ["novela", "genero", "clasico", "cuento", "poesia", "teatro",
+                   "ensayo", "memoria", "otro"]
+  },
+
+  "tonos": ["intimo", "melancolico", "luminoso", "ironico", "duro", "divertido",
+            "sereno", "urgente", "nostalgico", "critico", "didactico", "epico",
+            "romantico", "oscuro"],
+
+  "campos": {
+    "tema": "UNA de las opciones de `temas` para la macro del libro. Pasarle SOLO la lista de su macro: con las tres juntas, mezcla.",
+    "tono": "lista de 2 o 3 de `tonos`",
+    "exigencia": "1 si se lee sin esfuerzo, 2 si pide atencion, 3 si es dificil o tecnico",
+    "ritmo": "lento | parejo | rapido",
+    "humor": "true | false",
+    "final": "cerrado | abierto | null si no es un relato",
+    "epoca": "el siglo o periodo del que habla (ej. 'siglo XX', '1976-1983', 'antiguedad'), o null",
+    "lugar": "pais o region de la que habla (ej. 'Argentina', 'Europa'), o null",
+    "para": "UNA frase de menos de 12 palabras que empiece con 'para quien' y diga a que lector le sirve"
+  },
+
+  "_lecciones_ya_pagadas": [
+    "1. El modelo se muda de formula. Al prohibirle 'La lectura de este libro'",
+    "   paso a 'Se lee con...' (21 de 55) y 'Pide una lectura...' (14 de 55). La",
+    "   lista negra sola es un juego del topo: lo que lo resolvio fue pedir que",
+    "   arranque con adjetivo o sustantivo Y verificarlo en codigo. De 12% a 78%",
+    "   de arranques distintos.",
+    "2. El reintento tiene que decir QUE estuvo mal. Con temperatura 0 y un",
+    "   reproche generico, el segundo intento devuelve palabra por palabra lo",
+    "   mismo. Con el motivo exacto, los fallos bajaron de 8/24 a 3/24.",
+    "3. Temperatura 0: esto se vectoriza, no se lee. Que dos corridas den el",
+    "   mismo texto es lo que permite reprocesar sin mover el ranking entero.",
+    "4. La ficha puede ser de OTRO libro (sinopsis cruzadas de las librerias).",
+    "   Lo confiable son titulo y autor; una sinopsis que describe otro libro es",
+    "   peor que ninguna, porque el catalogo la da por buena."
+  ]
+}
