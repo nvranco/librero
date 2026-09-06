@@ -16,6 +16,7 @@ Corre DESPUES del deploy: funes_libros no existe en Railway hasta que la app
 arranca y ejecuta schema.sql.
 """
 
+import argparse
 import asyncio
 import os
 import sys
@@ -46,6 +47,11 @@ LOTE = 50
 
 
 async def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--simular", action="store_true",
+                        help="decir que cambiaria sin escribir nada")
+    args = parser.parse_args()
+
     destino_url = os.environ.get("DATABASE_URL_DESTINO", "").strip()
     if not destino_url:
         print("Falta DATABASE_URL_DESTINO (Railway > BBDD > Variables > DATABASE_PUBLIC_URL).")
@@ -76,6 +82,30 @@ async def main() -> None:
             f"INSERT INTO funes_libros ({', '.join(COLUMNAS)}) VALUES ({marcadores}) "
             f"ON CONFLICT (id) DO UPDATE SET {set_}"
         )
+
+        # Que va a pasar, ANTES de que pase. Esto existe porque al aplicar el
+        # catalogo en local aparecio que pisar puede EMPEORAR un campo: un
+        # titulo curado a mano ("DeMente. El cerebro, un hueso duro de roer")
+        # reemplazado por el scrapeado ("Demente"). Mirarlo despues de escribir
+        # en produccion no sirve de nada.
+        ya = {f["id"]: f for f in await destino.fetch(
+            "SELECT id, titulo, autor FROM funes_libros")}
+        nuevos = [f for f in filas if f["id"] not in ya]
+        pisan = [f for f in filas if f["id"] in ya]
+        cambian_titulo = [(f["titulo"], ya[f["id"]]["titulo"]) for f in pisan
+                          if f["titulo"] != ya[f["id"]]["titulo"]]
+        acortan = [(n, v) for n, v in cambian_titulo if len(n) < len(v) - 4]
+        print(f"\ndestino tiene {len(ya)} libros")
+        print(f"  entran nuevos: {len(nuevos)}")
+        print(f"  pisan a uno existente: {len(pisan)}")
+        print(f"  de esos, le cambian el titulo: {len(cambian_titulo)}")
+        if acortan:
+            print(f"  y {len(acortan)} lo ACORTAN — revisar antes de escribir:")
+            for n, v in acortan[:10]:
+                print(f"     {v[:46]:48} -> {n[:34]}")
+        if args.simular:
+            print("\n--simular: no se escribio nada.")
+            return
 
         copiados = 0
         for inicio in range(0, len(filas), LOTE):
