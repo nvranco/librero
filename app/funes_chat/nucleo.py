@@ -128,7 +128,57 @@ _PESO_DIVERSIDAD = 0.0
 # llamadas al LLM y la mitad de la espera para una pregunta decorativa. Ahora va
 # por vector propio, como se hizo con el ancla por la misma razon.
 _PESO_PROFUNDAS = 0.25
-_MODELO_ANCLA_WEB = "google/gemini-2.5-flash:online"
+
+# El peso de la correccion: lo que la persona escribe cuando pide otra
+# recomendacion ("quiero algo que tenga mas que ver con sistemas de castas").
+# Va aparte de las profundas y no adentro, que es como estaba, porque adentro
+# era casi inerte: el motivo se concatenaba con las dos respuestas profundas y
+# con los libros leidos en un solo texto de un solo vector, asi que le tocaba un
+# tercio de 0,25. Medido en una sesion real de produccion, dos recomendaciones
+# seguidas del mismo ciclo devolvieron la MISMA lista con los MISMOS puntajes
+# -delta maximo 0,005- y lo unico que cambio fue que bajo al segundo porque el
+# primero ya estaba mostrado. La persona habia escrito con todas las letras que
+# le erramos y el ranking no se movio.
+#
+# Es alto a proposito, mas que las profundas: es lo ultimo que dijo, lo dijo
+# escribiendo y no eligiendo, y lo dijo despues de ver un libro concreto y
+# decidir que no. Es la senal mas cara y mas informada de toda la conversacion.
+_PESO_CORRECCION = 0.35
+
+# Cuanto del puntaje pueden llevarse entre todas las partes que NO son el
+# perfil. Con tres componentes ademas del perfil los pesos fijos se pasarian de
+# 1 (0,5 + 0,25 + 0,35), asi que se escalan proporcionalmente y al perfil
+# siempre le queda este resto. El numero es el que ya regia antes de que
+# existiera la correccion (0,5 + 0,25), asi que sin correccion nada cambia.
+_MAX_SIN_PERFIL = 0.75
+# El fallback del ancla, el unico camino del pipeline que paga busqueda web.
+#
+# NO es el mismo modelo que la voz, y la diferencia es de precio: la tarifa de
+# busqueda de OpenRouter va por proveedor y no acompana al precio del modelo.
+# Google cobra $0,014 por busqueda y OpenAI $0,010, un 29% menos, con la entrada
+# ademas mas barata ($0,25/M contra $0,30/M). Como la busqueda inyecta ~2.600
+# tokens de resultados en el prompt -medido: el prompt pasa de 31 a 2.680-, esa
+# diferencia de entrada tambien cuenta.
+#
+# Se cambio despues de comparar los dos sobre tres referencias reales, midiendo
+# el coseno de la descripcion resultante contra el catalogo, que es para lo
+# unico que sirve este texto:
+#
+#   q4                        gemini-2.5-flash   gpt-5-mini
+#   Clarke, Canticos              0,648            0,629
+#   Frans de Waal                 0,503            0,539
+#   Sapiens                       0,564            0,602
+#
+# Igual o mejor en dos de tres, con los mismos libros en el top-3. Acepta
+# temperature 0 (varios modelos nuevos de OpenAI la rechazan) y devuelve el JSON
+# que espera _parsear_json_llm; las dos cosas verificadas con una llamada real.
+#
+# OJO con el banco: bench/simular.py usa gpt-5-mini como juez y como lector
+# simulado. El juez no puntua este texto -puntua el libro que sale- asi que la
+# regla de "el juez nunca es el modelo de la voz" se sigue cumpliendo, pero
+# ahora el ancla y el juez son de la misma familia. Si alguna vez el banco
+# muestra una mejora sospechosa en los perfiles con q4 raro, empezar por aca.
+_MODELO_ANCLA_WEB = "openai/gpt-5-mini:online"
 # El vector del ancla se cachea en memoria porque _candidatos() corre hasta 5
 # veces por conversacion (2 preguntas profundas + 3 recomendaciones) y sin esto
 # cada una pagaria de nuevo la expansion: 5 llamadas al LLM y 5 embeddings, y
@@ -163,10 +213,21 @@ PREGUNTAS = {
     "q0": {
         "titulo": "El Territorio",
         "pregunta": "¿Qué te interesa leer hoy en día?",
+        # Las tres etiquetas cambiaron cuando la filosofia se mudo de literatura
+        # a divulgacion. Antes literatura decia "ensayos" y divulgacion decia
+        # "ideas": el lector que venia por Kant leia las dos y no tenia forma de
+        # saber cual era la suya, y a partir de la mudanza la respuesta correcta
+        # era justo la que menos lo parecia.
+        #
+        # "pensamiento" es la palabra que hace el trabajo: nombra la filosofia
+        # sin decir "filosofia" primero, que suena a materia de facultad. Y
+        # literatura deja de prometer ensayos en la etiqueta -los sigue
+        # teniendo, y quien los busca los encuentra en la pregunta de la forma-
+        # para no seguir capturando a ese lector en la puerta equivocada.
         "opciones": {
-            "literatura": "Literatura, novelas, cuentos, ensayos.",
-            "historia": "Historia, civilizaciones, biografías, política.",
-            "divulgacion": "Divulgación, ciencias, naturaleza, ideas.",
+            "literatura": "Ficción y literatura: novelas, cuentos, poesía, teatro, memorias.",
+            "historia": "Historia: civilizaciones, biografías, política, guerras.",
+            "divulgacion": "Ciencias y pensamiento: naturaleza, la mente, la tecnología, filosofía.",
         },
         # Recorta el catalogo antes del coseno (ver _filtrar_catalogo). Es un
         # limite, no una preferencia: el vector no sabe decir "esto no", y sin
@@ -251,6 +312,10 @@ PREGUNTAS = {
                 # Los pueblos originarios van con Argentina (son en su mayoria
                 # de aca) y la historia americana con mundial, que es donde el
                 # comentario de arriba ya decia que caian mejor.
+                #
+                # Esta lista sola NO alcanza para el catalogo que viene: la
+                # taxonomia de Cuspide no es geografica. Lo que no cae aca lo
+                # resuelve el respaldo por tema (ver _TEMA_HISTORIA).
                 "filtro": "subgenero",
                 "subgeneros": {
                     "argentina": [
@@ -266,70 +331,51 @@ PREGUNTAS = {
             "divulgacion": {
                 "titulo": "La Curiosidad",
                 "pregunta": "¿Qué te da curiosidad?",
+                # CUATRO puertas y no cinco, y cada una junta varios temas.
+                #
+                # Antes eran cinco de un tema cada una y el reparto del catalogo
+                # las volvia decorativas: con los 575 libros del catalogo curado,
+                # "tecno" y "universo" tienen 33 libros cada uno -el 6% de la
+                # macro- contra 200 de "mente" y 150 de "ideas". Cinco puertas
+                # parejas para un estante que no lo es. Medido: el pool de
+                # "tecno" quedaba 7% tecnologico, y el de "universo" tenia mas
+                # filosofia (150) que libros del universo (33).
+                #
+                # Agrupadas asi, las cuatro pesan 200, 150, 129 y 78, y eso
+                # habilita lo importante: se puede volver a filtrar por
+                # INCLUSION -exigir el tema pedido- en vez de por exclusion. El
+                # pool pasa de ser 7-71% de lo que la persona pidio a ser 81-91%.
                 "opciones": {
-                    "mente": "La mente: por qué hacemos lo que hacemos.",
-                    "vida": "Los seres vivos: plantas, bichos, ecosistemas.",
-                    "tecno": "La tecnología: los datos, la inteligencia artificial, las pantallas.",
-                    "universo": "El universo y las leyes que lo rigen.",
+                    "mente": "La mente y la conducta: por qué hacemos lo que hacemos.",
+                    "vida": "La vida y el planeta: plantas, bichos, ecosistemas, el cuerpo.",
+                    "universo": "Cómo funciona todo: el universo, la física, los números, las máquinas.",
                     "ideas": "Las ideas: cómo pensamos, qué está bien, qué es vivir.",
                 },
                 # Medido: la etiqueta corta de "vida" daba coseno 0,443 y traia
-                # psicologia; esta redaccion da 0,600 y trae libros de bichos y
+                # psicologia; una consulta larga da 0,600 y trae bichos y
                 # plantas. Una opcion corta se diluye cuando se concatena con
                 # las respuestas largas de q2 y q3.
                 "consultas": {
                     "mente": "Un libro de divulgación sobre la mente, el cerebro y la conducta: por qué las personas hacen lo que hacen.",
-                    "vida": "Un libro sobre la vida en la Tierra, los animales, las plantas y cómo funcionan los ecosistemas.",
-                    "tecno": "Un libro de divulgación sobre la tecnología y sus efectos: los datos, la inteligencia artificial, las pantallas y cómo nos cambian.",
-                    "universo": "Un libro de divulgación sobre el universo, la física y las leyes que rigen la materia.",
+                    "vida": "Un libro sobre la vida en la Tierra: los animales, las plantas, los ecosistemas, el planeta y el cuerpo humano.",
+                    "universo": "Un libro de divulgación sobre cómo funciona el mundo físico: el universo, la física, las matemáticas y la tecnología.",
                     "ideas": "Un ensayo de filosofía y de pensamiento sobre las ideas, la ética y el sentido de la vida: cómo pensamos, qué está bien y cómo se discute.",
                 },
-                # En divulgacion esta pregunta tambien FILTRA, pero al reves que
-                # en historia: descarta lo ajeno en vez de exigir el tema.
+                # Por INCLUSION, al reves que antes. La exclusion existio mientras
+                # el catalogo eran 187 libros y ningun tema llegaba a 80: exigir
+                # el tema dejaba pools de 11 a 66 y el filtro se aflojaba siempre.
+                # Agrupadas, las cuatro puertas superan el piso y se puede exigir.
                 #
-                # El motivo es que exigirlo no se podria activar nunca. El unico
-                # campo con senal es rasgos->>'tema' (genero/subgenero no
-                # sirven: 87 de 187 son "EN GENERAL", y tecno y universo no
-                # existen como rama), y ahi el tema mas grande son 66 libros:
-                # todos los pools por inclusion caen bajo _PISO_POOL, o sea que
-                # el filtro se aflojaria siempre. Seria codigo muerto que parece
-                # funcionar. Descartando lo ajeno, en cambio, las cinco opciones
-                # quedan sobre el piso: 122, 90, 111, 81 y 107.
-                #
-                # Lo que NO se descarta es tan deliberado como lo que si. "otro"
-                # y los libros sin rasgos sobreviven siempre. "cuerpo" convive
-                # con mente y con vida, "tierra" con vida, y los 66 de mente se
-                # quedan en tecno porque "las pantallas y como nos cambian" es
-                # mente y tecno a la vez. Eso deja a tecno con un pool dominado
-                # por mente, que es el punto flojo conocido: con 16 libros de
-                # tecnologia ningun filtro lo arregla, lo tiene que arreglar el
-                # catalogo.
+                # OJO: eso vale con el catalogo curado cargado. Con los 197 de
+                # hoy, "ideas" da 25 y "universo" 46, las dos debajo de
+                # _PISO_POOL, y el filtro se afloja solo. Este cambio va junto
+                # con la migracion del catalogo, no antes.
                 "filtro": "tema",
-                #
-                # "ideas" es la quinta opcion y la mas nueva. Conserva mente y
-                # tecno porque la filosofia de la mente y la de la tecnica son
-                # la misma conversacion vista de otro lado; descarta lo que se
-                # mide con instrumentos. Del otro lado, solo "vida" descarta
-                # ideas: en mente y en tecno un ensayo cae bien, y universo ya
-                # esta bajo el piso y sumarle exclusiones no lo mejora.
-                #
-                # UMBRAL, para cuando entre el catalogo nuevo: esa adyacencia
-                # vale porque hoy "ideas" son 10 libros contra 66 de mente. La
-                # curaduria tiene 122 titulos de filosofia esperando entrar, y
-                # con ~132 la opcion pasa a ser el tema mas grande de la macro:
-                # proyectado, el pool de mente queda 54% filosofia, el de tecno
-                # 56% y el de universo 65%. Ahi la adyacencia deja de ser un
-                # matiz y se vuelve una toma del pool -el mismo modo de falla
-                # que este filtro vino a arreglar, con otro sujeto-. Pasando los
-                # ~40 libros de "ideas" hay que sumarlo a los ajenos de mente,
-                # tecno y universo. Es una linea; lo caro es descubrirlo con el
-                # catalogo ya cargado y el piloto andando.
-                "temas_ajenos": {
-                    "mente": ["vida", "tierra", "universo", "numeros"],
-                    "vida": ["mente", "tecno", "universo", "numeros", "ideas"],
-                    "tecno": ["vida", "tierra", "cuerpo", "universo"],
-                    "universo": ["mente", "vida", "cuerpo"],
-                    "ideas": ["vida", "tierra", "universo", "numeros", "cuerpo"],
+                "temas": {
+                    "mente": ["mente"],
+                    "vida": ["vida", "tierra", "cuerpo"],
+                    "universo": ["universo", "numeros", "tecno"],
+                    "ideas": ["ideas"],
                 },
             },
         },
@@ -488,17 +534,34 @@ def aplica(clave: str, respuestas: dict) -> bool:
 
 
 _SYSTEM_ANCLA = (
-    "Sos un bibliotecario. Te dan uno o mas autores u obras que un lector "
-    "menciona como referencia de lo que quiere leer.\n\n"
+    "Sos un bibliotecario. Un lector te cuenta, con sus palabras, que le gusto o "
+    "que anda buscando. Tu trabajo es traducir eso a la ficha de catalogo del "
+    "libro que habria que darle.\n\n"
     "Devolves SOLO un JSON con esta forma:\n"
     '{"conocido": true, "descripcion": "..."}\n\n'
-    '"conocido": true si reconoces con certeza al autor o la obra; false si no '
-    "estas seguro o si el texto es demasiado vago para identificarla.\n"
+    "Lo que te dan puede ser de tres clases, y con cada una haces algo "
+    "distinto:\n\n"
+    "a) UN AUTOR O UNA OBRA (\"Borges\", \"Sapiens\", \"Cronicas marcianas\"). "
+    "Describis de que trata esa obra, o esa clase de obra si son varias.\n\n"
+    "b) UN RASGO de una obra (\"me gusto el sistema de casas de Harry Potter\", "
+    "\"los finales que no cierran\", \"que el narrador te mienta\", \"personajes "
+    "que envejecen a lo largo del libro\"). Aca describis LIBROS QUE TENGAN ESE "
+    "RASGO, y NO la obra de donde lo saco. Lo que el lector valora es el rasgo; "
+    "la obra es el ejemplo que tenia a mano. Si te dice lo del sistema de casas "
+    "y vos describis Harry Potter, le vas a devolver novelas de magos y de "
+    "colegios, cuando lo que pidio son mundos divididos en grupos con reglas "
+    "propias y personajes definidos por a cual pertenecen. Nombrar una obra no "
+    "la convierte en el pedido: fijate SIEMPRE si lo que se elogia es la obra "
+    "entera o una cosa puntual de adentro.\n\n"
+    "c) UNA DESCRIPCION sin nombres propios (\"algo que me haga llorar\", \"una "
+    "historia de gente comun\"). La reescribis en idioma de catalogo.\n\n"
+    '"conocido": true si entendiste que pide y podes describirlo con precision '
+    "-vale igual para un rasgo que para una obra-; false si el texto es "
+    "demasiado vago o no alcanza para identificar nada.\n"
     '"descripcion": UN parrafo de 40 a 60 palabras, en tercera persona y en el '
-    "idioma de una ficha de catalogo, sobre de que tratan esas obras: el tema "
-    "especifico, el enfoque y el tono. Nunca opines, nunca te dirijas al lector "
-    "y nunca menciones que hay un lector o una referencia. Si no reconoces la "
-    "obra, describi lo que el texto sugiere sin inventar datos."
+    "idioma de una ficha de catalogo: el tema especifico, el enfoque y el tono. "
+    "Nunca opines, nunca te dirijas al lector y nunca menciones que hay un "
+    "lector o una referencia. Sin inventar datos."
 )
 
 
@@ -508,7 +571,7 @@ _SYSTEM_VOZ = (
     "de datos, algoritmo o busqueda: para vos el libro sale de haber escuchado "
     "a esa persona. Nunca menciones que hubo un formulario ni nombres las "
     "preguntas como preguntas.\n\n"
-    "Tu intervencion son TRES mensajes, cada uno en su propia linea (el "
+    "Tu intervencion son CUATRO mensajes, cada uno en su propia linea (el "
     "cliente los muestra como mensajes de chat separados, uno debajo del "
     "otro):\n\n"
     "1) EL LIBRO, sin preambulo. Exactamente esta forma:\n"
@@ -527,6 +590,31 @@ _SYSTEM_VOZ = (
     "o que le importa de un libro, que se note que lo tuviste en cuenta. Este "
     "mensaje puede ser mas abstracto que el anterior: hablar de la clase de "
     "lectura que es y de que se lleva quien la hace.\n\n"
+    "4) EL EMPUJON: UNA sola oracion, con esta forma exacta:\n"
+    "   Este libro PARTICULARIDAD, y tambien VUELTA DE TUERCA.\n"
+    "   La linea arranca con la palabra EMPUJON y dos puntos, y la oracion "
+    "empieza literalmente con 'Este libro'.\n"
+    "   Lo lee UNICAMENTE quien ya dijo que la recomendacion le sirve: "
+    "alguien que YA decidio. No lo convenzas de nuevo, no repitas el "
+    "argumento del mensaje 3 y no lo felicites por elegir bien.\n"
+    "   LA PARTICULARIDAD es un rasgo del libro que a esta persona le puede "
+    "importar: la forma (esta en verso, son tres monologos, lo cuenta el "
+    "que perdio), el tono, la atmosfera, el mecanismo que lo sostiene. Sale "
+    "de la sinopsis interna. NUNCA hables de cuanto tiempo pide, cuanta "
+    "atencion exige, si es lento, denso o exigente, ni de que conviene "
+    "leerlo con calma: a esta altura la persona ya decidio, y eso deja de "
+    "ser una particularidad para ser una advertencia.\n"
+    "   LA VUELTA DE TUERCA cierra. Si la persona nombro una lectura de "
+    "referencia y el libro se conecta DE VERDAD con ella, usala aca y "
+    "nombrala. Si no se conecta, no fabriques el puente: dejala afuera y "
+    "cerra con algo del libro mismo. Una referencia forzada es peor que "
+    "ninguna.\n"
+    "   Las dos mitades se unen con 'y tambien', 'y ademas' o 'y a la vez', "
+    "lo que suene mejor.\n"
+    "   Sin signos de exclamacion. Sin adjetivos de contratapa ('obra "
+    "maestra', 'imprescindible', 'inolvidable'). Sin devolverle a la persona "
+    "sus propias palabras. Y NO cierres saludando ni deseandole nada: de la "
+    "despedida se encarga el cliente.\n\n"
     "Podes retomar sus palabras: es lo que hace que se sienta escuchado. Lo "
     "que no podes hacer es citarlas como opciones de una lista.\n\n"
     "REGLA QUE NO SE NEGOCIA: si el libro NO cumple con algo que la persona "
@@ -534,9 +622,11 @@ _SYSTEM_VOZ = (
     "Callatelo, o decilo derecho ('no es corto, pero...'). Preferimos que se "
     "note el error a que la explicacion sea falsa: esa persona nos esta "
     "prestando su criterio para corregirnos.\n\n"
-    "Nunca inventes datos del libro que no esten en la sinopsis que te pasan. "
-    "Nada de trama, final ni personajes que no aparezcan ahi.\n\n"
-    "Formato: los tres mensajes separados por un solo salto de linea ('\\n'). "
+    "Nunca inventes datos del libro que no esten en la sinopsis interna que "
+    "te pasan. Nada de trama, final, personajes ni escenas que no "
+    "aparezcan ahi.\n\n"
+    "Formato: los cuatro mensajes separados por un solo salto de linea "
+    "('\\n'). "
     "NUNCA partas un mensaje en mitad de una oracion, de una sigla o de un "
     "nombre compuesto: si el autor se llama 'H. G. Wells', el nombre entero "
     "queda en un solo mensaje. Espanol rioplatense, sin markdown, sin listas, "
@@ -946,6 +1036,56 @@ _TEMA_FORMA = {
 _FILTROS_DE_TEMA = ("q1", "q1b")
 
 
+# Los valores de `tema` que no dicen nada: el que el LLM etiqueto "otro" y el
+# que no tiene rasgos. Un libro asi nunca se descarta por tema, en ninguna macro.
+_TEMAS_SIN_SENAL = {None, "otro"}
+
+
+# Respaldo por rasgos->>'tema' para historia, el gemelo de _TEMA_FORMA. Existe
+# por lo mismo: la taxonomia de El Ateneo es geografica -HISTORIA ARGENTINA,
+# HISTORIA UNIVERSAL- y la de Cuspide no. Sus subgeneros dicen QUE CLASE de
+# libro de historia es, no donde pasa: "EN GENERAL - TEORIA POLITICA",
+# "ENSAYOS", "BIOGRAFIAS - MEMORIAS".
+#
+# Y no alcanza con agregarlos a las listas, porque el mismo subgenero tiene
+# libros de los dos lados: de los 54 de "EN GENERAL - TEORIA POLITICA", 23 son
+# mundiales y 18 argentinos. No existe forma de asignarlo que no sea falsa para
+# la mitad. El dato geografico no esta en el subgenero de Cuspide; esta en el
+# tema, que se etiqueto justamente con ese eje.
+#
+# Medido sobre los 878 de historia del catalogo combinado: solo por subgenero
+# quedaban 301 inalcanzables (34%); con este respaldo quedan 31 (3%).
+#
+# Los pueblos originarios van con Argentina -son en su mayoria de aca- y la
+# historia americana y la belica con mundial, que es el mismo criterio que ya
+# rige en el mapa de subgeneros.
+_TEMA_HISTORIA = {
+    "argentina": "argentina",
+    "originarios": "argentina",
+    "mundial": "mundial",
+    "americana": "mundial",
+    "belica": "mundial",
+}
+
+
+def _lado_historico(libro: dict, por_subgenero: dict) -> str | None:
+    """A que lado de q1 cae este libro de historia: "argentina", "mundial" o None.
+
+    El subgenero manda y el tema es el respaldo, igual que en _forma_del_libro y
+    por la misma razon: donde el subgenero dice algo es el dato mas preciso. Los
+    368 libros del catalogo viejo clasifican por subgenero con una sola falla, y
+    su tema es mas ruidoso -34 son "otro"-, asi que reemplazarlo por el tema en
+    vez de complementarlo perderia libros que hoy salen bien.
+
+    `por_subgenero` viene ya normalizado y armado por el llamador: esto corre una
+    vez por libro del catalogo entero, y rehacer el diccionario adentro seria
+    pagarlo miles de veces por ranking."""
+    lado = por_subgenero.get(_normalizar_texto(libro.get("subgenero") or ""))
+    if lado:
+        return lado
+    return _TEMA_HISTORIA.get((libro.get("rasgos") or {}).get("tema"))
+
+
 def _forma_del_libro(libro: dict) -> str | None:
     """Cual de las cuatro formas de literatura es este libro, o None.
 
@@ -1001,19 +1141,26 @@ def _recorte_de(clave: str, libros: list[dict],
     elegida = str(respuestas.get(clave) or "").strip()
 
     if modo == "subgenero" and _FILTRO_SUBGENERO:
-        permitidos = (pregunta.get("subgeneros") or {}).get(elegida)
-        if permitidos:
-            permitidos = {_normalizar_texto(x) for x in permitidos}
+        mapa = pregunta.get("subgeneros") or {}
+        if elegida in mapa:
+            # Se da vuelta el mapa una sola vez -subgenero normalizado -> opcion-
+            # en vez de normalizar las listas dentro del bucle del catalogo.
+            por_subgenero = {_normalizar_texto(x): opcion
+                             for opcion, lista in mapa.items() for x in lista}
             return [l for l in libros
-                    if _normalizar_texto(l.get("subgenero") or "") in permitidos], "subgenero"
+                    if _lado_historico(l, por_subgenero) == elegida], "subgenero"
 
     if modo == "tema" and _FILTRO_TEMA:
-        ajenos = set((pregunta.get("temas_ajenos") or {}).get(elegida) or ())
-        if ajenos:
-            # Por exclusion: sobrevive todo lo que no sea de un tema ajeno,
-            # incluido lo que no tiene tema. Ver el comentario del mapa.
+        permitidos = set((pregunta.get("temas") or {}).get(elegida) or ())
+        if permitidos:
+            # Por inclusion: sobrevive lo que es del tema pedido, mas lo que no
+            # tiene tema util. Lo segundo no es una concesion: es la misma regla
+            # que rige en todo el filtrado -un dato faltante no puede ser una
+            # condena- y es lo que evita que un libro sin etiquetar desaparezca
+            # del catalogo por un campo que nosotros no completamos.
             return [l for l in libros
-                    if (l.get("rasgos") or {}).get("tema") not in ajenos], "tema"
+                    if (l.get("rasgos") or {}).get("tema") in permitidos
+                    or (l.get("rasgos") or {}).get("tema") in _TEMAS_SIN_SENAL], "tema"
 
     if modo == "forma" and _FILTRO_FORMA:
         if elegida in _FORMAS_LITERATURA:
@@ -1135,10 +1282,13 @@ def _construir_texto_consulta(respuestas: dict) -> str:
     return " ".join(x for x in partes if x)
 
 
-def _construir_texto_ajuste(profundas: list[dict], motivo_reformulado: str = "",
-                            texto_leidos: str = "") -> str:
+def _construir_texto_ajuste(profundas: list[dict], texto_leidos: str = "") -> str:
     """Lo que la persona agrego DESPUES de las opciones fijas: lo que contesto en
-    las 2 preguntas profundas y, si pidio otra recomendacion, en que le erramos.
+    las 2 preguntas profundas y lo que opino de los libros que ya habia leido.
+
+    El motivo del rechazo YA NO entra aca: tiene su propio vector y su propio
+    peso (ver _PESO_CORRECCION). Metido en esta bolsa quedaba diluido a un
+    tercio de 0,25 y no movia el ranking.
 
     De cada respuesta se usa su `consulta` -la misma eleccion escrita en el
     idioma del catalogo, que el LLM devuelve junto con la pregunta- y no el texto
@@ -1153,8 +1303,6 @@ def _construir_texto_ajuste(profundas: list[dict], motivo_reformulado: str = "",
         texto = str(p.get("consulta") or p.get("respuesta") or "").strip()
         if texto:
             partes.append(texto)
-    if motivo_reformulado.strip():
-        partes.append(motivo_reformulado.strip())
     if texto_leidos.strip():
         partes.append(texto_leidos.strip())
     return " ".join(partes)
@@ -1376,25 +1524,40 @@ async def _ancla(respuestas: dict) -> dict | None:
     return ancla
 
 
-def _pesos(ancla, ajuste) -> tuple[float, float, float]:
-    """Como se reparte el puntaje entre las tres cosas que la persona dijo.
+def _pesos(ancla, ajuste, correccion=None) -> tuple[float, float, float, float]:
+    """Como se reparte el puntaje entre las cuatro cosas que la persona dijo.
 
-    Devuelve (perfil, ancla, ajuste). Lo que no se usa se le devuelve al perfil,
-    que es la unica parte que siempre existe: quien no contesta q4 no tiene por
-    que recibir una recomendacion peor armada, solo una decidida por lo que si
-    contesto."""
-    peso_ancla = _PESO_ANCLA if ancla else 0.0
-    peso_ajuste = _PESO_PROFUNDAS if ajuste else 0.0
-    return 1.0 - peso_ancla - peso_ajuste, peso_ancla, peso_ajuste
+    Devuelve (perfil, ancla, ajuste, correccion). Lo que no se usa se le
+    devuelve al perfil, que es la unica parte que siempre existe: quien no
+    contesta q4 no tiene por que recibir una recomendacion peor armada, solo una
+    decidida por lo que si contesto.
+
+    Cuando estan las tres, los pesos fijos suman 1,10 y hay que escalarlos: se
+    reparten proporcionalmente el _MAX_SIN_PERFIL y el perfil se queda con el
+    resto. Escalar y no recortar una sola mantiene la proporcion que se calibro
+    entre ellas. Sin correccion el resultado es identico al de antes, porque
+    0,5 + 0,25 es exactamente _MAX_SIN_PERFIL."""
+    pesos = [
+        _PESO_ANCLA if ancla else 0.0,
+        _PESO_PROFUNDAS if ajuste else 0.0,
+        _PESO_CORRECCION if correccion else 0.0,
+    ]
+    total = sum(pesos)
+    if total > _MAX_SIN_PERFIL:
+        pesos = [x * _MAX_SIN_PERFIL / total for x in pesos]
+        total = _MAX_SIN_PERFIL
+    return (1.0 - total, *pesos)
 
 
-def _puntaje(vector, norma: float, ancla, libro: dict, ajuste=None) -> float:
-    """Que tanto le queda este libro a lo que la persona dijo, en tres partes:
+def _puntaje(vector, norma: float, ancla, libro: dict, ajuste=None,
+             correccion=None) -> float:
+    """Que tanto le queda este libro a lo que la persona dijo, en cuatro partes:
 
     - el perfil: las opciones que eligio en q1, q2 y q3;
     - el ancla: la lectura que puso como referencia en q4;
-    - el ajuste: lo que contesto en las 2 preguntas profundas, mas la
-      correccion que haya hecho al pedir otra recomendacion.
+    - el ajuste: lo que contesto en las 2 preguntas profundas y lo que opino de
+      lo que ya habia leido;
+    - la correccion: lo que escribio al rechazar la recomendacion anterior.
 
     Las tres van por vector separado y con peso explicito en vez de concatenarse
     en un solo texto. Concatenadas, la parte corta desaparece: el ancla eran 9
@@ -1402,7 +1565,8 @@ def _puntaje(vector, norma: float, ancla, libro: dict, ajuste=None) -> float:
     opuestos devolvian 6 de 8 libros iguales), y las respuestas profundas eran 3
     palabras sobre 48 y no cambiaban el ganador en ninguno de los 24 casos del
     banco."""
-    peso_perfil, peso_ancla, peso_ajuste = _pesos(ancla, ajuste)
+    peso_perfil, peso_ancla, peso_ajuste, peso_correccion = _pesos(
+        ancla, ajuste, correccion)
     total = peso_perfil * _coseno_con_norma(vector, norma, libro, "experiencia")
     if peso_ancla:
         # El ancla va contra la sinopsis: la referencia que trae el lector es
@@ -1411,6 +1575,13 @@ def _puntaje(vector, norma: float, ancla, libro: dict, ajuste=None) -> float:
     if peso_ajuste:
         total += peso_ajuste * _coseno_con_norma(
             ajuste["vector"], ajuste["norma"], libro, "experiencia")
+    if peso_correccion:
+        # La correccion va contra la sinopsis y no contra la experiencia, por lo
+        # mismo que el ancla: cuando alguien dice que le erramos casi siempre
+        # habla de CONTENIDO ("queria algo sobre castas", "esperaba mas humor"),
+        # no de como se lee.
+        total += peso_correccion * _coseno_con_norma(
+            correccion["vector"], correccion["norma"], libro)
     return total
 
 
@@ -1765,6 +1936,31 @@ def _dicho_por_el_lector(respuestas: dict) -> str:
     return "\n".join(partes)
 
 
+# El cuarto mensaje viene pegado a los otros tres en la misma respuesta del
+# LLM —una sola llamada, sin costo extra— pero NO se muestra con ellos: se
+# guarda hasta que la persona dice que la recomendacion le sirve. Por eso el
+# modelo lo marca y aca se lo saca del texto, en vez de contar lineas: si el
+# modelo devuelve tres mensajes en lugar de cuatro, cortar por posicion se
+# comeria el mensaje del "por que es para vos", que es el mas importante de los
+# tres. Sin marca, se pierde el empujon y no se rompe nada.
+_MARCAS_EMPUJON = ("EMPUJON:", "EMPUJÓN:")
+
+
+def partir_voz(texto: str) -> tuple[str, str]:
+    """Devuelve (los mensajes que se muestran, el empujon) del texto crudo."""
+    lineas = texto.split("\n")
+    for i in range(len(lineas) - 1, -1, -1):
+        limpia = lineas[i].strip()
+        for marca in _MARCAS_EMPUJON:
+            if limpia.upper().startswith(marca):
+                del lineas[i]
+                return (
+                    "\n".join(l for l in lineas if l.strip()),
+                    limpia[len(marca):].strip(),
+                )
+    return texto, ""
+
+
 async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> str:
     dicho = _dicho_por_el_lector(respuestas)
     referencia = str(respuestas.get("q4") or "").strip()
@@ -1778,7 +1974,14 @@ async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> 
         + f"Ademas charlaron esto:\n{resumen_profundas}\n\n"
         f"El libro que le corresponde es: \"{libro['titulo']}\", de {libro['autor']}.\n"
         f"Sinopsis interna (no citarla textual, es solo contexto tuyo): {libro['abstracto']}\n\n"
-        "Escribi tu intervencion siguiendo las reglas del system prompt."
+        # `experiencia` se probo aca y se saco. Ese campo habla de lo que el
+        # libro EXIGE —1286 de sus 1366 textos mencionan atencion, ritmo o
+        # calma— y el empujon lo lee alguien que ya decidio llevarselo: a esa
+        # altura "pide una lectura atenta" no es una particularidad, es una
+        # advertencia. Pasarlo solo empujaba al modelo hacia lo unico que el
+        # mensaje tiene prohibido decir. El tono, que si sirve, ya esta en el
+        # abstracto ("el tono es solemne y grandioso").
+        + "Escribi tu intervencion siguiendo las reglas del system prompt."
     )
     body = {
         "model": _MODELO_VOZ,
@@ -1922,7 +2125,16 @@ async def elegir_libro(
 
     motivo_reformulado = await _reformular_rechazo(motivo_rechazo)
     texto_leidos = await _texto_de_leidos(leidos or [])
-    texto_ajuste = _construir_texto_ajuste(profundas, motivo_reformulado, texto_leidos)
+    # La correccion, por su propio vector. Va antes del ajuste porque si el
+    # motivo se cuela en los dos lados pesaria doble.
+    correccion = None
+    if _PESO_CORRECCION > 0 and motivo_reformulado.strip():
+        crudo_correccion = await _embeber_cacheado(motivo_reformulado.strip())
+        vec_c, norma_c = _preparar_consulta(crudo_correccion, respuestas.get("q0"))
+        correccion = {"vector": vec_c, "norma": norma_c,
+                      "texto": motivo_reformulado.strip()}
+
+    texto_ajuste = _construir_texto_ajuste(profundas, texto_leidos)
     if _PESO_PROFUNDAS > 0 and texto_ajuste:
         # El perfil se reusa tal cual (ya esta embebido y cacheado) y lo que la
         # persona agrego despues entra por su propio vector, con su propio peso.
@@ -1935,6 +2147,10 @@ async def elegir_libro(
         # concatenado en un solo texto.
         texto_afinado = _construir_texto_afinado(respuestas, profundas, motivo_reformulado)
         ajuste = None
+        # Sin el mecanismo de vectores aparte, la correccion vuelve adentro del
+        # texto concatenado (_construir_texto_afinado ya la incluye) y no puede
+        # ademas tener vector propio.
+        correccion = None
     vector_afinado, norma_afinado = _preparar_consulta(
         await _embeber_cacheado(texto_afinado), respuestas.get("q0"))
 
@@ -1942,7 +2158,8 @@ async def elegir_libro(
     # al elegir los 8 candidatos, la referencia del lector decidiria quienes
     # compiten pero no quien gana.
     def puntaje_final(libro: dict) -> float:
-        return (_puntaje(vector_afinado, norma_afinado, ancla, libro, ajuste)
+        return (_puntaje(vector_afinado, norma_afinado, ancla, libro, ajuste,
+                         correccion)
                 - _PESO_DIVERSIDAD * _castigo_repeticion(libro, mostrados))
 
     mejor = max(disponibles, key=puntaje_final)
@@ -2005,7 +2222,7 @@ async def recomendar(
                                   motivo_rechazo, leidos, libro_fijado)
     mejor = eleccion["libro"]
     candidatos = eleccion["candidatos"]
-    voz = await _generar_voz(respuestas, profundas, mejor)
+    voz, empujon = partir_voz(await _generar_voz(respuestas, profundas, mejor))
 
     mostrados_tras_este = len(ya_mostrados) + 1
     agotado = (
@@ -2029,6 +2246,11 @@ async def recomendar(
         "titulo": mejor["titulo"],
         "autor": mejor["autor"],
         "voz": voz,
+        # Se manda con la recomendacion y el cliente lo guarda sin mostrarlo.
+        # Viaja igual aunque la persona termine diciendo que estuvo floja:
+        # pedirlo recien despues del veredicto costaria otra llamada y una
+        # espera justo en el mejor momento de la conversacion.
+        "empujon": empujon,
         "agotado": agotado,
         # Para que el front pueda postear el veredicto contra esta recomendacion
         # puntual. Ojo: aca NO va nada del top-K ni de los puntajes; el prompt de

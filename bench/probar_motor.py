@@ -80,8 +80,8 @@ def probar_resolver() -> None:
     ok(set(nucleo.resolver("q1", {"q0": "historia"})["opciones"]) == {"argentina", "mundial"},
        "q1 de historia trae argentina/mundial")
     ok(set(nucleo.resolver("q1", {"q0": "divulgacion"})["opciones"])
-       == {"mente", "vida", "tecno", "universo", "ideas"},
-       "q1 de divulgacion trae los 5 temas")
+       == {"mente", "vida", "universo", "ideas"},
+       "q1 de divulgacion trae las 4 puertas")
     ok("explicacion" in nucleo.resolver("q3", {"q0": "divulgacion"})["opciones"],
        "q3 de divulgacion usa la variante")
     ok("trama" in nucleo.resolver("q3", {"q0": "literatura"})["opciones"],
@@ -242,10 +242,10 @@ def probar_filtros() -> None:
                           "_leidos": [{"titulo": "fundacion", "autor": "ISAAC ASIMOV"}]})
     ok({l["id"] for l in pool} == {"i"}, "el descarte no depende de acentos ni mayusculas")
 
-    ajuste = nucleo._construir_texto_ajuste([], "", "busca ciencia ficcion de ideas")
+    ajuste = nucleo._construir_texto_ajuste([], "busca ciencia ficcion de ideas")
     ok(ajuste == "busca ciencia ficcion de ideas",
        "lo que opino de un libro leido entra al texto de ajuste")
-    ok(nucleo._construir_texto_ajuste([], "") == "", "y sin leidos no agrega nada")
+    ok(nucleo._construir_texto_ajuste([]) == "", "y sin leidos no agrega nada")
 
     print("\nla misma obra no se muestra dos veces")
     ed1 = dict(libro("edicion-1", "La vida secreta de la mente", "divulgacion"), autor="Mariano Sigman")
@@ -426,23 +426,39 @@ def probar_filtro_tema() -> None:
     ok(n == 181 and aflojado == "forma",
        "un recorte por debajo del piso se afloja entero", f"dio {n}/{aflojado}")
 
-    print("\nfiltro por tema (divulgacion): excluye")
-    # 90 de cada tema y no 50: lo que sobrevive al recorte tiene que quedar por
-    # encima de _PISO_POOL, o el filtro se afloja y el caso mide otra cosa.
+    print("\nfiltro por tema (divulgacion): incluye, y agrupa varios temas")
+    # 90 de cada uno para que los recortes queden por encima de _PISO_POOL: con
+    # menos, el filtro se afloja y el caso mide otra cosa.
     div = ([libro(f"m{i}", f"M{i}", "divulgacion", 200, tema="mente") for i in range(90)]
-           + [libro(f"v{i}", f"V{i}", "divulgacion", 200, tema="vida") for i in range(90)]
+           + [libro(f"v{i}", f"V{i}", "divulgacion", 200, tema="vida") for i in range(45)]
+           + [libro(f"t{i}", f"T{i}", "divulgacion", 200, tema="tierra") for i in range(45)]
+           + [libro(f"x{i}", f"X{i}", "divulgacion", 200, tema="tecno") for i in range(90)]
            + [libro("otro", "O", "divulgacion", 200, tema="otro")]
            + [libro("sin", "S", "divulgacion", 200)])
     base = {"q0": "divulgacion", "q2": ""}
     pool, n, aflojado = nucleo._filtrar_catalogo(div, {**base, "q1": "mente"})
-    ok(n == 92 and aflojado is None, "q1=mente descarta los de vida y deja el resto", f"dio {n}")
+    ok(n == 92 and aflojado is None, "q1=mente deja los de mente y nada mas", f"dio {n}")
+    ok(all((l["rasgos"] or {}).get("tema") in ("mente", "otro", None) for l in pool),
+       "no se cuela ningun tema ajeno")
     ok(any(l["id"] == "otro" for l in pool), "un libro de tema 'otro' sobrevive siempre")
     ok(any(l["id"] == "sin" for l in pool), "un libro sin rasgos sobrevive siempre")
+
+    # La puerta agrupada: 'vida' junta vida, tierra y cuerpo.
     pool, n, _ = nucleo._filtrar_catalogo(div, {**base, "q1": "vida"})
-    ok(not any(l["id"].startswith("m") for l in pool), "q1=vida descarta los de mente")
-    _, n, aflojado = nucleo._filtrar_catalogo(div, {**base, "q1": "universo"})
-    ok(aflojado == "tema" and n == 182,
-       "universo cae bajo el piso y el filtro se afloja solo", f"dio {n}/{aflojado}")
+    ok(n == 92, "q1=vida junta vida y tierra en la misma puerta", f"dio {n}")
+    ok(not any((l["rasgos"] or {}).get("tema") == "mente" for l in pool),
+       "y deja afuera a los de mente")
+
+    # 'universo' absorbe tecno y numeros.
+    pool, n, _ = nucleo._filtrar_catalogo(div, {**base, "q1": "universo"})
+    ok(n == 92 and all((l["rasgos"] or {}).get("tema") in ("tecno", "otro", None) for l in pool),
+       "la tecnologia entra por la puerta del universo", f"dio {n}")
+
+    # Y la escalera de aflojado sigue mandando cuando el recorte es chico.
+    _, n, aflojado = nucleo._filtrar_catalogo(div, {**base, "q1": "ideas"})
+    ok(aflojado == "tema" and n == len(div),
+       "una puerta sin libros cae bajo el piso y el filtro se afloja entero",
+       f"dio {n}/{aflojado}")
 
     print("\ncada filtro vive en su macro y no se pisa con los otros")
     hist = [libro(f"h{i}", f"H{i}", "historia", 500, "HISTORIA", "HISTORIA ARGENTINA")
@@ -485,21 +501,39 @@ def probar_textos() -> None:
 
     profundas = [{"pregunta": "¿P?", "respuesta": "El detalle", "consulta": "Un libro sobre un caso concreto"},
                  {"pregunta": "¿Q?", "respuesta": "Sí"}]
-    ajuste = nucleo._construir_texto_ajuste(profundas, "buscaba algo mas liviano")
+    ajuste = nucleo._construir_texto_ajuste(profundas)
     ok("Un libro sobre un caso concreto" in ajuste, "el ajuste usa la consulta cuando viene")
     ok("El detalle" not in ajuste, "y no el texto del boton")
     ok("Sí" in ajuste, "si no hay consulta (respuesta escrita a mano) usa lo que escribio la persona")
-    ok("buscaba algo mas liviano" in ajuste, "el ajuste suma la correccion del lector")
 
-    perfil_solo, ancla_solo, ajuste_solo = nucleo._pesos(None, None)
+    perfil_solo, ancla_solo, ajuste_solo, correccion_solo = nucleo._pesos(None, None)
     ok(perfil_solo == 1.0, "sin ancla ni profundas, todo el peso es del perfil")
-    p_pa, a_pa, j_pa = nucleo._pesos({"x": 1}, None)
+    p_pa, a_pa, j_pa, c_pa = nucleo._pesos({"x": 1}, None)
     ok(abs(p_pa + a_pa - 1.0) < 1e-9 and a_pa == nucleo._PESO_ANCLA,
        "con ancla sola, los pesos suman 1")
-    p3, a3, j3 = nucleo._pesos({"x": 1}, {"x": 1})
+    p3, a3, j3, c3 = nucleo._pesos({"x": 1}, {"x": 1})
     ok(abs(p3 + a3 + j3 - 1.0) < 1e-9 and j3 == nucleo._PESO_PROFUNDAS,
        "con las tres partes, los pesos suman 1", f"{p3}+{a3}+{j3}")
     ok(p3 > 0, "y al perfil siempre le queda algo", f"perfil={p3}")
+
+    # La correccion es el cuarto componente. Antes viajaba adentro del texto de
+    # ajuste, compartiendo un solo vector con las dos profundas y con los libros
+    # leidos: le tocaba un tercio de 0,25 y en produccion no movia el ranking
+    # (dos recomendaciones seguidas, la misma lista, delta maximo 0,005).
+    p4, a4, j4, c4 = nucleo._pesos({"x": 1}, {"x": 1}, {"x": 1})
+    ok(abs(p4 + a4 + j4 + c4 - 1.0) < 1e-9, "con las cuatro partes, los pesos suman 1")
+    ok(c4 > nucleo._PESO_PROFUNDAS / 3,
+       "la correccion pesa mas que el tercio de las profundas que tenia antes",
+       f"antes ~{nucleo._PESO_PROFUNDAS / 3:.3f}, ahora {c4:.3f}")
+    ok(p4 >= 0.24, "y al perfil le sigue quedando su parte", f"le quedo {p4:.3f}")
+    ok(abs(a4 / j4 - nucleo._PESO_ANCLA / nucleo._PESO_PROFUNDAS) < 1e-9,
+       "escalar mantiene la proporcion entre ancla y profundas")
+    sin_c = nucleo._pesos({"x": 1}, {"x": 1})
+    ok(sin_c[:3] == nucleo._pesos({"x": 1}, {"x": 1}, None)[:3],
+       "sin correccion, el reparto es identico al de antes")
+    ok(nucleo._construir_texto_ajuste([{"pregunta": "p", "respuesta": "r"}]) == "r"
+       and "erramos" not in nucleo._construir_texto_ajuste([{"pregunta": "p", "respuesta": "r"}]),
+       "el motivo del rechazo ya no se cuela en el texto de ajuste")
 
     ok(nucleo._limpiar_citas("Un libro [wikipedia.org] sobre hongos") == "Un libro sobre hongos",
        "_limpiar_citas saca la cita suelta")
@@ -580,7 +614,7 @@ async def probar_perfiles() -> None:
     # Divulgacion tiene uno mas desde que q1 gano su quinta opcion: una opcion
     # sin perfil detras es una opcion sin medir. Ver el corte de linea base
     # anotado en el _comentario de perfiles.json.
-    esperados = {"literatura": 8, "historia": 8, "divulgacion": 9}
+    esperados = {"literatura": 10, "historia": 8, "divulgacion": 9}
     ok(len(perfiles) == sum(esperados.values()),
        f"hay {sum(esperados.values())} perfiles", f"hay {len(perfiles)}")
     ids = [p["id"] for p in perfiles]

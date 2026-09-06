@@ -8,7 +8,22 @@
 {% block contenido %}
 <div class="min-h-screen flex flex-col">
 
-  <header class="bg-celeste px-5 py-4">
+  <!-- La flecha va absoluta y no como primer hijo del flex: asi el titulo sigue
+       centrado respecto de la pantalla y no respecto del espacio que sobra al
+       lado de la flecha, que lo correria unos pixeles a la derecha.
+       El area tocable se estira de borde a borde del banner (top-0 bottom-0) y
+       centra la flecha por dentro con flex. Antes se agrandaba con un padding
+       mas un margen negativo, y eso la subia 12px: en un elemento absoluto
+       `top: 50%` ubica el borde del MARGEN, asi que el margen negativo se
+       descuenta antes de que el translate lo centre. -->
+  <header class="bg-celeste px-5 py-4 relative">
+    <a href="/funes" aria-label="Volver"
+       class="tap absolute left-2 top-0 bottom-0 w-12 flex items-center justify-center text-tinta">
+      <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor"
+           stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 4 L7 12 L15 20"/>
+      </svg>
+    </a>
     <div class="flex items-center justify-center gap-2">
       <h1 class="text-2xl font-bold text-tinta leading-tight" style="font-family: var(--font-display);">Funes</h1>
       <svg viewBox="0 0 32 32" class="w-6 h-6 text-tinta shrink-0" fill="none"
@@ -25,8 +40,32 @@
        Se escribe corta y en criollo a proposito: una pagina larga y notarial
        se cierra sin leer, y entonces no informo nada. -->
   <div class="flex-1 px-5 py-6 safe-b text-sm leading-relaxed">
-    <h2 class="text-xl font-bold mb-1" style="font-family: var(--font-display);">Qué guarda Funes</h2>
-    <p class="text-gris mb-5">Esto es una prueba. Acá está todo, sin letra chica.</p>
+    {# Sin titulo: quien llega aca ya toco un link que le prometio esto, y un
+       encabezado arriba solo repetiria la promesa. Tres parrafos: que es
+       Funes, como elige, y por que guarda. El ultimo va ultimo porque no se
+       entiende sin los dos primeros.
+
+       Lo que dicen es verificable paso por paso, a proposito. No se afirma que
+       las recomendaciones sean "menos sesgadas": el motor tiene su propio sesgo
+       medido (hay libros que salen en 17 de cada 300 busquedas y otros que no
+       salen nunca). Alcanza con describir el mecanismo. Esta es la pagina que
+       abre el que desconfia: sobrevender aca cuesta mas de lo que rinde. #}
+    <p class="mb-3">
+      Funes es un sistema de recomendación que combina varias técnicas de
+      procesamiento de información para seleccionar libros dentro de un catálogo
+      curado, accesible en la ciudad de Buenos Aires.
+    </p>
+    <p class="mb-3">
+      A partir de tus respuestas se construye un perfil, el cual se compara con
+      la descripción de cada libro del catálogo para quedarse con una selección
+      de candidatos. Sobre estos candidatos se generan preguntas en profundidad,
+      para discriminar entre ellos y elegir una recomendación final.
+    </p>
+    <p class="mb-5">
+      Guarda esta charla por eso: las conversaciones son lo único que dice si
+      esto sirve y dónde se equivoca. No hay publicidad ni venta de datos a
+      nadie.
+    </p>
 
     <h3 class="font-bold mt-5 mb-1">Qué guarda</h3>
     <ul class="list-disc pl-5 space-y-1">
@@ -46,19 +85,7 @@
       cuando cerrás la pestaña.
     </p>
 
-    <h3 class="font-bold mt-5 mb-1">Para qué</h3>
-    <p>
-      Para ver si esto le sirve a alguien y mejorarlo. No hay publicidad ni venta
-      de datos a nadie.
-    </p>
-
-    <h3 class="font-bold mt-5 mb-1">Una cosa más</h3>
-    <p>
-      Lo que escribís sale del país: la recomendación la arma un proveedor de
-      inteligencia artificial de afuera. Por las dudas, no escribas nada personal.
-    </p>
-
-    <h3 class="font-bold mt-5 mb-1">Si querés que la borre</h3>
+    <h3 class="font-bold mt-5 mb-1">Borrado</h3>
     {% if contacto %}
     <p>
       Escribime a <a class="underline font-medium" href="mailto:{{ contacto }}">{{ contacto }}</a>
@@ -74,9 +101,9 @@
       Ley 25.326. Los reclamos van a la Agencia de Acceso a la Información Pública.
     </p>
 
-    <p class="mt-8">
+    <p class="mt-8 text-right">
       <a href="/funes" class="tap btn-secundario inline-flex items-center rounded-xl2 px-4 py-3 font-medium">
-        Volver a Funes
+        Volver
       </a>
     </p>
   </div>

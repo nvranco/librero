@@ -6,7 +6,7 @@ Sin autorizar, `/sites/MLA/search` devuelve 403 y `/sites/MLA` devuelve
 suponer que con token va a andar: hay que probarlo.
 
 Esto es el go/no-go de la Fase de precios. Si aun autorizados devuelve 403,
-`app/funes_chat/mercadolibre.py` ya degrada solo (muestra el link de busqueda
+`app/funes_chat/precios.py` ya degrada solo (muestra el link de busqueda
 sin precio) y no hay nada mas que construir de ese lado.
 
 Requiere haber autorizado la app una vez (abrir
@@ -31,7 +31,7 @@ os.environ.setdefault("ADMIN_TOKEN", "x")
 import httpx  # noqa: E402
 
 from app import db  # noqa: E402
-from app.funes_chat import mercadolibre  # noqa: E402
+from app.funes_chat import precios  # noqa: E402
 
 CONSULTAS = [
     ("titulo+autor", "Rayuela Julio Cortazar"),
@@ -41,7 +41,7 @@ CONSULTAS = [
 
 
 async def main() -> None:
-    print(f"credenciales en el entorno: {mercadolibre.hay_credenciales()}")
+    print(f"credenciales en el entorno: {precios.hay_credenciales()}")
     await db.conectar()
     try:
         fila = await db.pool().fetchrow("SELECT * FROM funes_ml_credenciales WHERE id = 1")
@@ -50,7 +50,7 @@ async def main() -> None:
             return
         print(f"token guardado, vence {fila['expira_en']}")
 
-        token = await mercadolibre._token()
+        token = await precios._token()
         if not token:
             print("No se pudo obtener un access token vigente (mirá los logs).")
             return
@@ -74,7 +74,7 @@ async def main() -> None:
                 print(f"      {r.get('condition','?'):<5} ${r.get('price')} {r.get('currency_id')}"
                       f"  {str(r.get('title',''))[:55]}")
             libro = {"id": "spike", "titulo": consulta, "autor": "", "isbn": None}
-            print(f"    estimacion: {mercadolibre._estimar(resultados, consulta)}")
+            print(f"    estimacion: {precios._estimar(resultados, consulta)}")
         print("\nCampos disponibles en un resultado (para afinar la estimacion):")
         if resp.status_code == 200 and resp.json().get("results"):
             print("  " + ", ".join(sorted(resp.json()["results"][0].keys())))

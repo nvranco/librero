@@ -32,7 +32,16 @@
     "libros de filosofia de literatura a divulgacion; y se sumo un noveno perfil",
     "de divulgacion (div-ideas-filosofia) para la opcion 'ideas'. Son 25, no 24, y",
     "divulgacion tiene 9. Comparar base contra una variante DENTRO de una misma",
-    "corrida sigue siendo valido: eso es lo que mide el banco."
+    "corrida sigue siendo valido: eso es lo que mide el banco.",
+    "",
+    "Segundo corte (2026-09-05, mismo dia): literatura pasa a 10. Se sumaron",
+    "lit-rasgo-en-q4, para el q4 que es un rasgo y no una obra, y",
+    "lit-forma-adversario, el unico donde la forma pelea contra el animo y por lo",
+    "tanto el unico que puede mostrar el error que el filtro por forma evita.",
+    "",
+    "Tercer corte (2026-09-06): divulgacion pasa de 5 puertas a 4 y su filtro de",
+    "exclusion a inclusion, asi que div-tecno-ia contesta 'universo'. Los numeros",
+    "de divulgacion anteriores a esta fecha no son comparables."
   ],
   "perfiles": [
     {
@@ -376,6 +385,95 @@
         ],
         "adversario": true,
         "nota": "'la vida secreta de' es titulo de dos libros del catalogo. Verifica cuantos titulos expulsa _menciono_el_libro: expulsar libros de divulgacion es inocuo aca (otra macro), pero la regla del primer tramo de titulo puede morder de mas."
+      }
+    },
+    {
+      "id": "lit-rasgo-en-q4",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Disenadora de 29, leyo fantasia de adolescente y volvio a leer hace poco. No sabe nombrar generos, pero sabe muy bien que le gusto de lo que leyo.",
+        "exigencia": "moderada",
+        "leidos": [
+          "La saga de Harry Potter",
+          "Los juegos del hambre",
+          "Cronica de una muerte anunciada"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "ideas",
+        "q1b": "genero",
+        "q2": "corto",
+        "q3": "ideas",
+        "q4": "me gusto mucho el sistema de casas de la saga harry potter"
+      },
+      "esperado": {
+        "generos": [
+          "CIENCIA FICCIÓN / FANTASTICA",
+          "NOVELAS"
+        ],
+        "subgeneros": [
+          "EN GENERAL",
+          "UNIVERSAL",
+          "GENERAL",
+          "SUSPENSO"
+        ],
+        "libros": [
+          "Un mundo feliz",
+          "El cuento de la criada",
+          "Mundo azul"
+        ],
+        "prohibido_generos": [
+          "COCINA",
+          "DICCIONARIOS",
+          "SUPERACION PERSONAL",
+          "CRITICA LITERARIA"
+        ],
+        "adversario": true,
+        "nota": "Caso real de produccion (sesion 4d17d906, 19:10). q4 NO es una obra ni un autor: es un RASGO de una obra. El ancla vieja describia Harry Potter y devolvia novelas de magos y colegios; lo que la persona pide son mundos divididos en grupos con reglas propias. Ahi el coseno del ancla dio 0,27-0,30 contra los 0,53-0,69 de las sesiones donde q4 era un libro. Es el tipo de q4 que un lector real escribe y la vara del ancla nueva."
+      }
+    },
+    {
+      "id": "lit-forma-adversario",
+      "macro": "literatura",
+      "persona": {
+        "quien": "Traductor de 52, lector fino, esta cansado y quiere una novela de intriga bien escrita. No quiere poesia ni ensayo, quiere que pase algo.",
+        "exigencia": "alta",
+        "leidos": [
+          "Los cuadernos de Don Rigoberto, de Vargas Llosa",
+          "El maestro y Margarita, de Bulgakov",
+          "Nada, de Carmen Laforet"
+        ]
+      },
+      "respuestas": {
+        "q0": "literatura",
+        "q1": "introspectivo",
+        "q1b": "genero",
+        "q2": "corto",
+        "q3": "prosa",
+        "q4": "Patricia Highsmith"
+      },
+      "esperado": {
+        "generos": [
+          "NOVELAS",
+          "CIENCIA FICCIÓN / FANTASTICA"
+        ],
+        "subgeneros": [
+          "POLICIAL",
+          "SUSPENSO",
+          "TERROR",
+          "EN GENERAL"
+        ],
+        "libros": [],
+        "prohibido_generos": [
+          "POESÍA",
+          "TEATRO",
+          "CRITICA LITERARIA",
+          "BIOGRAFIAS Y RELATOS",
+          "CLÁSICOS"
+        ],
+        "adversario": true,
+        "nota": "El unico perfil donde q1b pelea contra el resto: el animo (introspectivo), el valor (prosa) y la extension (corto) tiran a lo literario y breve, y la forma pide policial o fantastico. Sin el filtro por forma, el vector se va a poesia y ensayo, que es lo que este perfil declara prohibido. Es la unica vara que tiene el banco para decidir si _FILTRO_FORMA se queda: los otros 8 de literatura tienen la forma elegida en linea con lo que esperan, asi que nunca podrian mostrar el error que el filtro evita."
       }
     },
     {
@@ -845,7 +943,7 @@
       },
       "respuestas": {
         "q0": "divulgacion",
-        "q1": "tecno",
+        "q1": "universo",
         "q2": "intermedio",
         "q3": "ideas",
         "q4": "Artificial, de Mariano Sigman y Santiago Bilinkis"
@@ -869,7 +967,7 @@
           "GEOLOGIA"
         ],
         "adversario": true,
-        "nota": "Nombra un libro que ESTA en el catalogo: tiene que quedar excluido y aun asi orientar el resto. En el piloto real, este perfil recibio justamente Artificial."
+        "nota": "Contestaba q1='tecno' cuando divulgacion tenia 5 puertas de un tema cada una. Con las 4 agrupadas, la tecnologia vive adentro de la puerta 'como funciona todo' junto con el universo y los numeros. Nombra un libro que ESTA en el catalogo: tiene que quedar excluido y aun asi orientar el resto. En el piloto real, este perfil recibio justamente Artificial."
       }
     },
     {

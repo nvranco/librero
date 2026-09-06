@@ -180,7 +180,7 @@
          las lineas parejas en vez de dejar una palabra sola al final; el
          navegador que no lo soporte lo ignora y sigue centrado igual. -->
     <p id="aviso-datos" class="hidden mt-4 text-xs text-gris text-center" style="text-wrap: balance">
-      Funes es una prueba de concepto y guarda esta charla para mejorar sus recomendaciones.
+      Funes guarda esta charla de forma anónima para mejorar sus recomendaciones.
       <a href="/funes/privacidad" class="underline">¿Qué datos almacena?</a>
     </p>
     <!-- Sin esto, el documento no tiene suficiente alto debajo del ultimo
@@ -336,6 +336,16 @@ let agotadoActual = false;
 let sesionId = "";
 let recomendacionActual = null;
 let promesaPrecio = null;
+// El cuarto mensaje de la voz, que viene con la recomendacion y no se
+// muestra con ella: es para quien ya dijo que le sirve. Puede venir vacio
+// si el modelo se olvido de marcarlo, y en ese caso no se muestra nada.
+let empujonActual = "";
+// El precio esta APAGADO para el piloto. Estimarlo cuesta una consulta al LLM
+// por cada recomendacion y lo que mide la hipotesis HF-3 es el clic para
+// conseguir el libro, no el numero: el precio era decoracion cara alrededor de
+// ese clic. El modulo, el endpoint y la cache siguen en el repo; prender esta
+// constante los vuelve a encender enteros.
+const PRECIO_ENCENDIDO = false;
 
 // Las escrituras de bitacora se encadenan en una sola promesa en vez de
 // dispararse sueltas: si dos respuestas seguidas la llamaran en paralelo con
@@ -1160,42 +1170,40 @@ function registrarClicConseguir() {
 // dio. Lo miran los botones: a quien acaba de decir "no me interesa" no se le
 // ofrece un boton para comprarlo.
 let veredictoActual = null;
+// "Contame mas" se ofrece una sola vez por recomendacion. Se reinicia cuando
+// llega un libro nuevo, no cuando se vuelve a dibujar la botonera: esta se
+// redibuja despues de cada "Contame mas", y ahi es justamente donde no tiene
+// que volver a pasar nada.
+let yaAmplio = false;
 
-// Convierte el nombre de la tienda, dentro de una burbuja ya escrita, en el
-// link que lleva a la busqueda. Es el MISMO destino y el MISMO registro que el
-// boton "¿Donde lo consigo?": para la hipotesis que se esta midiendo (HF-3, el
-// clic para conseguirlo) tocar acá tiene que valer exactamente igual que tocar
-// el boton, o el dato del piloto queda partido en dos mitades incomparables.
-//
-// Se rearma con nodos y no con innerHTML porque el nombre de la tienda lo
-// declara un modelo: es texto de afuera y no tiene por que poder inyectar HTML.
-function enlazarTienda(div, texto, precio) {
-  const donde = texto.lastIndexOf(precio.fuente);
-  if (donde === -1) return;
-  div.textContent = "";
-  div.append(texto.slice(0, donde));
-  const link = document.createElement("a");
-  link.href = precio.url;
-  link.target = "_blank";
-  link.rel = "noopener noreferrer";
-  link.className = "underline font-semibold";
-  link.textContent = precio.fuente;
-  link.addEventListener("click", registrarClicConseguir);
-  div.append(link, texto.slice(donde + precio.fuente.length));
+// A donde manda "¿Donde lo consigo?" ahora que no hay tienda elegida: a una
+// busqueda en Google. El titulo va entre comillas para que no se desarme —hay
+// titulos de una sola palabra— y el autor suelto al lado, para que aguante las
+// variantes del nombre. "comprar libro" es lo que hace que Google levante las
+// fichas de tiendas en vez de resenas y resumenes.
+function urlDeBusqueda(titulo, autor) {
+  const consulta = `"${titulo}" ${autor} comprar libro`;
+  return "https://www.google.com/search?q=" + encodeURIComponent(consulta);
 }
+
+// Se elige una al azar por recomendacion. Son intercambiables a proposito:
+// lo que dice algo es lo que viene despues, no la interjeccion.
+const CELEBRACIONES = ["¡Excelente!", "¡Qué bueno!", "¡Buenísimo!"];
 
 async function mostrarBotonesRecomendacion() {
   limpiarInput();
-  const ofrecerConseguir = veredictoActual !== "no_me_interesa";
+  // Solo se llega aca por el camino de "Precisa" —directo, o volviendo de un
+  // "Contame mas"—. "Floja" y "Dudosa" no pasan por esta funcion: van a
+  // caminoAjuste(), que pregunta que fallo y busca otro libro.
+  const ofrecerConseguir = veredictoActual === "me_la_llevo";
   const cont = document.createElement("div");
   cont.className = "flex flex-col gap-2";
 
-  // Accion principal. El precio es un extra: si ML no contesta, si no hay
-  // credenciales o si no hubo resultados utiles, el boton sale igual con el
-  // link a la busqueda y el lector no se entera de nada.
-  // Casi siempre ya llego (se pide al aparecer la recomendacion, bastante antes
-  // del veredicto), pero si demorara la pantalla quedaria sin nada: el
-  // laberinto tapa ese hueco.
+  // El precio siempre fue un extra: el boton sale igual sin el. Con
+  // PRECIO_ENCENDIDO en false, `promesaPrecio` es null y esto no corre nunca
+  // — ni la espera ni el laberinto. Queda entero porque prender la constante
+  // tiene que alcanzar para recuperar el comportamiento completo; un
+  // interruptor que no enciende nada es peor que no tener interruptor.
   let precio = null;
   if (ofrecerConseguir && promesaPrecio) {
     const espera = document.createElement("p");
@@ -1206,27 +1214,9 @@ async function mostrarBotonesRecomendacion() {
     dejarDePensar();
     espera.remove();
   }
-  // Quien ya dijo "Precisa" no necesita que le pregunten si quiere el libro:
-  // ya contesto que si. En vez de un boton que repite la pregunta, Funes le
-  // pasa el dato y sigue la charla. El link va embebido en la frase y hace lo
-  // mismo que hacia el boton.
-  const seLaLleva = veredictoActual === "me_la_llevo";
-  if (ofrecerConseguir && seLaLleva && precio && precio.url) {
-    const texto = precio.precio && precio.fuente
-      ? `¡Buenísimo! Podés encontrarlo desde $${precio.precio.toLocaleString("es-AR")} en ${precio.fuente}.`
-      : (precio.fuente
-          ? `¡Buenísimo! Podés encontrarlo en ${precio.fuente}.`
-          : "¡Buenísimo! Te dejo dónde buscarlo.");
-    // Anclaje "end" como el resto de este momento: subir el turno empujaria la
-    // recomendacion fuera de la pantalla justo cuando la persona la acepto.
-    await mostrarRespuestaFunes(
-      texto,
-      (div, escrito) => { if (precio.fuente) enlazarTienda(div, escrito, precio); },
-      "end",
-    );
-  } else if (ofrecerConseguir && precio && precio.url) {
+  if (ofrecerConseguir) {
     const btnConseguir = document.createElement("a");
-    btnConseguir.href = precio.url;
+    btnConseguir.href = urlDeBusqueda(tituloActual, autorActual);
     btnConseguir.target = "_blank";
     btnConseguir.rel = "noopener noreferrer";
     btnConseguir.className = "btn-primario border-celeste tap rounded-xl2 px-4 py-3 w-full text-sm font-semibold text-center block";
@@ -1239,7 +1229,8 @@ async function mostrarBotonesRecomendacion() {
     // concreta, no el precio de lo que el lector va a encontrar del otro lado
     // del link: meterlo adentro del boton seria prometer un precio que no
     // tenemos. Con la fuente, el lector puede verificarlo.
-    if (precio.precio) {
+    // Con PRECIO_ENCENDIDO en false esto no corre nunca: `precio` queda null.
+    if (precio && precio.precio) {
       const nota = document.createElement("p");
       nota.className = "text-xs text-gris text-center";
       nota.textContent = `Desde $${precio.precio.toLocaleString("es-AR")}`;
@@ -1265,16 +1256,26 @@ async function mostrarBotonesRecomendacion() {
     }
   }
 
-  const btnInfo = document.createElement("button");
-  btnInfo.type = "button";
-  // Verde cuando la persona se lo lleva: ahi las dos opciones que quedan son
-  // dos caminos igual de validos para seguir, y ninguna es "la secundaria".
-  btnInfo.className = seLaLleva
-    ? "tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel"
-    : "btn-secundario tap rounded-xl2 px-4 py-3 w-full text-sm";
-  btnInfo.textContent = "Contame más";
-  btnInfo.addEventListener("click", () => pedirMasInfo());
-  cont.appendChild(btnInfo);
+  // "Contame mas" se ofrece UNA vez por libro. La segunda ampliacion sale del
+  // mismo abstracto que la primera, asi que dice lo mismo con otras palabras:
+  // el boton promete algo nuevo y devuelve una parafrasis.
+  if (!yaAmplio) {
+    const btnInfo = document.createElement("button");
+    btnInfo.type = "button";
+    // Verde cuando la persona se lo lleva: ahi las dos opciones que quedan son
+    // dos caminos igual de validos para seguir, y ninguna es "la secundaria".
+    btnInfo.className =
+      "tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btnInfo.textContent = "Contame más";
+    btnInfo.addEventListener("click", () => {
+      // Queda del lado de la persona, como cualquier otra eleccion: pedir mas
+      // informacion es algo que ELLA hizo, y sin la burbuja la respuesta de
+      // Funes aparece sola y no se entiende a que vino.
+      burbuja("Contame más", true);
+      pedirMasInfo();
+    });
+    cont.appendChild(btnInfo);
+  }
 
   if (agotadoActual && ciclos >= MAX_CICLOS) {
     // Fin del recorrido: sin esto quedaba solo "Contame mas", que repite el
@@ -1300,8 +1301,8 @@ async function mostrarBotonesRecomendacion() {
     const btnOtra = document.createElement("button");
     btnOtra.type = "button";
     btnOtra.className = "tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel";
-    btnOtra.textContent = "Dame otra recomendación";
-    btnOtra.addEventListener("click", () => preguntarMotivo());
+    btnOtra.textContent = "Recomendame otro libro";
+    btnOtra.addEventListener("click", () => preguntarComoSeguir());
     cont.appendChild(btnOtra);
   }
 
@@ -1315,6 +1316,71 @@ async function mostrarBotonesRecomendacion() {
 //
 // `yaMostrados` se conserva a proposito: son justamente los libros que ya
 // rechazo, y repetirselos seria lo peor que puede pasar en esta pantalla.
+// Antes de buscar otro libro hay que saber QUE cambio. No es lo mismo "este no,
+// probá otro parecido" que "me equivoque de estante": en el primer caso todo lo
+// que la persona contesto sigue valiendo y solo falta un ajuste; en el segundo,
+// seguir usando ese perfil garantiza otro libro del mismo lado equivocado.
+//
+// Hasta ahora se asumia siempre lo primero y se iba derecho a pedir el motivo.
+// Quien habia entrado por el estante equivocado no tenia forma de decirlo sin
+// recargar la pagina y perder la conversacion entera.
+async function preguntarComoSeguir() {
+  await mostrarRespuestaFunes(
+    "¿Sigo con lo que ya me contaste, o arrancamos de nuevo?"
+  );
+  limpiarInput();
+  const cont = document.createElement("div");
+  cont.className = "flex flex-col gap-2";
+  const opciones = [
+    ["Seguí con esto", () => preguntarMotivo()],
+    ["Arranquemos de nuevo", () => reiniciarDesdeQ0()],
+  ];
+  opciones.forEach(([etiqueta, alTocar], indice) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 w-full text-left text-base bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btn.style.animationDelay = `${indice * 160}ms`;
+    btn.textContent = etiqueta;
+    btn.addEventListener("click", () => {
+      const mia = burbuja(etiqueta, true);
+      limpiarInput();
+      alTocar();
+      llevarArriba(mia);
+    });
+    cont.appendChild(btn);
+  });
+  zonaInput.appendChild(cont);
+}
+
+// El cuestionario entero de nuevo, incluido el estante. La conversacion NO se
+// recarga: se sigue en el mismo hilo y con la misma sesion, asi la bitacora
+// registra las dos vueltas como lo que son, una sola persona cambiando de idea,
+// y no como dos visitas sin relacion.
+//
+// `yaMostrados` se conserva a proposito, igual que en reiniciarDesdeQ1: son los
+// libros que ya vio, y repetirselos seria lo peor que puede pasar aca.
+async function reiniciarDesdeQ0() {
+  ciclos += 1;
+  for (const clave of ORDEN) delete respuestas[clave];
+  profundas.length = 0;
+  recomendacionesPedidas = 0;
+  agotadoActual = false;
+  veredictoActual = null;
+  yaAmplio = false;
+  recomendacionActual = null;
+  libroActual = null;
+  tituloActual = "";
+  autorActual = "";
+  promesaPrecio = null;
+  progresoActual = 4;
+  ponerBarra(4);
+  limpiarInput();
+  await mostrarRespuestaFunes(
+    "Listo, borrón y cuenta nueva.\nMe acuerdo de todo lo que ya te mostré, así que no te lo repito."
+  );
+  avanzar();
+}
+
 async function reiniciarDesdeQ1() {
   ciclos += 1;
   for (const clave of ORDEN) {
@@ -1324,6 +1390,7 @@ async function reiniciarDesdeQ1() {
   recomendacionesPedidas = 0;
   agotadoActual = false;
   veredictoActual = null;
+  yaAmplio = false;
   recomendacionActual = null;
   libroActual = null;
   tituloActual = "";
@@ -1510,9 +1577,11 @@ async function pedirRecomendacion(motivoRechazo, libroFijado) {
   libroActual = datos.id;
   tituloActual = datos.titulo;
   autorActual = datos.autor;
+  empujonActual = datos.empujon || "";
   recomendacionActual = datos.recomendacion_id || null;
   veredictoActual = null;
-  promesaPrecio = pedirPrecio(datos.id);
+  yaAmplio = false;
+  promesaPrecio = PRECIO_ENCENDIDO ? pedirPrecio(datos.id) : null;
   yaMostrados.push(datos.id);
   recomendacionesPedidas += 1;
   agotadoActual = datos.agotado || recomendacionesPedidas >= MAX_RECOMENDACIONES;
@@ -1554,10 +1623,17 @@ async function mostrarVeredicto() {
     btn.style.animationDelay = `${indice * 160}ms`;
     btn.textContent = etiqueta;
     btn.addEventListener("click", () => {
-      // Aca no habla Funes, asi que no nace ninguna burbuja "start" que haga el
-      // scroll sola: se ancla en la respuesta propia, ya con el form renderizado.
       const mia = burbuja(etiqueta, true);
-      pedirJustificacion(valor);
+      veredictoActual = valor;
+      // El veredicto se manda ACA, al tocar, y no cuando la persona termina de
+      // escribir. Es el dato que el piloto necesita si o si, y en el camino de
+      // ajuste todavia falta una pantalla entera antes de llegar al submit: si
+      // alguien la abandona ahi, el voto tiene que estar guardado igual. Despues
+      // se vuelve a mandar con la justificacion, y como es un UPDATE la segunda
+      // pasada solo completa el campo que faltaba.
+      enviarVeredicto(valor, "");
+      if (valor === "me_la_llevo") caminoPrecisa();
+      else caminoAjuste(valor);
       llevarArriba(mia);
     });
     cont.appendChild(btn);
@@ -1565,44 +1641,93 @@ async function mostrarVeredicto() {
   zonaInput.appendChild(cont);
 }
 
-// La justificacion es opcional a proposito: pedirla como obligatoria hundiria
-// la tasa de respuesta del veredicto, que es el dato que si o si necesitamos.
-// Aun con un 20-30% de completado es la materia prima cualitativa del piloto.
-function pedirJustificacion(veredicto) {
+// Quien acepto el libro no tiene nada que corregir: se le celebra, se le da el
+// empujon que el modelo escribio para este momento y se le pregunta como sigue.
+// El empujon puede faltar (si el modelo no lo marco) y entonces no sale nada en
+// su lugar: una frase de relleno sobre lo lindo que es leer seria peor que el
+// silencio, porque justo aca la persona esta esperando algo sobre SU libro.
+//
+// Anclaje "end" en todo el momento: subirlo empujaria la recomendacion fuera de
+// la pantalla justo cuando la persona acaba de aceptarla.
+async function caminoPrecisa() {
+  limpiarInput();
+  const celebracion = CELEBRACIONES[Math.floor(Math.random() * CELEBRACIONES.length)];
+  // El cierre lo escribimos nosotros y no el modelo: es una formula de
+  // despedida, no necesita estar generada, y fija se garantiza que aparezca
+  // siempre. El prompt tiene prohibido despedirse justamente para que no salga
+  // dos veces. Va pegada al empujon y no en su propia burbuja: sola queda
+  // flotando, y serian tres globos seguidos antes de los botones.
+  const cierre = "Ojalá te guste.";
+  const partes = [celebracion, empujonActual ? empujonActual + " " + cierre : cierre];
+  partes.push("¿Cómo continuamos?");
+  await mostrarRespuestaFunes(partes.join("\n"), null, "end");
+  mostrarBotonesRecomendacion();
+}
+
+// "Floja" y "Dudosa" van los dos por aca. La diferencia entre "no me sirve" y
+// "no se" no cambia lo que hay que hacer —buscar otro— y si cambiara, lo diria
+// la respuesta escrita, que es mas informativa que la distancia entre los dos
+// botones. El veredicto se guarda distinto igual, asi que la serie del piloto
+// los sigue separando.
+//
+// La respuesta es OBLIGATORIA, al reves de la justificacion opcional que habia
+// antes. El razonamiento cambio: el campo opcional aparecia como un tramite
+// entre el voto y lo que seguia, y se salteaba. Ahora es la unica forma de
+// seguir, y ademas es lo que alimenta la busqueda siguiente: sin eso, "dame
+// otro" vuelve a buscar con el mismo perfil que ya fallo.
+async function caminoAjuste(veredicto) {
+  limpiarInput();
+  await mostrarRespuestaFunes(
+    (agotadoActual
+      ? "Entiendo. Ya te mostré todo lo que tenía por este camino, así que no puedo traerte otro ahora."
+      : "Entiendo, busquemos otro libro entonces.") +
+      "\n¿Qué estabas esperando en mi recomendación? ¿Qué creés que le faltó o podemos ajustar?"
+  );
   limpiarInput();
   const form = document.createElement("form");
-  form.className = "flex flex-col gap-2";
+  form.className = "flex gap-2 items-end";
   form.innerHTML =
-    '<textarea rows="1" class="w-full rounded-xl2 border-2 px-3 py-3 resize-none overflow-hidden" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="¿Por qué? (opcional)" maxlength="1000"></textarea>' +
-    '<div class="flex gap-2">' +
-    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 flex-1 font-semibold">Listo</button>' +
-    '</div>';
+    '<textarea rows="1" class="flex-1 rounded-xl2 border-2 px-3 py-3 resize-none overflow-hidden" ' +
+    'style="border-color: var(--borde-secundario)" placeholder="Lo que no te cerró..." ' +
+    'required maxlength="500"></textarea>' +
+    '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
-    const texto = form.querySelector("textarea").value.trim();
-    // La justificacion es opcional: si no escribio nada no hay burbuja nueva y
-    // el ancla pasa a ser el ultimo mensaje del hilo (su propio veredicto).
-    const mia = texto ? burbuja(texto, true) : hilo.lastElementChild;
-    enviarVeredicto(veredicto, texto);
-    veredictoActual = veredicto;
+    const valor = form.querySelector("textarea").value.trim();
+    if (!valor) return;
+    const mia = burbuja(valor, true);
+    // Segunda pasada del veredicto, ahora con la justificacion. Es un UPDATE
+    // contra la misma fila: no duplica nada.
+    enviarVeredicto(veredicto, valor);
     limpiarInput();
-    if (veredicto === "no_me_interesa" && !agotadoActual) {
-      // Ya dijo que no: quedarse ofreciendole el libro es no haberlo
-      // escuchado. Y si ademas escribio por que, ESE es el motivo del rechazo,
-      // asi que preguntarle "¿que le erre?" seria preguntarle dos veces lo
-      // mismo en dos pantallas seguidas. Se salta derecho a buscar otra.
-      if (texto) pedirCandidato(texto);
-      else preguntarMotivo();
-    } else {
-      // mostrarBotonesRecomendacion() es async (espera el precio), asi que los
-      // botones pueden llegar despues del scroll. No importa: solo agregan alto
-      // DEBAJO del ancla, y eso nunca acorta el destino.
-      mostrarBotonesRecomendacion();
-    }
+    // Se pregunta igual aunque no queden libros: quien se va con las manos
+    // vacias es el que mas tiene para decir, y esa respuesta es del piloto
+    // aunque no sirva para buscar nada. Lo que no se hace es prometerle un
+    // libro que no va a llegar, y por eso cambia el primer mensaje.
+    if (agotadoActual) cerrarSinLibros();
+    else pedirCandidato(valor);
     llevarArriba(mia);
   });
   zonaInput.appendChild(form);
+}
+
+// Fin del recorrido por el lado del rechazo. Las dos salidas son las mismas que
+// ya ofrecia la botonera cuando se agotaba el catalogo; lo unico que cambia es
+// que aca llegan despues de haber escuchado a la persona.
+async function cerrarSinLibros() {
+  await mostrarRespuestaFunes("Gracias, me lo llevo anotado.");
+  limpiarInput();
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel";
+  if (ciclos >= MAX_CICLOS) {
+    btn.textContent = "Empezar de cero";
+    btn.addEventListener("click", () => window.location.reload());
+  } else {
+    btn.textContent = "Probemos de nuevo";
+    btn.addEventListener("click", () => reiniciarDesdeQ1());
+  }
+  zonaInput.appendChild(btn);
 }
 
 function enviarVeredicto(veredicto, justificacion) {
@@ -1650,6 +1775,7 @@ async function preguntarMotivo() {
 }
 
 async function pedirMasInfo() {
+  yaAmplio = true;
   limpiarInput();
   const promesa = (async () => {
     try {
@@ -1687,7 +1813,7 @@ function mostrarContinuar() {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 w-full text-base font-semibold bg-celeste-claro border-2 border-celeste text-texto-papel";
-  btn.textContent = "Continuar";
+  btn.textContent = "Comenzar";
   // Sin burbuja propia: tocar "Continuar" no es una respuesta, y dejarla en el
   // hilo ensuciaria la transcripcion que despues se lee en la bitacora.
   btn.addEventListener("click", async () => {
