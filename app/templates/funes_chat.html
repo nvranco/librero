@@ -992,15 +992,15 @@ async function mostrarOpciones(clave) {
   zonaInput.appendChild(cont);
 }
 
-async function mostrarTexto(clave) {
-  const p = preguntaActual(clave);
-  await mostrarRespuestaFunes(p.pregunta);
-  limpiarInput();
+// El formulario de texto, sin la pregunta: lo comparten mostrarTexto y la rama
+// "Si" de mostrarNombreOpcional, que muestra la suya antes de los botones.
+function formularioTexto(clave, marcador, largo) {
   const form = document.createElement("form");
   form.className = "flex gap-2 items-end";
   form.innerHTML =
     '<textarea rows="1" class="flex-1 rounded-xl2 border-2 px-3 py-3 resize-none overflow-hidden" ' +
-    'style="border-color: var(--borde-secundario)" placeholder="Un autor o un título..." required maxlength="300"></textarea>' +
+    'style="border-color: var(--borde-secundario)" placeholder="' + marcador +
+    '" required maxlength="' + largo + '"></textarea>' +
     '<button type="submit" class="btn-primario border-celeste tap rounded-xl2 px-4 py-3 font-semibold">Enviar</button>';
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
@@ -1011,7 +1011,53 @@ async function mostrarTexto(clave) {
     limpiarInput();
     avanzar();
   });
-  zonaInput.appendChild(form);
+  return form;
+}
+
+async function mostrarTexto(clave) {
+  const p = preguntaActual(clave);
+  // q4b tiene dos redacciones y la que va no depende de la macro sino de si el
+  // lector nombro algo en q4a, asi que resolver() no puede elegirla: se elige
+  // aca. Sin referencia, la pregunta no puede decir "en lo que nombraste".
+  const sinNombre = p.pregunta_sin_nombre && !(respuestas.q4a || "").trim();
+  await mostrarRespuestaFunes(sinNombre ? p.pregunta_sin_nombre : p.pregunta);
+  limpiarInput();
+  zonaInput.appendChild(
+    formularioTexto(clave, p.marcador || "Un autor o un título...", 600));
+}
+
+// Si/No y, si dice que si, el campo en la MISMA pantalla. Aparte y no como una
+// pregunta mas para no pagar dos pantallas: literatura ya paso de 5 a 6 con
+// q1b, y con el ancla partida serian 8. El si/no no se guarda: decir que no y
+// dejarlo vacio son el mismo dato -no hay referencia-, y el "si" sin texto no
+// existe porque el campo es required.
+async function mostrarNombreOpcional(clave) {
+  const p = preguntaActual(clave);
+  await mostrarRespuestaFunes(p.pregunta);
+  limpiarInput();
+  const cont = document.createElement("div");
+  cont.className = "flex flex-col gap-2";
+  [["Sí", true], ["No se me ocurre ninguno", false]].forEach(([etiqueta, dijoQueSi], indice) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "opcion-aparece tap rounded-xl2 px-4 py-3 text-left text-base bg-celeste-claro border-2 border-celeste text-texto-papel";
+    btn.style.animationDelay = `${indice * 160}ms`;
+    btn.textContent = etiqueta;
+    btn.addEventListener("click", async () => {
+      burbuja(etiqueta, true);
+      limpiarInput();
+      if (!dijoQueSi) {
+        respuestas[clave] = "";
+        avanzar();
+        return;
+      }
+      if (p.ayuda) await mostrarRespuestaFunes("¿Cuál? " + p.ayuda);
+      limpiarInput();
+      zonaInput.appendChild(formularioTexto(clave, "Un autor o un título...", 300));
+    });
+    cont.appendChild(btn);
+  });
+  zonaInput.appendChild(cont);
 }
 
 function siguientePregunta() {
@@ -1029,8 +1075,13 @@ function avanzar() {
     pedirPreguntaProfunda();
     return;
   }
-  if (clave === "q4") {
+  // El tipo lo declara la pregunta, no una lista de claves cableada aca: con
+  // el ancla partida en dos ya son tres las preguntas que no son de opciones.
+  const tipo = PREGUNTAS[clave].tipo || "opciones";
+  if (tipo === "texto") {
     mostrarTexto(clave);
+  } else if (tipo === "nombre_opcional") {
+    mostrarNombreOpcional(clave);
   } else {
     mostrarOpciones(clave);
   }

@@ -107,6 +107,11 @@ class RespuestasFijas(BaseModel):
     q2: str = ""
     q3: str = ""
     q4: str = Field("", max_length=300)
+    # El ancla de literatura, en dos tiempos. q4a es opcional de verdad: vacia
+    # significa "no se me ocurre ninguno", que es una respuesta y no una falta.
+    # q4b es la que se exige donde se pregunta (ver RespuestasCompletas).
+    q4a: str = Field("", max_length=300)
+    q4b: str = Field("", max_length=600)
 
     @field_validator("q0", "q1", "q1b", "q2", "q3")
     @classmethod
@@ -135,6 +140,22 @@ class RespuestasFijas(BaseModel):
             raise ValueError(f"Opcion desconocida para {info.field_name}: {valor!r}")
         return valor
 
+    @field_validator("q4", "q4a", "q4b")
+    @classmethod
+    def _texto_de_una_pregunta_que_se_hizo(cls, valor: str, info) -> str:
+        """El ancla es texto libre, pero igual tiene que ser de esta macro.
+
+        Sin esto, la mitad de la simetria falta: una opcion cerrada contestada
+        donde no se pregunta se rechaza (ver _opcion_conocida) y un texto no.
+        Y aca importa mas, porque las dos formas del ancla conviven: literatura
+        contesta q4a/q4b y las otras dos q4. Recibir las dos juntas significa
+        que el cliente y el servidor no estan de acuerdo sobre que se pregunto,
+        y ademas partes_del_ancla() tendria que elegir una y descartar la otra
+        en silencio."""
+        if valor and not nucleo.aplica(info.field_name, info.data):
+            raise ValueError(f"{info.field_name} no aplica a esta macro.")
+        return valor
+
 
 class RespuestasCompletas(RespuestasFijas):
     """Las mismas respuestas, pero exigiendo las que el motor necesita si o si.
@@ -153,16 +174,20 @@ class RespuestasCompletas(RespuestasFijas):
             raise ValueError(f"Falta {info.field_name}.")
         return valor
 
-    @field_validator("q1b")
+    @field_validator("q1b", "q4b")
     @classmethod
     def _no_vacia_si_aplica(cls, valor: str, info) -> str:
-        """q1b va aparte porque es obligatoria solo donde se pregunta.
+        """Van aparte porque son obligatorias solo donde se preguntan.
 
-        En historia y divulgacion vacia es lo correcto; en literatura, vacia
-        significa que el filtro por forma no corrio y el lector recibiria un
-        pool sin recortar sin que nadie se entere."""
-        if not valor and nucleo.aplica("q1b", info.data):
-            raise ValueError("Falta q1b.")
+        En historia y divulgacion vacias es lo correcto; en literatura, q1b
+        vacia significa que el filtro por forma no corrio y el lector recibiria
+        un pool sin recortar sin que nadie se entere, y q4b vacia significa que
+        no hay ancla, que es la mitad del vector.
+
+        q4a NO esta aca: puede venir vacia legitimamente, porque es la respuesta
+        de quien no tiene ninguna lectura para nombrar."""
+        if not valor and nucleo.aplica(info.field_name, info.data):
+            raise ValueError(f"Falta {info.field_name}.")
         return valor
 
 
@@ -493,7 +518,13 @@ async def admin_bitacora(token: str):
         """
         SELECT s.origen,
                count(DISTINCT s.id) AS sesiones,
-               count(DISTINCT s.id) FILTER (WHERE s.q4 <> '') AS llegaron_al_final,
+               -- "Llego al final" = contesto el ancla, que es la ultima. Hay
+               -- dos formas de contestarla: q4 en historia y divulgacion, q4b
+               -- en literatura. Mirando solo q4, toda sesion de literatura
+               -- contaria como abandonada, y el numero titular del piloto
+               -- saldria mal sin que nada falle.
+               count(DISTINCT s.id) FILTER (WHERE s.q4 <> '' OR s.q4b <> '')
+                   AS llegaron_al_final,
                count(DISTINCT r.sesion_id) AS con_recomendacion,
                count(r.veredicto) AS calificadas,
                count(*) FILTER (WHERE r.veredicto = 'me_la_llevo') AS me_la_llevo

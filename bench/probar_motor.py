@@ -335,9 +335,43 @@ def probar_filtro_tema() -> None:
     ok(not nucleo.aplica("q1b", {"q0": "historia"}), "q1b NO se pregunta en historia")
     ok(not nucleo.aplica("q1b", {"q0": "divulgacion"}), "q1b NO se pregunta en divulgacion")
     ok(not nucleo.aplica("q1b", {}), "sin macro, q1b no se pregunta")
-    ok(all(nucleo.aplica(c, {"q0": m}) for c in ("q0", "q1", "q2", "q3", "q4")
+    ok(all(nucleo.aplica(c, {"q0": m}) for c in ("q0", "q1", "q2", "q3")
            for m in ("literatura", "historia", "divulgacion")),
-       "las otras cinco preguntas se le hacen a las tres macros")
+       "las cuatro preguntas de opciones se le hacen a las tres macros")
+
+    # El ancla tiene dos formas y son excluyentes: dos tiempos en literatura
+    # (q4a el nombre, q4b que de eso quiere repetir) y una sola caja en las
+    # otras dos. Que las dos formas convivan es exactamente lo que hay que
+    # vigilar: si una macro contestara las dos, partes_del_ancla() elegiria una
+    # y descartaria la otra sin que nadie se entere.
+    ok(nucleo.aplica("q4a", {"q0": "literatura"}) and nucleo.aplica("q4b", {"q0": "literatura"}),
+       "en literatura el ancla se pregunta en dos tiempos")
+    ok(not nucleo.aplica("q4", {"q0": "literatura"}),
+       "en literatura NO se pregunta la q4 vieja")
+    ok(all(nucleo.aplica("q4", {"q0": m}) for m in ("historia", "divulgacion")),
+       "en historia y divulgacion sigue la q4 de una sola caja")
+    ok(not any(nucleo.aplica(c, {"q0": m}) for c in ("q4a", "q4b")
+               for m in ("historia", "divulgacion")),
+       "q4a/q4b NO se preguntan fuera de literatura")
+
+    print("\npartes_del_ancla(): las dos formas dan lo mismo aguas abajo")
+    ok(nucleo.partes_del_ancla({"q0": "literatura", "q4a": "Kafka en la orilla",
+                                "q4b": "cosas imposibles"})
+       == ("Kafka en la orilla", "cosas imposibles"),
+       "literatura devuelve (nombre, rasgo)")
+    ok(nucleo.partes_del_ancla({"q0": "historia", "q4": "Sapiens"}) == ("Sapiens", ""),
+       "la caja unica cae en el lugar del nombre")
+    ok(nucleo.partes_del_ancla({"q0": "literatura", "q4a": "", "q4b": "que me deje pensando"})
+       == ("", "que me deje pensando"),
+       "sin referencia, queda solo el rasgo")
+    ok(nucleo.partes_del_ancla({}) == ("", ""), "sin nada, no explota")
+    # El texto que se le manda al LLM va etiquetado, no concatenado: la
+    # diferencia entre "Harry Potter" y "el sistema de casas" es cual de los dos
+    # es el pedido, y pegarlos en una linea vuelve a perderla.
+    ok(nucleo._texto_para_el_ancla("Harry Potter", "el sistema de casas")
+       == "OBRA_O_AUTOR: Harry Potter\nLO_QUE_VALORA: el sistema de casas",
+       "los dos campos viajan etiquetados")
+    ok(nucleo._texto_para_el_ancla("", "") == "", "sin campos, texto vacio")
 
     print("\n_parsear_rasgos(): jsonb llega como texto, no como dict")
     ok(nucleo._parsear_rasgos('{"tema": "mente"}') == {"tema": "mente"},

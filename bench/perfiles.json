@@ -66,7 +66,8 @@
         "q1b": "genero",
         "q2": "corto",
         "q3": "trama",
-        "q4": "Agatha Christie"
+        "q4a": "Agatha Christie",
+        "q4b": "que enganche rapido y que el misterio se vaya armando de a poco, sin pedirme concentracion"
       },
       "esperado": {
         "generos": [
@@ -110,7 +111,8 @@
         "q1b": "genero",
         "q2": "intermedio",
         "q3": "ideas",
-        "q4": "Cánticos de la lejana Tierra, de Arthur C. Clarke"
+        "q4a": "Cánticos de la lejana Tierra, de Arthur C. Clarke",
+        "q4b": "esa sensacion de escala enorme, ideas grandes contadas con calma, mas el mundo que los personajes"
       },
       "esperado": {
         "generos": [
@@ -152,7 +154,8 @@
         "q1b": "breves",
         "q2": "corto",
         "q3": "prosa",
-        "q4": "Annie Ernaux"
+        "q4a": "Annie Ernaux",
+        "q4b": "que mire la propia vida de frente y sin adornos, en primera persona, sin consolar a nadie"
       },
       "esperado": {
         "generos": [
@@ -201,7 +204,8 @@
         "q1b": "breves",
         "q2": "corto",
         "q3": "prosa",
-        "q4": "Borges y Cortázar, cuentos"
+        "q4a": "Borges y Cortázar, cuentos",
+        "q4b": "cuentos que dan vuelta todo al final y estan escritos con una prosa muy trabajada"
       },
       "esperado": {
         "generos": [
@@ -249,7 +253,8 @@
         "q1b": "clasicos",
         "q2": "largo",
         "q3": "personajes",
-        "q4": "Dostoievski, Los hermanos Karamazov"
+        "q4a": "Dostoievski, Los hermanos Karamazov",
+        "q4b": "personajes que discuten ideas durante paginas enteras, y una novela larga en la que meterse a vivir"
       },
       "esperado": {
         "generos": [
@@ -293,7 +298,8 @@
         "q1b": "novela",
         "q2": "largo",
         "q3": "personajes",
-        "q4": "Jane Austen"
+        "q4a": "Jane Austen",
+        "q4b": "el ambiente de epoca, un vinculo que se demora, y la ironia de la que esta contando"
       },
       "esperado": {
         "generos": [
@@ -334,7 +340,8 @@
         "q1b": "novela",
         "q2": "corto",
         "q3": "trama",
-        "q4": ""
+        "q4a": "",
+        "q4b": "algo facil de agarrar, que pase algo en cada capitulo y no me pida acordarme de nada"
       },
       "esperado": {
         "generos": [
@@ -372,7 +379,8 @@
         "q1b": "novela",
         "q2": "corto",
         "q3": "prosa",
-        "q4": "algo como El túnel de Sabato, esa cosa de la vida secreta de la mente de un tipo obsesionado"
+        "q4a": "algo como El túnel de Sabato",
+        "q4b": "esa cosa de la vida secreta de la mente de un tipo obsesionado"
       },
       "esperado": {
         "generos": [
@@ -409,7 +417,8 @@
         "q1b": "genero",
         "q2": "corto",
         "q3": "ideas",
-        "q4": "me gusto mucho el sistema de casas de la saga harry potter"
+        "q4a": "me gusto mucho el sistema de casas de la saga harry potter",
+        "q4b": "que haya grupos con reglas propias y que se note a cual pertenece cada uno"
       },
       "esperado": {
         "generos": [
@@ -455,7 +464,8 @@
         "q1b": "genero",
         "q2": "corto",
         "q3": "prosa",
-        "q4": "Patricia Highsmith"
+        "q4a": "Patricia Highsmith",
+        "q4b": "la tension psicologica y que este bien escrito, sin poesia ni ensayo"
       },
       "esperado": {
         "generos": [
@@ -626,7 +636,7 @@
           "HISTORIOGRAFIA"
         ],
         "libros": [
-          "Alejandría",
+          "Alejandría. En busca de la ciudad perdida",
           "Antiguo Egipto",
           "Alejandro en el fin del mundo"
         ],
@@ -890,7 +900,7 @@
         "libros": [
           "Cerebros en construcción",
           "El cerebro matemático. Cómo nacen, viven y a veces mueren los números en nuestra mente",
-          "Demente"
+          "DeMente. El cerebro, un hueso duro de roer"
         ],
         "prohibido_subgeneros": [
           "BOTANICA",
@@ -962,7 +972,7 @@
         ],
         "libros": [
           "Automatizados",
-          "Big data"
+          "Big data. Breve manual para conocer la ciencia de datos que ya invadió nuestras vidas"
         ],
         "prohibido_subgeneros": [
           "BOTANICA",

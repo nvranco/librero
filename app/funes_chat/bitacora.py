@@ -79,6 +79,8 @@ async def guardar_estado(
                 q2 = COALESCE(NULLIF($4, ''), q2),
                 q3 = COALESCE(NULLIF($5, ''), q3),
                 q4 = COALESCE(NULLIF($6, ''), q4),
+                q4a = COALESCE(NULLIF($12, ''), q4a),
+                q4b = COALESCE(NULLIF($13, ''), q4b),
                 profundas = CASE WHEN $7::jsonb = '[]'::jsonb THEN profundas ELSE $7::jsonb END,
                 -- GREATEST y no ciclos+1: el cliente dice en que vuelta va, asi
                 -- que un POST repetido (reintento, doble toque) escribe el mismo
@@ -100,6 +102,12 @@ async def guardar_estado(
             filtro_aflojado,
             max(1, int(ciclo or 1)),
             str(respuestas.get("q1b") or ""),
+            # q4a puede quedar vacia legitimamente -es "no se me ocurre
+            # ninguno"-, asi que aca el NULLIF no distingue "no contesto" de
+            # "contesto que no". Da igual para lo que se mide: en las dos la
+            # sesion no tiene referencia, y q4b dice si llego al final.
+            str(respuestas.get("q4a") or ""),
+            str(respuestas.get("q4b") or ""),
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning("funes_bitacora_guardar_estado_fallo sesion=%s error=%s", sesion_id, exc)

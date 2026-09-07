@@ -427,12 +427,12 @@ PREGUNTAS = {
     },
     "q3": {
         "titulo": "El Valor Central",
-        "pregunta": "Cuando un texto realmente te funciona, ¿dónde sentís que reside su mayor valor?",
+        "pregunta": "¿Qué es lo que más valorás en un libro?",
         "opciones": {
-            "ideas": "En la construcción de las ideas y los conceptos, que me haga cuestionar lo establecido.",
-            "personajes": "En la psicología de los personajes, entender sus motivaciones y contradicciones.",
-            "trama": "En la trama y el ritmo, que la historia avance y me mantenga enfocado.",
-            "prosa": "En la prosa y el estilo, la estética de cómo está escrito.",
+            "ideas": "La construcción de las ideas y los conceptos, que me haga cuestionar lo establecido.",
+            "personajes": "La psicología de los personajes, entender sus motivaciones y contradicciones.",
+            "trama": "La trama y el ritmo, que la historia avance y me mantenga enfocado.",
+            "prosa": "La prosa y el estilo, la estética de cómo está escrito.",
         },
         "consultas": {
             "ideas": "Un libro de ideas y conceptos, que discute lo establecido y hace pensar.",
@@ -450,10 +450,10 @@ PREGUNTAS = {
         "variantes": {
             "divulgacion": {
                 "opciones": {
-                    "explicacion": "En cómo lo explica: que me haga entender algo difícil sin bajarme el nivel.",
-                    "ideas": "En las ideas: que me cambie la forma de ver algo.",
-                    "historias": "En las historias reales: los descubrimientos y la gente que los hizo.",
-                    "asombro": "En el asombro: que me deje pensando en lo raro que es todo.",
+                    "explicacion": "Cómo lo explica: que me haga entender algo difícil sin bajarme el nivel.",
+                    "ideas": "Las ideas: que me cambie la forma de ver algo.",
+                    "historias": "Las historias reales: los descubrimientos y la gente que los hizo.",
+                    "asombro": "El asombro: que me deje pensando en lo raro que es todo.",
                 },
                 "consultas": {
                     "explicacion": "Un libro de divulgación claro y didáctico, que explica con precisión un tema complejo y lo hace entendible sin perder rigor.",
@@ -466,10 +466,68 @@ PREGUNTAS = {
     },
     "q4": {
         "titulo": "El Ancla de Similitud",
+        "tipo": "texto",
+        # En literatura el ancla se pregunta en dos tiempos (q4a y q4b). Esta
+        # es la version de una sola caja, que sobrevive en las otras dos macros
+        # hasta que cada una tenga la suya: el eje que conviene preguntar no es
+        # el mismo en una novela que en un libro de historia.
+        "solo_macros": ["historia", "divulgacion"],
         "pregunta": (
             "Pensando en esa búsqueda, esa longitud y ese valor central, "
             "¿qué autor o título leíste antes que te haya dado una "
             "experiencia parecida a la que querés replicar hoy?"
+        ),
+        "opciones": {},
+    },
+    # El ancla de literatura, en dos tiempos.
+    #
+    # Antes era una sola caja que tenia que recibir tres cosas distintas -un
+    # nombre ("Sapiens"), un rasgo ("que el narrador te mienta") o una
+    # descripcion ("algo que me haga llorar")- y el LLM tenia que ADIVINAR cual
+    # le habia tocado. El parrafo mas largo de _SYSTEM_ANCLA existe solo por
+    # eso, y su modo de falla es caro: a quien elogia el sistema de casas de
+    # Harry Potter se le devuelven novelas de magos, cuando lo que pidio son
+    # mundos divididos en grupos con reglas propias.
+    #
+    # Preguntado por separado, desambiguar deja de ser una instruccion que el
+    # modelo tiene que aplicar bien y pasa a ser estructura: el campo dice de
+    # que clase es el dato que trae.
+    "q4a": {
+        "titulo": "El Ancla: la referencia",
+        "tipo": "nombre_opcional",
+        "solo_macros": ["literatura"],
+        "pregunta": "¿Tenés algún libro o autor que se parezca a lo que buscás hoy?",
+        # Vacio significa que contesto que no. No hace falta guardar aparte el
+        # si/no: el cliente no deja mandar "si" sin escribir nada, asi que
+        # vacio y "no se me ocurre ninguno" son el mismo caso.
+        # Sale como "¿Cuál? Si es un libro...". Pedir el autor junto al titulo
+        # no es cortesia: un titulo solo no identifica una obra. "Leviatan" son
+        # dos libros que no se parecen en nada -el de Auster y el de Hobbes- y
+        # esa colision ya nos hizo fusionar dos libros distintos al deduplicar
+        # el catalogo. Con el autor al lado, la referencia se puede resolver.
+        "ayuda": "Si es un libro, mencioname su autor también.",
+        "opciones": {},
+    },
+    "q4b": {
+        "titulo": "El Ancla: qué de eso",
+        "tipo": "texto",
+        "solo_macros": ["literatura"],
+        # `sensaciones` va primera a proposito: la gente contesta el primer item
+        # de una lista, y es el eje que el resto del formulario no cubre por
+        # ningun otro lado. `estructuras` y `perspectivas` son mas exigentes,
+        # pero van despues, asi que quien no sepa que hacer con ellas ya
+        # arranco a escribir por la primera.
+        "pregunta": (
+            "¿Qué sensaciones, estructuras o perspectivas hay en lo que "
+            "nombraste que te gustaría repetir en tu próxima lectura?"
+        ),
+        # La rama de quien no nombro nada. No es una variante por macro -o sea
+        # que resolver() no sirve- sino por lo que contesto en q4a, asi que la
+        # elige el cliente. Con esta rama el piso nunca baja: es la pregunta
+        # abierta de siempre, con tres agarraderas en vez de una caja vacia.
+        "pregunta_sin_nombre": (
+            "¿Qué sensaciones, estructuras o perspectivas te interesan para "
+            "tu próxima lectura?"
         ),
         "opciones": {},
     },
@@ -519,6 +577,21 @@ def resolver(clave: str, respuestas: dict) -> dict:
     return {**pregunta, **variante}
 
 
+def partes_del_ancla(respuestas: dict) -> tuple[str, str]:
+    """Lo que el lector nombro y lo que valora de eso, venga de donde venga.
+
+    Literatura lo pregunta en dos tiempos (q4a el nombre, q4b el rasgo) y las
+    otras dos macros siguen teniendo una sola caja (q4), que puede traer
+    cualquiera de las dos cosas mezcladas. Todo lo que consume el ancla pasa por
+    aca para no tener que saber cual de las dos formas se uso.
+
+    Devuelve (nombrado, valorado). En q4 lo escrito se toma como `nombrado`
+    porque la pregunta pide un autor o un titulo; si en vez de eso vino un
+    rasgo, el prompt lo detecta igual, que es lo que hace hoy."""
+    nombrado = str(respuestas.get("q4a") or respuestas.get("q4") or "").strip()
+    return nombrado, str(respuestas.get("q4b") or "").strip()
+
+
 def aplica(clave: str, respuestas: dict) -> bool:
     """Si esta pregunta hay que hacerla, dada la macro que eligio el lector.
 
@@ -539,6 +612,21 @@ _SYSTEM_ANCLA = (
     "libro que habria que darle.\n\n"
     "Devolves SOLO un JSON con esta forma:\n"
     '{"conocido": true, "descripcion": "..."}\n\n'
+    "Lo que te dan viene en dos campos:\n\n"
+    "OBRA_O_AUTOR: lo que el lector nombro, si nombro algo. Puede venir mal "
+    "escrito, a medias o de memoria (\"sweig, el de las 24 horas\"): "
+    "interpretalo con generosidad.\n"
+    "LO_QUE_VALORA: que de eso quiere volver a encontrar. ESTO ES EL PEDIDO. "
+    "Cuando viene, describis LIBROS QUE TENGAN ESO, y NO la obra nombrada: la "
+    "obra es el ejemplo que el lector tenia a mano, no lo que pide. Si dice "
+    "que le gusto el sistema de casas de Harry Potter y vos describis Harry "
+    "Potter, le vas a devolver novelas de magos y de colegios, cuando lo que "
+    "pidio son mundos divididos en grupos con reglas propias. La obra nombrada "
+    "sirve para entender el pedido y para ubicar el registro, nunca para "
+    "reemplazarlo.\n\n"
+    "Cualquiera de los dos campos puede venir vacio. Con OBRA_O_AUTOR solo, "
+    "describis esa obra o esa clase de obra. Con LO_QUE_VALORA solo, describis "
+    "libros con eso.\n\n"
     "Lo que te dan puede ser de tres clases, y con cada una haces algo "
     "distinto:\n\n"
     "a) UN AUTOR O UNA OBRA (\"Borges\", \"Sapiens\", \"Cronicas marcianas\"). "
@@ -1192,7 +1280,10 @@ def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict],
     # libro nombrado se convirtio en el match mas obvio del catalogo.
     # Solo por titulo, nunca por autor: quien nombra un autor suele estar
     # pidiendo mas de ese autor.
-    q4 = str(respuestas.get("q4") or "").strip()
+    # Solo la parte donde el lector NOMBRO algo, nunca lo que dijo que valora:
+    # "que no te expliquen nada" no es el titulo de nada, y hacerlo pasar por el
+    # matcher de titulos solo puede sacar del pool a un libro por accidente.
+    q4 = partes_del_ancla(respuestas)[0]
     if q4:
         q4_norm = f" {_normalizar_texto(q4)} "
         nombrados = [l for l in libros if _menciono_el_libro(l["titulo"], q4_norm)]
@@ -1276,9 +1367,11 @@ def _construir_texto_consulta(respuestas: dict) -> str:
     leer la referencia tal como la escribio la persona— y para la bitacora, que
     tiene que guardar lo que el lector realmente dijo."""
     partes = [_construir_texto_perfil(respuestas)]
-    q4 = str(respuestas.get("q4") or "").strip()
-    if q4:
-        partes.append(f"Lectura de referencia con una experiencia parecida: {q4}.")
+    nombrado, valorado = partes_del_ancla(respuestas)
+    if nombrado:
+        partes.append(f"Lectura de referencia con una experiencia parecida: {nombrado}.")
+    if valorado:
+        partes.append(f"De esa lectura quiere repetir: {valorado}.")
     return " ".join(x for x in partes if x)
 
 
@@ -1446,8 +1539,22 @@ async def _pedir_ancla(modelo: str, texto: str) -> dict:
     return _parsear_json_llm(resp.json()["choices"][0]["message"]["content"])
 
 
-async def _expandir_ancla(texto: str) -> tuple[str, bool]:
-    """Convierte lo que el lector escribio en q4 en una ficha de catalogo.
+def _texto_para_el_ancla(nombrado: str, valorado: str) -> str:
+    """Los dos campos con su etiqueta, que es como los espera _SYSTEM_ANCLA.
+
+    Etiquetados y no concatenados: la diferencia entre "Harry Potter" y "el
+    sistema de casas" es justamente cual de los dos es el pedido, y pegarlos en
+    una sola linea vuelve a perder eso."""
+    partes = []
+    if nombrado:
+        partes.append(f"OBRA_O_AUTOR: {nombrado}")
+    if valorado:
+        partes.append(f"LO_QUE_VALORA: {valorado}")
+    return "\n".join(partes)
+
+
+async def _expandir_ancla(nombrado: str, valorado: str = "") -> tuple[str, bool]:
+    """Convierte lo que el lector nombro y lo que valora en una ficha de catalogo.
 
     "Frans de Waal" son tres palabras que el catalogo no dice en ningun lado; su
     descripcion —primates, empatia, continuidad evolutiva— si se parece a como
@@ -1460,16 +1567,27 @@ async def _expandir_ancla(texto: str) -> tuple[str, bool]:
 
     Devuelve (descripcion, la_reconocio). Si falla, ("", False) y el llamador usa
     el texto crudo: es una mejora, nunca un requisito. `la_reconocio` va a la
-    bitacora porque es la senal de cuando hubo que pagar la busqueda web."""
+    bitacora porque es la senal de cuando hubo que pagar la busqueda web.
+
+    Ojo con `conocido` cuando el lector no nombro nada y solo dijo que valora:
+    ahi no hay referencia que "reconocer", asi que el modelo puede contestar
+    false y disparar la busqueda web al pedo. Sin obra nombrada no se reintenta:
+    un rasgo se describe sin internet."""
+    texto = _texto_para_el_ancla(nombrado, valorado)
     if not texto or not OPENROUTER_API_KEY:
         return "", False
+    modelos = (_MODELO_VOZ, _MODELO_ANCLA_WEB) if nombrado else (_MODELO_VOZ,)
     inicio = time.monotonic()
-    for modelo in (_MODELO_VOZ, _MODELO_ANCLA_WEB):
+    for modelo in modelos:
         try:
             datos = await _pedir_ancla(modelo, texto)
             descripcion = _limpiar_citas(str(datos.get("descripcion") or ""))
             conocido = bool(datos.get("conocido"))
-            if descripcion and (conocido or modelo == _MODELO_ANCLA_WEB):
+            # `modelos[-1]` y no `_MODELO_ANCLA_WEB`: cuando no hay obra
+            # nombrada la lista tiene un solo modelo, y ahi un `conocido: false`
+            # no puede tirar a la basura una descripcion buena, porque no queda
+            # ningun intento despues.
+            if descripcion and (conocido or modelo == modelos[-1]):
                 logger.info(
                     "funes_chat_ancla_ok modelo=%s conocido=%s latencia_ms=%s palabras=%s",
                     modelo, conocido, round((time.monotonic() - inicio) * 1000),
@@ -1495,7 +1613,8 @@ async def _ancla(respuestas: dict) -> dict | None:
 
     El vector se cachea por el texto crudo: _candidatos() corre hasta 5 veces por
     conversacion y sin cache cada una repetiria la expansion y el embedding."""
-    texto = str(respuestas.get("q4") or "").strip()
+    nombrado, valorado = partes_del_ancla(respuestas)
+    texto = " · ".join(x for x in (nombrado, valorado) if x)
     if not texto:
         return None
     macro = str(respuestas.get("q0") or "")
@@ -1506,7 +1625,7 @@ async def _ancla(respuestas: dict) -> dict | None:
     if guardado is not None and time.monotonic() - guardado[1] < _TTL_CACHE_ANCLA:
         return guardado[0]
 
-    descripcion, conocida = await _expandir_ancla(texto)
+    descripcion, conocida = await _expandir_ancla(nombrado, valorado)
     crudo = await _embeber_cacheado(descripcion or texto)
     vector, norma = _preparar_consulta(crudo, macro)
     if norma == 0:
@@ -1925,9 +2044,10 @@ def _dicho_por_el_lector(respuestas: dict) -> str:
     partes = []
     for clave in PREGUNTAS:
         elegida = str(respuestas.get(clave) or "").strip()
-        # q4 es texto libre y va aparte, presentada como lo que es: la lectura
-        # que la persona nombro, no una opcion que eligio de una lista.
-        if not elegida or clave == "q4":
+        # El ancla es texto libre y va aparte, presentada como lo que es: la
+        # lectura que la persona nombro y que quiere repetir de ella, no una
+        # opcion que eligio de una lista.
+        if not elegida or clave in ("q4", "q4a", "q4b"):
             continue
         # resolver() y no PREGUNTAS[clave]: q1 tiene un juego de opciones por
         # macro, y el de la macro equivocada no matchearia con lo elegido.
@@ -1963,7 +2083,7 @@ def partir_voz(texto: str) -> tuple[str, str]:
 
 async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> str:
     dicho = _dicho_por_el_lector(respuestas)
-    referencia = str(respuestas.get("q4") or "").strip()
+    referencia, valorado = partes_del_ancla(respuestas)
     resumen_profundas = "\n".join(
         f"P: {p.get('pregunta', '')}\nR: {p.get('respuesta', '')}" for p in profundas
     )
@@ -1971,6 +2091,7 @@ async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> 
         f"Esto es lo que la persona eligio, con las mismas palabras que leyo:\n"
         f"{dicho}\n\n"
         + (f"Nombro esta lectura como referencia: {referencia}\n\n" if referencia else "")
+        + (f"Y de eso queria repetir: {valorado}\n\n" if valorado else "")
         + f"Ademas charlaron esto:\n{resumen_profundas}\n\n"
         f"El libro que le corresponde es: \"{libro['titulo']}\", de {libro['autor']}.\n"
         f"Sinopsis interna (no citarla textual, es solo contexto tuyo): {libro['abstracto']}\n\n"

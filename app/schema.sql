@@ -371,6 +371,16 @@ ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS ciclos INTEGER NOT NULL DEFA
 -- Se llama q1b y no q5 para que quede al lado de la pregunta de la que cuelga.
 ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS q1b TEXT NOT NULL DEFAULT '';
 
+-- El ancla partida en dos, tambien solo en literatura: q4a es lo que el lector
+-- nombro (vacia si contesto que no se le ocurre ninguno) y q4b que de eso
+-- quiere repetir. En historia y divulgacion las dos quedan en '' y el ancla
+-- sigue viniendo entera en q4, hasta que esas macros tengan su propia version.
+-- No se renumera ni se reusa q4: hay sesiones guardadas con la pregunta vieja y
+-- mezclarlas en la misma columna haria que "lo que escribio el lector" quisiera
+-- decir dos cosas distintas segun la fecha.
+ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS q4a TEXT NOT NULL DEFAULT '';
+ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS q4b TEXT NOT NULL DEFAULT '';
+
 -- El texto que se vectoriza, partido en dos. Hasta ahora el vector de cada libro
 -- salia de `abstracto`, un parrafo unico que mezclaba de que trata el libro con
 -- que es leerlo, y que ademas fue escrito calcando el cuestionario ("novela
