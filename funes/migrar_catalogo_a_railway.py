@@ -18,6 +18,7 @@ arranca y ejecuta schema.sql.
 
 import argparse
 import asyncio
+import datetime
 import os
 import sys
 from pathlib import Path
@@ -44,6 +45,20 @@ COLUMNAS = [
     "version_reescritura",
 ]
 LOTE = 50
+
+
+def _es_recorte(nuevo: str, viejo: str) -> bool:
+    """Si `nuevo` es `viejo` al que le cortaron el final.
+
+    Mismo guardian que `preparar_ingesta_curaduria._es_recorte`. Hace falta
+    tambien aca porque el catalogo local se aplico ANTES de que ese guardian
+    existiera, asi que arrastra 24 titulos que son la primera parte del titulo
+    curado ("Demente" por "DeMente. El cerebro, un hueso duro de roer").
+    Destino todavia tiene el bueno y este UPSERT se lo pisaria en silencio.
+    """
+    from app.funes_chat import nucleo
+    a, b = nucleo._normalizar_texto(nuevo), nucleo._normalizar_texto(viejo)
+    return bool(a) and b.startswith(a) and len(b) > len(a) + 4
 
 
 async def main() -> None:
@@ -92,27 +107,55 @@ async def main() -> None:
             "SELECT id, titulo, autor FROM funes_libros")}
         nuevos = [f for f in filas if f["id"] not in ya]
         pisan = [f for f in filas if f["id"] in ya]
-        cambian_titulo = [(f["titulo"], ya[f["id"]]["titulo"]) for f in pisan
-                          if f["titulo"] != ya[f["id"]]["titulo"]]
-        acortan = [(n, v) for n, v in cambian_titulo if len(n) < len(v) - 4]
-        print(f"\ndestino tiene {len(ya)} libros")
+        cambian_titulo = [(f["id"], f["titulo"], ya[f["id"]]["titulo"])
+                          for f in pisan if f["titulo"] != ya[f["id"]]["titulo"]]
+        # De los titulos que cambian, los que son un RECORTE del que ya esta no
+        # viajan: gana el de destino. El resto son diferencias de verdad
+        # (mayusculas, acentos, puntuacion) donde el bueno es el local.
+        preservar = {i: v for i, n, v in cambian_titulo if _es_recorte(n, v)}
+        distintos = [(n, v) for i, n, v in cambian_titulo if i not in preservar]
+        print()
+        print(f"destino tiene {len(ya)} libros")
         print(f"  entran nuevos: {len(nuevos)}")
         print(f"  pisan a uno existente: {len(pisan)}")
         print(f"  de esos, le cambian el titulo: {len(cambian_titulo)}")
-        if acortan:
-            print(f"  y {len(acortan)} lo ACORTAN — revisar antes de escribir:")
-            for n, v in acortan[:10]:
-                print(f"     {v[:46]:48} -> {n[:34]}")
+        print(f"     {len(distintos)} son cambios de verdad, viaja el local")
+        print(f"     {len(preservar)} son RECORTES: se conserva el de destino")
+        for v in list(preservar.values())[:5]:
+            print(f"        se conserva: {v[:62]}")
         if args.simular:
             print("\n--simular: no se escribio nada.")
             return
 
+        # Respaldo antes de escribir. En local esto ya existia; en destino no,
+        # y aca se pisan 1381 filas curadas a mano contra las que no hay vuelta
+        # atras. Con hora y no solo fecha: dos corridas el mismo dia se pisaban
+        # el respaldo y la segunda guardaba el estado YA aplicado, o sea nada.
+        respaldo = f"funes_libros_antes_{datetime.datetime.now():%Y%m%d_%H%M}"
+        await destino.execute(f"DROP TABLE IF EXISTS {respaldo}")
+        await destino.execute(
+            f"CREATE TABLE {respaldo} AS SELECT * FROM funes_libros")
+        guardadas = await destino.fetchval(f"SELECT count(*) FROM {respaldo}")
+        print(f"respaldo en destino: {respaldo} ({guardadas} filas)")
+
         copiados = 0
         for inicio in range(0, len(filas), LOTE):
             tanda = filas[inicio:inicio + LOTE]
-            await destino.executemany(sql, [tuple(f[c] for c in COLUMNAS) for f in tanda])
+            await destino.executemany(sql, [
+                tuple(preservar.get(f["id"], f[c]) if c == "titulo" else f[c]
+                      for c in COLUMNAS)
+                for f in tanda])
             copiados += len(tanda)
             print(f"  {copiados}/{len(filas)}", flush=True)
+
+        # Y el titulo conservado vuelve a local, para que las dos bases digan
+        # lo mismo y la proxima corrida no tenga que volver a decidir esto.
+        for id_, bueno in preservar.items():
+            await origen.execute(
+                "UPDATE funes_libros SET titulo = $2 WHERE id = $1", id_, bueno)
+        if preservar:
+            print()
+            print(f"{len(preservar)} titulos recuperados tambien en local")
 
         total = await destino.fetchval("SELECT count(*) FROM funes_libros")
         con_emb = await destino.fetchval(
