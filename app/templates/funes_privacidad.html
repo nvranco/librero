@@ -40,11 +40,12 @@
        Se escribe corta y en criollo a proposito: una pagina larga y notarial
        se cierra sin leer, y entonces no informo nada. -->
   <div class="flex-1 px-5 py-6 safe-b text-sm leading-relaxed">
-    {# Tres secciones: que es Funes, como funciona y que datos guarda. La
-       ultima va ultima porque el motivo del guardado no se entiende sin las
-       dos primeras. Adentro, el orden es motivo -> que se guarda -> que no:
-       quien abre esta pagina desconfia, y la lista de lo que se guarda se lee
-       distinto si antes se sabe para que.
+    {# Cinco secciones: que es Funes, como funciona, que datos recolecta, si se
+       pueden borrar y a quien escribirle. Las de datos van despues de las dos
+       primeras porque el motivo de la recoleccion no se entiende sin ellas, y
+       adentro el orden es garantia -> finalidad -> que se guarda -> que no:
+       quien abre esta pagina desconfia, y la lista se lee distinto si antes se
+       sabe para que.
 
        Lo que dicen es verificable paso por paso, a proposito. No se afirma que
        las recomendaciones sean "menos sesgadas": el motor tiene su propio sesgo
@@ -56,6 +57,24 @@
       Funes es un sistema de recomendación que combina varias técnicas de
       procesamiento de información para seleccionar libros dentro de un catálogo
       curado, accesible en la ciudad de Buenos Aires.
+    </p>
+    <p class="mb-3">
+      Está inspirado en el icónico cuento de Borges, <em>Funes el memorioso</em>,
+      cuyo protagonista recordaba absolutamente todo lo que había visto y no
+      podía olvidar nada.
+    </p>
+    {# La cita va en blockquote y no entre comillas: el borde ya dice que es
+       ajena, y las comillas encima duplican la marca. Borges y el titulo
+       quedan nombrados en el parrafo de arriba, que es la atribucion. #}
+    <blockquote class="my-4 pl-4 border-l-2 italic text-gris"
+                style="border-color: var(--borde-secundario)">
+      Pensar es olvidar diferencias, es generalizar, abstraer. En el abarrotado
+      mundo de Funes no había sino detalles, casi inmediatos.
+    </blockquote>
+    <p class="mb-3">
+      Recomendar un libro exige hacer comparaciones, y hacer comparaciones exige
+      abstracción. Es por eso que, en esta antítesis de Ireneo Funes, la
+      capacidad de abstracción es por diseño su principal fortaleza.
     </p>
     <h3 class="font-bold mt-5 mb-1">¿Cómo funciona?</h3>
     <p class="mb-3">
@@ -72,22 +91,51 @@
       que explicás sobre por qué no funcionó entra como una corrección al perfil,
       y la búsqueda se rehace sobre los candidatos restantes.
     </p>
-    <h3 class="font-bold mt-5 mb-1">¿Qué datos guarda?</h3>
+    <h3 class="font-bold mt-5 mb-1">¿Qué datos recolecta?</h3>
     <p class="mb-3">
-      Las conversaciones son lo único que dice si esto sirve y dónde se
-      equivoca, y por eso se guardan, de forma anónima. No hay publicidad ni
-      venta de datos a nadie.
+      Funes es un proyecto independiente y no incluye publicidad ni traspaso de
+      datos a terceros.
+    </p>
+    <p class="mb-3">
+      En cada conversación, con la única finalidad de medir y mejorar la calidad
+      de las recomendaciones que este hace, almacena de forma anónima los
+      siguientes datos:
     </p>
     <ul class="list-disc pl-5 space-y-1">
-      <li>Lo que elegís y lo que escribís en la charla.</li>
-      <li>Los libros que te recomienda y lo que te contesta.</li>
-      <li>Qué te pareció cada recomendación, y si tocaste “¿Dónde lo consigo?”.</li>
+      <li>Todo lo que se dice en la charla, lo que elegís, lo que escribís y lo que Funes contesta.</li>
+      <li>Los libros recomendados, qué te pareció cada uno y si te interesó saber dónde conseguirlo.</li>
     </ul>
     <p class="mt-3">
-      No guarda tu nombre, tu mail ni tu teléfono: no hay cuenta ni registro, ni
-      nada que sirva para saber quién sos. Para hilar tus respuestas queda un
-      número al azar en tu navegador, que se borra cuando cerrás la pestaña.
+      No almacena datos personales ni requiere registro. Para hilar tus respuestas
+      se usa un número al azar, que vive en tu navegador y se borra al cerrar la
+      pestaña.
     </p>
+
+    <h3 class="font-bold mt-5 mb-1">¿Puedo borrar mi conversación?</h3>
+    <p class="mb-3">
+      La ley 25.326 te reconoce el derecho a acceder a tus datos y a pedir que
+      estos se borren.
+    </p>
+    <p>
+      Al no recolectar ningún dato que te identifique, para borrar una
+      conversación es necesario saber la fecha y la hora aproximadas.
+    </p>
+
+    {# El mail sale de FUNES_CONTACTO y no fijo en el HTML: cambiarlo en Railway
+       no deberia pedir un deploy. Si la variable no esta seteada la seccion
+       igual tiene que decir algo —el derecho al borrado no depende de que yo me
+       acuerde de configurar el entorno—, y por eso existe la rama del else. #}
+    <h3 class="font-bold mt-5 mb-1">¿Contacto?</h3>
+    {% if contacto %}
+    <p>
+      Podés escribirme directamente a
+      <a class="underline font-medium" href="mailto:{{ contacto }}">{{ contacto }}</a>.
+    </p>
+    {% else %}
+    <p>
+      Escribile a quien te pasó Funes: todavía no hay un mail para esto.
+    </p>
+    {% endif %}
 
     <p class="mt-8 text-right">
       <a href="/funes" class="tap btn-secundario inline-flex items-center rounded-xl2 px-4 py-3 font-medium">
