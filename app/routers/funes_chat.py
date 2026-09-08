@@ -651,7 +651,8 @@ async def admin_bitacora(token: str):
 
 
 @router.get("/funes/admin/{token}/conversaciones")
-async def admin_conversaciones(token: str, limite: int = 5, sesion: str = ""):
+async def admin_conversaciones(token: str, limite: int = 5, sesion: str = "",
+                               desde: str = "", hasta: str = ""):
     """Las ultimas conversaciones completas, tal como las vivio el lector.
 
     El resto del panel devuelve agregados, que sirven para medir pero no para
@@ -666,6 +667,22 @@ async def admin_conversaciones(token: str, limite: int = 5, sesion: str = ""):
     if sesion:
         sesiones = await db.pool().fetch(
             "SELECT * FROM funes_sesiones WHERE id = $1", sesion)
+    elif desde or hasta:
+        # Un pedido de borrado bajo la 25.326 llega con una fecha y una hora
+        # aproximadas, porque no guardamos ningun dato que identifique a la
+        # persona: es lo unico con lo que puede describir su conversacion. Sin
+        # este filtro solo se llegaba a las ultimas 25 por actividad, o sea que
+        # la promesa de la pagina no se podia cumplir para nada mas viejo.
+        #
+        # En hora de Argentina, igual que el tablero: quien escribe "el martes a
+        # la tarde" no esta pensando en UTC.
+        sesiones = await db.pool().fetch(
+            f"""
+            SELECT * FROM funes_sesiones
+            WHERE ($1::date IS NULL OR (creado_en AT TIME ZONE '{piloto.ZONA}')::date >= $1)
+              AND ($2::date IS NULL OR (creado_en AT TIME ZONE '{piloto.ZONA}')::date <= $2)
+            ORDER BY creado_en DESC LIMIT $3
+            """, _fecha(desde), _fecha(hasta), limite)
     else:
         # Por ultima actividad y no por creado_en: interesa la que se movio
         # recien, que es la que uno viene a mirar.
@@ -701,6 +718,50 @@ async def admin_conversaciones(token: str, limite: int = 5, sesion: str = ""):
         salida.append(fila)
 
     return {"conversaciones": salida}
+
+
+@router.delete("/funes/admin/{token}/conversaciones/{sesion_id}")
+async def admin_borrar_conversacion(token: str, sesion_id: str):
+    """Borra UNA conversacion entera, con todo lo que cuelga de ella.
+
+    Existe por la pagina de privacidad: dice, citando la 25.326, que se puede
+    pedir que una conversacion se borre, y hasta ahora la unica forma de
+    cumplirlo era entrar a la base a mano. Tambien sirve para lo mas prosaico:
+    sacar del piloto las conversaciones de prueba del propio equipo, que si no
+    entran al embudo como una persona mas.
+
+    DELETE y no GET a proposito: un GET destructivo lo dispara solo cualquier
+    cosa que precargue links —un crawler, el navegador, un preview de WhatsApp—
+    y un borrado no puede depender de que nadie toque una URL sin querer.
+
+    Es de a UNA y por id exacto. No hay forma de pedir un rango ni un borrado
+    masivo: para eso esta la consola de la base, donde el que lo hace sabe lo que
+    esta haciendo.
+
+    Devuelve lo que borro, no un OK a secas. Las recomendaciones y los "ya lei"
+    se van solos por ON DELETE CASCADE, asi que se cuentan ANTES: despues no hay
+    a quien preguntarle, y quedarse sin saber cuanto se llevo por delante es
+    justo lo que no se quiere de un borrado."""
+    _validar_admin(token)
+    async with db.pool().acquire() as con:
+        async with con.transaction():
+            recomendaciones = await con.fetchval(
+                "SELECT count(*) FROM funes_recomendaciones WHERE sesion_id = $1",
+                sesion_id)
+            leidos = await con.fetchval(
+                "SELECT count(*) FROM funes_leidos WHERE sesion_id = $1", sesion_id)
+            fila = await con.fetchrow(
+                "DELETE FROM funes_sesiones WHERE id = $1 "
+                "RETURNING id, origen, macro, creado_en", sesion_id)
+    if fila is None:
+        raise HTTPException(status_code=404, detail="No existe esa conversacion.")
+    # Queda en el log del servidor: es lo unico que sobrevive al borrado, y sin
+    # eso una fila que desaparece del embudo no tiene explicacion posible.
+    logger.warning(
+        "funes_conversacion_borrada sesion=%s origen=%s creada=%s recomendaciones=%s leidos=%s",
+        fila["id"], fila["origen"], fila["creado_en"], recomendaciones, leidos)
+    return {"borrada": dict(fila),
+            "recomendaciones": recomendaciones, "leidos": leidos}
 
 
 @router.post("/funes/mas-info")

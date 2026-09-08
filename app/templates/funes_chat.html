@@ -148,10 +148,37 @@
     from { opacity: 0; transform: translateY(3px); }
     to   { opacity: 1; transform: none; }
   }
+
+  /* En pantalla ancha el banner llega de punta a punta y la charla se lee un
+     poco mas grande. Abajo de 768px no cambia NADA: el celular es donde esto
+     se usa y ya esta afinado ahi.
+
+     El truco es que la columna deja de ser el envoltorio y pasan a serlo sus
+     hijos. La alternativa habitual -dejar el envoltorio angosto y estirar el
+     header con margin: calc(50% - 50vw)- se lleva puesto el ancho de la barra
+     de scroll: 100vw la incluye y 100% no, asi que en Windows el banner sale
+     unos pixeles mas ancho que la pagina y aparece scroll horizontal. Y taparlo
+     con overflow-x: hidden en el body rompe el sticky de la cabecera, que es
+     justo lo que este header necesita. */
+  @media (min-width: 768px) {
+    body > #envoltorio { max-width: none; }
+    #riel-progreso, #conversacion {
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+    }
+    #envoltorio header h1 { font-size: 1.75rem; }
+    #conversacion { padding-left: 2rem; padding-right: 2rem; font-size: 1.0625rem; }
+    /* Las clases de tamano explicitas ganan por especificidad, asi que las
+       burbujas y los botones no crecen solos con el font-size del contenedor. */
+    #conversacion .text-base { font-size: 1.0625rem; }
+    #conversacion .text-sm { font-size: 0.9375rem; }
+  }
 </style>
 {% endblock %}
 {% block contenido %}
-<div class="min-h-screen flex flex-col">
+<div id="envoltorio" class="min-h-screen flex flex-col">
 
   <!-- Cabecera pegajosa: el banner y la barra quedan siempre a la vista, como
        en WhatsApp, y el contenido pasa por debajo. El bg-fondo no es decorativo
@@ -186,7 +213,7 @@
        porque no se sabe cuando termina el backend, aca los pasos son conocidos
        de antemano y la barra dice la verdad. Va adentro de #cabecera, o sea
        que viaja pegada arriba junto con el header. -->
-  <div class="px-4 pt-3 pb-3">
+  <div id="riel-progreso" class="px-4 pt-3 pb-3">
     <div class="h-3 w-full bg-borde rounded-full overflow-hidden">
       <div id="barra-progreso" class="h-full bg-celeste rounded-full transition-all duration-700 ease-out" style="width: 4%"></div>
     </div>
@@ -194,7 +221,7 @@
 
   </div>
 
-  <div class="flex-1 px-4 pt-6 pb-10 safe-b">
+  <div id="conversacion" class="flex-1 px-4 pt-6 pb-10 safe-b">
     <div id="hilo" class="flex flex-col gap-3"></div>
     <div id="zona-input" class="mt-4"></div>
     <!-- Aparece junto con el boton "Continuar" y se va cuando se lo toca. La
