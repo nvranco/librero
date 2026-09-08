@@ -69,7 +69,16 @@
      Una clase mas especifica (ej. max-w-2xl del admin) sigue ganando. */
   body > div { max-width: 480px; margin-left: auto; margin-right: auto; }
   h1 { font-family: var(--font-display); }
-  input:focus, button:focus, a:focus { outline: 2px solid rgb(var(--celeste)); outline-offset: 2px; }
+  /* :focus-visible y no :focus. Con :focus el recuadro celeste aparecia
+     tambien al TOCAR o clickear -el elemento queda enfocado igual-, asi que
+     cada boton de la conversacion y la flecha de volver se quedaban con un
+     marco verde alrededor despues de usarlos, sin que nadie lo hubiera
+     pedido. :focus-visible lo deja solo cuando el navegador entiende que la
+     persona esta navegando con teclado, que es para quien el recuadro existe:
+     sacarlo del todo dejaria a esa persona sin saber donde esta parada. */
+  input:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid rgb(var(--celeste)); outline-offset: 2px;
+  }
   .safe-b { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
   .tap { min-height: 48px; min-width: 48px; }
 
