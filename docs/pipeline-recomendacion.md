@@ -116,11 +116,29 @@ ninguno de los 24 casos del banco.
 | perfil (q1+q2+q3) | 0,25–1,00 | experiencia | Es lo único que siempre existe; se queda con lo que sobra |
 | ancla (q4) | **0,50** | sinopsis | La referencia es contenido, no forma de leer |
 | ajuste (2 profundas + leídos) | **0,25** | experiencia | Termina de decidir entre los 8 candidatos |
-| corrección (motivo del rechazo) | **0,35** | sinopsis | Es lo último que dijo, escribiendo, y después de ver un libro concreto |
+| corrección (motivo del rechazo) | **0,35** | sinopsis | Es lo último que dijo, escribiendo, y después de ver un libro concreto. **Cuando existe, la búsqueda se rehace sobre el pool entero** — ver abajo |
 
 Los pesos fijos suman 1,10, así que cuando están los cuatro se **escalan
 proporcionalmente** hasta `_MAX_SIN_PERFIL = 0,75` y el perfil se queda con
 0,25. Sin corrección el reparto es idéntico al histórico (0,50 + 0,25).
+
+### La re-búsqueda no compite contra la lista corta
+
+Los 8 candidatos se eligen con **perfil + ancla**, o sea con lo que el lector
+dijo *antes* de ver un libro. Si la corrección tuviera que elegir ahí adentro no
+podría traer ninguno nuevo: sólo reordenar lo que sobró. Y con un giro perverso
+—cuanto más precisa la corrección, menos serviría—, porque alguien que dice
+exactamente qué quiere está pidiendo, casi por definición, algo que el ranking
+inicial ya descartó.
+
+Por eso, **cuando hay corrección, `_candidatos()` devuelve el pool entero** (ya
+recortado por los filtros duros) y se rankea todo con los cuatro vectores. Se
+paga sólo cuando la persona efectivamente corrige: medido sobre literatura +
+banda intermedia, son **658 libros y ~283 ms** contra los ~8 de siempre.
+
+A la bitácora van los **finalistas** por puntaje final —no los cientos que
+compitieron— y su desglose incluye ahora el coseno de la corrección, que es lo
+único que explica por qué ganó un libro que la lista corta no tenía.
 
 Cada opción de q1, q2 y q3 tiene además su **`consulta`**: la misma elección
 reescrita en idioma de catálogo. Medido: la etiqueta corta de "los seres vivos"

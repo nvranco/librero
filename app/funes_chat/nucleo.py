@@ -1858,7 +1858,8 @@ def _castigo_repeticion(libro: dict, mostrados: list[dict], forzar: bool = False
     return peor
 
 
-def _puntaje_detalle(vector, norma: float, ancla, libro: dict, ajuste=None) -> dict:
+def _puntaje_detalle(vector, norma: float, ancla, libro: dict, ajuste=None,
+                     correccion=None) -> dict:
     """Cada parte del puntaje por separado, para la bitacora.
 
     Guardar solo la mezcla esconde justo lo que hay que poder revisar: si un
@@ -1869,16 +1870,23 @@ def _puntaje_detalle(vector, norma: float, ancla, libro: dict, ajuste=None) -> d
     suyo = _coseno_con_norma(ancla["vector"], ancla["norma"], libro) if ancla else None
     propio = (_coseno_con_norma(ajuste["vector"], ajuste["norma"], libro, "experiencia")
               if ajuste else None)
+    # Desde que la re-busqueda compite contra todo el pool, la correccion puede
+    # traer un libro que la lista corta no tenia. Ese es justo el caso que hay
+    # que poder explicar despues, y sin esta columna el desglose mostraria tres
+    # cosenos que no alcanzan para justificar al ganador.
+    arreglo = (_coseno_con_norma(correccion["vector"], correccion["norma"], libro)
+               if correccion else None)
     return {
         "perfil": round(perfil, 6),
         "ancla": round(suyo, 6) if suyo is not None else None,
         "profundas": round(propio, 6) if propio is not None else None,
-        "mezcla": round(_puntaje(vector, norma, ancla, libro, ajuste), 6),
+        "correccion": round(arreglo, 6) if arreglo is not None else None,
+        "mezcla": round(_puntaje(vector, norma, ancla, libro, ajuste, correccion), 6),
     }
 
 
 async def _candidatos(
-    respuestas: dict,
+    respuestas: dict, todos: bool = False,
 ) -> tuple[list[dict], dict[str, float], int, str | None, tuple | None]:
     """Los _TOP_K_CANDIDATOS libros mas afines a las respuestas fijas (Q1-Q4),
     DENTRO del recorte que dejaron los filtros duros (Q0 y la banda de paginas
@@ -1899,6 +1907,14 @@ async def _candidatos(
     diagnostico que va a la bitacora; nada de esto se le muestra al lector (el prompt de las preguntas profundas tiene prohibido
     siquiera insinuar que existe una lista de candidatos).
 
+    Con `todos` no hay lista corta: devuelve el pool entero, ya recortado por
+    los filtros duros, para que el que llame lo rankee con TODOS los vectores.
+    Lo usa la re-busqueda: la lista corta se arma con perfil + ancla, o sea con
+    lo que el lector dijo ANTES de ver un libro, y si la correccion tuviera que
+    elegir ahi adentro no podria traer ninguno nuevo —solo reordenar lo que
+    sobro—. El costo es rankear cientos de libros con cuatro cosenos en vez de
+    ocho, y se paga solo cuando la persona efectivamente corrige.
+
     El filtro va aca porque este es el UNICO punto por el que el catalogo entra
     al ranking — lo usan recomendar() y generar_pregunta() — asi que filtrar en
     un solo lugar alcanza para que las preguntas profundas tambien se generen
@@ -1912,19 +1928,25 @@ async def _candidatos(
     vector, norma = _preparar_consulta(
         await _embeber_cacheado(_construir_texto_perfil(respuestas)), respuestas.get("q0"))
     ancla = await _ancla(respuestas)
-    # nlargest en vez de sorted: ordenar 1381 libros para quedarse con 8 es
-    # trabajo tirado, y esto corre 3 veces por conversacion bloqueando el loop.
-    mejores = heapq.nlargest(
-        _TOP_K_CANDIDATOS, libros, key=lambda l: _puntaje(vector, norma, ancla, l)
-    )
-    # Los puntajes van en un dict aparte y NO como una clave del libro: los
-    # dicts que devuelve _libros() son los de la cache compartida, asi que
-    # escribirles encima filtraria el score de un lector al siguiente.
-    puntajes = {l["id"]: _puntaje_detalle(vector, norma, ancla, l) for l in mejores}
+    if todos:
+        # Sin recorte y sin puntajes: el que llama va a rankear esto entero con
+        # los cuatro vectores, asi que puntuar aca con dos seria trabajo tirado
+        # y ademas el orden no significaria nada.
+        mejores, puntajes = libros, {}
+    else:
+        # nlargest en vez de sorted: ordenar 1381 libros para quedarse con 8 es
+        # trabajo tirado, y esto corre 3 veces por conversacion bloqueando el loop.
+        mejores = heapq.nlargest(
+            _TOP_K_CANDIDATOS, libros, key=lambda l: _puntaje(vector, norma, ancla, l)
+        )
+        # Los puntajes van en un dict aparte y NO como una clave del libro: los
+        # dicts que devuelve _libros() son los de la cache compartida, asi que
+        # escribirles encima filtraria el score de un lector al siguiente.
+        puntajes = {l["id"]: _puntaje_detalle(vector, norma, ancla, l) for l in mejores}
     logger.info(
         "funes_chat_pool macro=%s banda=%s pool=%s aflojado=%s candidatos=%s ancla=%s",
-        respuestas.get("q0"), respuestas.get("q2"), pool, aflojado, len(mejores),
-        ancla is not None,
+        respuestas.get("q0"), respuestas.get("q2"), pool, aflojado,
+        "todos" if todos else len(mejores), ancla is not None,
     )
     return mejores, puntajes, pool, aflojado, ancla
 
@@ -2356,7 +2378,22 @@ async def elegir_libro(
     # y lo que opino de ellos entra al vector de ajuste mas abajo.
     if leidos:
         respuestas = {**respuestas, "_leidos": leidos}
-    candidatos, puntajes, pool, filtro_aflojado, ancla = await _candidatos(respuestas)
+
+    # La correccion se calcula ANTES de pedir los candidatos, porque es la que
+    # decide contra que se compite: sin correccion, la lista corta de siempre;
+    # con correccion, todo el pool. Si la reescritura en positivo falla, esto da
+    # "" y la re-busqueda vuelve sola al comportamiento viejo.
+    motivo_reformulado = await _reformular_rechazo(motivo_rechazo)
+    hay_correccion = _PESO_CORRECCION > 0 and bool(motivo_reformulado.strip())
+    correccion = None
+    if hay_correccion:
+        crudo_correccion = await _embeber_cacheado(motivo_reformulado.strip())
+        vec_c, norma_c = _preparar_consulta(crudo_correccion, respuestas.get("q0"))
+        correccion = {"vector": vec_c, "norma": norma_c,
+                      "texto": motivo_reformulado.strip()}
+
+    candidatos, puntajes, pool, filtro_aflojado, ancla = await _candidatos(
+        respuestas, todos=hay_correccion)
     # Los ya mostrados, como objetos del catalogo, para poder medir contra ellos.
     mostrados = [l for l in candidatos if l["id"] in ya_mostrados]
     # Ademas del id, se descarta la misma OBRA con otro id. El catalogo tiene
@@ -2370,17 +2407,7 @@ async def elegir_libro(
     if not disponibles:
         raise ErrorFunesChat("No quedan libros sin mostrar entre los candidatos.")
 
-    motivo_reformulado = await _reformular_rechazo(motivo_rechazo)
     texto_leidos = await _texto_de_leidos(leidos or [])
-    # La correccion, por su propio vector. Va antes del ajuste porque si el
-    # motivo se cuela en los dos lados pesaria doble.
-    correccion = None
-    if _PESO_CORRECCION > 0 and motivo_reformulado.strip():
-        crudo_correccion = await _embeber_cacheado(motivo_reformulado.strip())
-        vec_c, norma_c = _preparar_consulta(crudo_correccion, respuestas.get("q0"))
-        correccion = {"vector": vec_c, "norma": norma_c,
-                      "texto": motivo_reformulado.strip()}
-
     texto_ajuste = _construir_texto_ajuste(profundas, texto_leidos)
     if _PESO_PROFUNDAS > 0 and texto_ajuste:
         # El perfil se reusa tal cual (ya esta embebido y cacheado) y lo que la
@@ -2409,7 +2436,12 @@ async def elegir_libro(
                          correccion)
                 - _PESO_DIVERSIDAD * _castigo_repeticion(libro, mostrados))
 
-    mejor = max(disponibles, key=puntaje_final)
+    # Se puntua UNA vez por libro y se reusa. Con la correccion puesta
+    # `disponibles` es el pool entero y no ocho libros, asi que recorrerlo de
+    # nuevo para sacar el maximo y despues los finalistas seria pagar dos veces
+    # lo mas caro del request.
+    puntos = {l["id"]: puntaje_final(l) for l in disponibles}
+    mejor = max(disponibles, key=lambda l: puntos[l["id"]])
     # Si ya se le pregunto a la persona por un libro puntual ("¿ya lo leiste?"),
     # la recomendacion tiene que ser ESE. Se busca entre los disponibles, no se
     # confia en el id a ciegas: asi un id viejo o inventado cae al mejor de
@@ -2418,15 +2450,27 @@ async def elegir_libro(
         elegido = next((l for l in disponibles if l["id"] == libro_fijado), None)
         if elegido is not None:
             mejor = elegido
-    # Los puntajes de la bitacora se recalculan con el ajuste puesto: los que
-    # trae _candidatos son los del top-K, de antes de que la persona contestara
-    # las preguntas profundas, y lo que hay que poder auditar despues es por que
-    # gano este libro y no otro.
-    puntajes = {l["id"]: _puntaje_detalle(vector_afinado, norma_afinado, ancla, l, ajuste)
-                for l in candidatos}
+    # A la bitacora van los FINALISTAS, no todo lo que compitio: con la
+    # correccion puesta compiten cientos de libros, y volcarlos a JSONB en cada
+    # recomendacion pesa y no se lee nunca. Se eligen por el puntaje FINAL —el
+    # que explica por que gano este y no otro—, que ademas dice mas que el top-K
+    # de la primera pasada, calculado antes de que la persona hablara.
+    finalistas = heapq.nlargest(_TOP_K_CANDIDATOS, disponibles,
+                                key=lambda l: puntos[l["id"]])
+    # Un libro fijado puede ganar sin estar entre los mejores por puntaje, y la
+    # bitacora tiene que contener siempre al que se mostro.
+    if all(l["id"] != mejor["id"] for l in finalistas):
+        finalistas = [mejor] + finalistas[:-1]
+    puntajes = {l["id"]: _puntaje_detalle(vector_afinado, norma_afinado, ancla, l,
+                                          ajuste, correccion)
+                for l in finalistas}
     return {
         "libro": mejor,
-        "candidatos": candidatos,
+        "candidatos": finalistas,
+        # Cuantos quedaban ANTES de mostrar este. Lo usa recomendar() para saber
+        # si se acabaron: contra len(candidatos) ya no sirve, porque ese numero
+        # ahora salta de 8 a cientos segun si la persona corrigio.
+        "restantes": len(disponibles),
         "puntajes": puntajes,
         "pool": pool,
         "aflojado": filtro_aflojado,
@@ -2437,7 +2481,7 @@ async def elegir_libro(
         "motivo_reformulado": motivo_reformulado,
         # El orden en que quedaron los disponibles tras el re-rank. Lo consume el
         # banco de pruebas; la bitacora hoy solo guarda al ganador.
-        "orden_afinado": sorted(disponibles, key=lambda l: -puntaje_final(l)),
+        "orden_afinado": finalistas,
     }
 
 
@@ -2474,7 +2518,11 @@ async def recomendar(
     mostrados_tras_este = len(ya_mostrados) + 1
     agotado = (
         mostrados_tras_este >= _MAX_TOTAL_RECOMENDACIONES
-        or mostrados_tras_este >= len(candidatos)
+        # `restantes` cuenta los que quedaban antes de mostrar este: si era el
+        # ultimo, no hay otro. Antes se comparaba contra len(candidatos), que
+        # era el top-K; con la re-busqueda sobre el pool entero ese numero salta
+        # de 8 a cientos y "se acabaron" habria dejado de pasar nunca.
+        or eleccion["restantes"] <= 1
     )
 
     if sesion_id:

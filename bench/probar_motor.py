@@ -13,6 +13,7 @@ pruebas en un medidor de nada).
 Lo que NO cubre: el ranking. Eso es bench/simular.py, que si cuesta plata.
 """
 import argparse
+import array
 import asyncio
 import json
 import os
@@ -677,6 +678,60 @@ def _validadores() -> None:
 
 # ------------------------------------------------- perfiles.json vs catalogo
 
+async def probar_rebusqueda() -> None:
+    """La correccion tiene que poder traer un libro que la lista corta no tenia.
+
+    Es la propiedad que justifica todo el cambio, y es la que no se ve mirando
+    un resultado suelto: con el top-8 congelado antes de que la persona hablara,
+    el libro que pide al corregir puede ser inalcanzable por CONSTRUCCION y no
+    por puntaje. Aca se prueba justo eso, con el catalogo real y sin llamar a
+    ninguna API: el vector de la correccion se fabrica copiando el embedding de
+    un libro que quedo afuera del top-8, que es el caso extremo -"quiero
+    exactamente esto"- y el que antes no podia ganar nunca."""
+    print()
+    print("re-busqueda: la correccion compite contra todo el pool")
+    perfil = {"q0": "literatura", "q1": "narrativa", "q1b": "novela",
+              "q2": "intermedio", "q3": "trama",
+              "q4a": "Stephen King", "q4b": "que enganche y no pueda soltarlo"}
+
+    corto, _, pool, _, ancla = await nucleo._candidatos(perfil)
+    todos, _, pool2, _, _ = await nucleo._candidatos(perfil, todos=True)
+
+    ok(len(corto) == nucleo._TOP_K_CANDIDATOS,
+       f"sin correccion compiten {nucleo._TOP_K_CANDIDATOS}", str(len(corto)))
+    ok(len(todos) == pool == pool2,
+       "con correccion compite el pool entero, ya recortado por los filtros duros",
+       f"{len(todos)} vs pool {pool}")
+
+    ids_cortos = {l["id"] for l in corto}
+    afuera = [l for l in todos if l["id"] not in ids_cortos]
+    ok(bool(afuera), "hay libros fuera de la lista corta (si no, no se prueba nada)")
+    objetivo = afuera[len(afuera) // 2]
+
+    vec = array.array("f", objetivo["embedding"])
+    correccion = {"vector": vec, "norma": sum(x * x for x in vec) ** 0.5,
+                  "texto": "(fabricada)"}
+    vector, norma = nucleo._preparar_consulta(
+        await nucleo._embeber_cacheado(nucleo._construir_texto_perfil(perfil)),
+        perfil["q0"])
+
+    def gana(libros):
+        return max(libros, key=lambda l: nucleo._puntaje(
+            vector, norma, ancla, l, None, correccion))
+
+    ok(gana(todos)["id"] == objetivo["id"],
+       "sobre el pool entero gana el libro que el lector pidio al corregir",
+       gana(todos)["titulo"][:50])
+    ok(gana(corto)["id"] != objetivo["id"],
+       "y sobre la lista corta era inalcanzable, que es el bug que esto arregla")
+
+    detalle = nucleo._puntaje_detalle(vector, norma, ancla, objetivo, None, correccion)
+    ok(detalle.get("correccion") is not None,
+       "el desglose de la bitacora trae el coseno de la correccion")
+    ok(nucleo._puntaje_detalle(vector, norma, ancla, objetivo)["correccion"] is None,
+       "y es None cuando no hubo correccion, que es toda primera recomendacion")
+
+
 async def probar_perfiles() -> None:
     print("\nbench/perfiles.json contra el catalogo real")
     datos = json.loads(PERFILES.read_text(encoding="utf-8"))
@@ -873,6 +928,7 @@ async def main() -> None:
     await db.conectar()
     try:
         await probar_perfiles()
+        await probar_rebusqueda()
     finally:
         await db.cerrar()
 

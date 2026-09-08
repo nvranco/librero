@@ -220,6 +220,9 @@ async def guardar_recomendacion(
             "coseno_perfil": p.get("perfil"),
             "coseno_ancla": p.get("ancla"),
             "coseno_profundas": p.get("profundas"),
+            # None cuando la persona no corrigio, que es la primera
+            # recomendacion de toda conversacion.
+            "coseno_correccion": p.get("correccion"),
         })
     try:
         return await db.pool().fetchval(
