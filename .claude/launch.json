@@ -4,14 +4,41 @@
     {
       "name": "librero",
       "runtimeExecutable": ".venv/Scripts/python.exe",
-      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--port", "8000", "--reload"],
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "app.main:app",
+        "--port",
+        "8000",
+        "--reload"
+      ],
       "port": 8000
     },
     {
       "name": "librero-8011",
       "runtimeExecutable": ".venv/Scripts/python.exe",
-      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--port", "8011", "--reload"],
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "app.main:app",
+        "--port",
+        "8011",
+        "--reload"
+      ],
       "port": 8011
+    },
+    {
+      "name": "librero-8012",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "app.main:app",
+        "--port",
+        "8012",
+        "--reload"
+      ],
+      "port": 8012
     }
   ]
 }

@@ -1039,8 +1039,12 @@ async function mostrarTexto(clave) {
   const sinNombre = p.pregunta_sin_nombre && !(respuestas.q4a || "").trim();
   await mostrarRespuestaFunes(sinNombre ? p.pregunta_sin_nombre : p.pregunta);
   limpiarInput();
-  zonaInput.appendChild(
-    formularioTexto(clave, p.marcador || "Un autor o un título...", 600));
+  // El marcador acompana a la redaccion, no a la pregunta: las dos ramas de
+  // q4b arrancan la frase por el lector y no puede decir "me gusto" quien no
+  // nombro nada.
+  const marcador =
+    (sinNombre ? p.marcador_sin_nombre : p.marcador) || "Tu respuesta...";
+  zonaInput.appendChild(formularioTexto(clave, marcador, 600));
 }
 
 // Si/No y, si dice que si, el campo en la MISMA pantalla. Aparte y no como una
@@ -1287,7 +1291,13 @@ async function mostrarBotonesRecomendacion() {
     btnConseguir.href = urlDeBusqueda(tituloActual, autorActual);
     btnConseguir.target = "_blank";
     btnConseguir.rel = "noopener noreferrer";
-    btnConseguir.className = "btn-primario border-celeste tap rounded-xl2 px-4 py-3 w-full text-sm font-semibold text-center block";
+    // Mismas clases que "Contame mas" y "Recomendame otro libro", mas
+    // text-center y block, que hacen falta solo porque este es un <a> y no un
+    // <button>. Antes era .btn-primario y font-semibold, y se leia como el
+    // boton importante al lado de dos secundarios; los tres son caminos
+    // validos para seguir y ahora se ven asi.
+    btnConseguir.className =
+      "tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel text-center block";
     btnConseguir.textContent = "¿Dónde lo consigo?";
     btnConseguir.addEventListener("click", registrarClicConseguir);
     cont.appendChild(btnConseguir);
@@ -1932,20 +1942,22 @@ function saludo() {
   // (MAX_MENSAJES_POR_RESPUESTA), y una cuarta se fusionaria con la anterior en
   // la misma burbuja. Sale de MACRO_FIJA y no cableado, asi el dia que vuelvan
   // las tres macros la frase se corrige sola en vez de quedar mintiendo.
-  // La coma va adentro: sin estante nombrado la frase no la lleva, y con la
-  // enumeracion adelante "teatro y de cada uno" se lee de una sola tirada.
-  const que = MACRO_FIJA === "literatura"
-    ? "novelas, cuentos, poesía y teatro," : "libros";
+  // "obras de literatura" y no la enumeracion de generos: nombra el estante
+  // igual pero sin leerse como un catalogo de secciones. El cierre concuerda
+  // con lo que se nombro y por eso viaja al lado, no cableado en las frases.
+  const esLiteratura = MACRO_FIJA === "literatura";
+  const que = esLiteratura ? "obras de literatura" : "libros";
+  const cada = esLiteratura ? "de cada una" : "de cada uno";
   if (!CANT_LIBROS || CANT_LIBROS < 200) {
     return MACRO_FIJA
       ? "Tengo a mi disposición una biblioteca curada de " + que +
-        " y de cada uno me acuerdo hasta el último detalle."
+        " y " + cada + " me acuerdo hasta el último detalle."
       : "Tengo a mi disposición una biblioteca curada y de cada libro me acuerdo hasta el último detalle.";
   }
   const redondo = Math.floor(CANT_LIBROS / 100) * 100;
   return "Tengo a mi disposición una biblioteca curada de más de " +
          redondo.toLocaleString("es-AR") + " " + que +
-         " y de cada uno me acuerdo hasta el último detalle.";
+         " y " + cada + " me acuerdo hasta el último detalle.";
 }
 
 async function iniciar() {

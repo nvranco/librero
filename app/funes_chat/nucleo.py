@@ -408,7 +408,7 @@ PREGUNTAS = {
     },
     "q2": {
         "titulo": "La Densidad y Extensión",
-        "pregunta": "¿Qué nivel de desafío intelectual y longitud sentís que buscás en este momento?",
+        "pregunta": "¿Qué nivel de desafío y longitud sentís que buscás en este momento?",
         "opciones": {
             "corto": "Algo corto y conciso, directo al punto",
             "intermedio": "Algo intermedio, un desarrollo moderado",
@@ -512,22 +512,27 @@ PREGUNTAS = {
         "titulo": "El Ancla: qué de eso",
         "tipo": "texto",
         "solo_macros": ["literatura"],
-        # `sensaciones` va primera a proposito: la gente contesta el primer item
-        # de una lista, y es el eje que el resto del formulario no cubre por
-        # ningun otro lado. `estructuras` y `perspectivas` son mas exigentes,
-        # pero van despues, asi que quien no sepa que hacer con ellas ya
-        # arranco a escribir por la primera.
+        # Ninguna de las dos redacciones enumera ya los ejes. La lista
+        # ("sensaciones, estructuras o perspectivas") pedia elegir una
+        # categoria antes de poder contestar, y quien acaba de nombrar una
+        # referencia tiene delante algo concreto de lo que hablar sin que se
+        # lo clasifiquen primero.
         "pregunta": (
-            "¿Qué sensaciones, estructuras o perspectivas hay en lo que "
-            "nombraste que te gustaría repetir en tu próxima lectura?"
+            "¿Y qué hay en esa elección que te gustaría repetir en tu "
+            "próxima lectura?"
         ),
+        # Los marcadores son el principio de la frase, no una lista de
+        # ejemplos: enumerar ejes obligaba a elegir una categoria antes de
+        # escribir, y una frase empezada solo pide seguirla. Hay uno por rama
+        # porque no se puede decir "me gusto" de algo que no se nombro.
+        "marcador": "Me gustó mucho...",
+        "marcador_sin_nombre": "Me gustaría que...",
         # La rama de quien no nombro nada. No es una variante por macro -o sea
         # que resolver() no sirve- sino por lo que contesto en q4a, asi que la
-        # elige el cliente. Con esta rama el piso nunca baja: es la pregunta
-        # abierta de siempre, con tres agarraderas en vez de una caja vacia.
+        # elige el cliente. Sin referencia la pregunta no puede mirar hacia
+        # atras, asi que mira hacia adelante: no que repetir, sino que buscar.
         "pregunta_sin_nombre": (
-            "¿Qué sensaciones, estructuras o perspectivas te interesan para "
-            "tu próxima lectura?"
+            "¿Y qué te gustaría encontrar en tu próxima lectura?"
         ),
         "opciones": {},
     },
