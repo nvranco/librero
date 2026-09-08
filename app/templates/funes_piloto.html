@@ -165,15 +165,42 @@
 
   {# Con una sola cohorte, HF-2 no esta protegida del sesgo de cortesia. Se
      avisa arriba de todo y no en una nota al pie: es la condicion que decide si
-     el numero titular del piloto significa algo. #}
+     el numero titular del piloto significa algo.
+
+     Pero "una sola cohorte" pasa por tres motivos distintos y el aviso no puede
+     decir lo mismo en los tres. `salud.cohortes` es un count(DISTINCT origen)
+     que se calcula DENTRO del recorte, asi que apretar un chip de cohorte lo
+     baja a 1 por definicion: el aviso salia igual, y arriba de 33 conversaciones
+     que habian llegado todas con ?src=whatsapp imprimia "ningun link llego con
+     ?src=". Y aunque no haya filtro, la cohorte unica puede no ser la de los
+     que entran pelados: `normalizar_origen` mete en `link` a quien no trae
+     ?src=, asi que "nadie llego etiquetado" solo se puede afirmar cuando el
+     unico balde es ese. Lo que NO cambia entre los tres es el costo, y por eso
+     la ultima frase es una sola. #}
   {% if d.salud.cohortes <= 1 %}
+    {# `default(..., true)` y no `default(...)`: sin sesiones el embudo viene
+       vacio y `first` devuelve Undefined, que no es none y caeria en la rama de
+       nombrar la cohorte con el <code> vacio. #}
+    {% set unica = d.embudo|map(attribute='origen')|first|default('link', true) %}
     <div class="rounded-xl2 px-4 py-3 mb-6 text-sm leading-snug"
          style="background: rgba(190,110,85,0.10); border: 1px solid rgba(190,110,85,0.35)">
-      <strong>Todas las conversaciones caen en la misma cohorte.</strong>
-      Ningún link llegó con <code>?src=</code>{% if d.rango.desde or d.rango.hasta %} en este recorte{% endif %},
-      así que no hay forma de separar amigos
-      de desconocidos. HF-2 se lee con pinzas hasta que existan las dos: la cortesía de
-      un conocido infla la opinión y no se puede descontar después.
+      {% if d.cohortes.elegidas %}
+        <strong>Estás mirando una sola cohorte.</strong>
+        Todo lo de abajo sale de {{ d.cohortes.elegidas|join(' + ') }} y no del piloto
+        entero, así que acá adentro no hay contra qué comparar. La comparación
+        existe: está en <a href="?{{ fechas }}" class="underline">Todas</a>.
+      {% else %}
+        <strong>Todas las conversaciones caen en la misma cohorte.</strong>
+        {% if unica == 'link' %}
+          Ningún link llegó con <code>?src=</code>{% if d.rango.desde or d.rango.hasta %} en este recorte{% endif %},
+          así que no hay forma de separar amigos de desconocidos.
+        {% else %}
+          Todas entraron como <code>{{ unica }}</code>{% if d.rango.desde or d.rango.hasta %} en este recorte{% endif %},
+          así que no hay una segunda cohorte contra la cual leerlas.
+        {% endif %}
+        HF-2 se lee con pinzas hasta que existan las dos: la cortesía de
+        un conocido infla la opinión y no se puede descontar después.
+      {% endif %}
     </div>
   {% endif %}
 
