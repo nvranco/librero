@@ -982,6 +982,12 @@ async function mostrarRespuestaFunes(origen, alTerminarBurbuja, anclaje = "start
   const dejarDePensar = pensar(primera);
   const [textoCompleto] = await Promise.all([promesaTexto, esperar(DELAY_TIPEO_MIN)]);
   dejarDePensar();
+  // Texto vacio significa "al final no habia nada que decir". Pasa cuando la
+  // burbuja se abre ANTES de saber si va a haber mensaje -para que el
+  // indicador de "pensando" salga en el mismo toque- y la respuesta termina
+  // mandando el flujo por otro lado. Se retira en vez de quedar como una
+  // burbuja vacia en el hilo.
+  if (!textoCompleto) { primera.remove(); return ""; }
 
   const mensajes = dividirEnMensajes(textoCompleto);
   await revelarTexto(primera, mensajes[0], false);
@@ -1575,29 +1581,42 @@ async function reiniciarDesdeQ1() {
 async function pedirCandidato(motivoRechazo) {
   limpiarInput();
   if (leidos.length >= MAX_LEIDOS) return pedirRecomendacion(motivoRechazo);
-  await cadenaSesion;
-  let libro = null;
-  try {
-    const resp = await fetch("/funes/candidato", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...respuestas, profundas, ya_mostrados: yaMostrados, leidos,
-        sesion_id: sesionId, motivo_rechazo: motivoRechazo || "",
-      }),
-    });
-    if (resp.ok) libro = await resp.json();
-  } catch (err) { /* sin candidato se sigue por el camino de siempre */ }
-
-  // Si esto falla no se corta nada: se recomienda como antes, sin preguntar.
-  if (!libro || !libro.titulo) return pedirRecomendacion(motivoRechazo);
+  // El pedido arranca SIN esperar y la burbuja con "pensando" se abre en el
+  // mismo tick que el toque, igual que despues de la primera profunda. Antes
+  // se hacia `await cadenaSesion` y despues el fetch con la pantalla quieta,
+  // asi que entre el toque y cualquier senal de vida pasaba todo el viaje al
+  // servidor: la persona tocaba y no pasaba nada. La espera de la bitacora
+  // sigue estando, pero adentro de la promesa y no delante de la pantalla.
+  const promesa = (async () => {
+    await cadenaSesion;
+    try {
+      const resp = await fetch("/funes/candidato", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...respuestas, profundas, ya_mostrados: yaMostrados, leidos,
+          sesion_id: sesionId, motivo_rechazo: motivoRechazo || "",
+        }),
+      });
+      if (resp.ok) return await resp.json();
+    } catch (err) { /* sin candidato se sigue por el camino de siempre */ }
+    return null;
+  })();
 
   // El titulo va en cursiva (*asi*, ver parsearCursivas). Se le sacan los
   // asteriscos que pudiera traer: uno suelto adentro del titulo cerraria la
   // cursiva antes de tiempo y se comeria el resto de la frase.
-  const titulo = "*" + libro.titulo.replace(/\*/g, "") + "*";
-  const comoSeLlama = libro.autor ? `${titulo}, de ${libro.autor}` : titulo;
-  await mostrarRespuestaFunes(`¿Leíste ${comoSeLlama}?`);
+  await mostrarRespuestaFunes(promesa.then((libro) => {
+    if (!libro || !libro.titulo) return "";
+    const titulo = "*" + libro.titulo.replace(/\*/g, "") + "*";
+    return `¿Leíste ${libro.autor ? `${titulo}, de ${libro.autor}` : titulo}?`;
+  }));
+
+  // Si el candidato falla no se corta nada: se recomienda como antes, sin
+  // preguntar. La burbuja que se abrio arriba ya se retiro sola, porque el
+  // texto vino vacio.
+  const libro = await promesa;
+  if (!libro || !libro.titulo) return pedirRecomendacion(motivoRechazo);
   mostrarSiONo(libro, motivoRechazo);
 }
 
@@ -1695,10 +1714,12 @@ function registrarLeido(libro, opinion, motivoRechazo) {
 
 async function pedirRecomendacion(motivoRechazo, libroFijado) {
   limpiarInput();
-  // Esperamos a que la cadena de bitacora termine para que sesionId ya exista:
-  // sin el, la recomendacion se guardaria huerfana y no se podria calificar.
-  await cadenaSesion;
   const promesa = (async () => {
+    // Esperamos a que la cadena de bitacora termine para que sesionId ya
+    // exista: sin el, la recomendacion se guardaria huerfana y no se podria
+    // calificar. Va ADENTRO de la promesa por lo mismo que en pedirCandidato:
+    // delante, retrasa el indicador de "pensando" sin que se vea nada.
+    await cadenaSesion;
     try {
       const resp = await fetch("/funes/recomendar", {
         method: "POST",
