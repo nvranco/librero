@@ -16,6 +16,32 @@
 <meta property="og:description" content="Descubrí tu próxima lectura conversando con el personaje más icónico de Borges.">
 <meta property="og:url" content="{{ base_url }}/funes">
 <meta property="og:image" content="{{ base_url }}/static/funes-og.png?v={{ og_version }}">
+{# PostHog: el replay de la conversacion. Sirve para ver DONDE dudan y donde
+   abandonan, que es el paso 2 del plan de campo -"probarlo con 3 amigos
+   sentados al lado"- pero a escala y sin el efecto de tener a alguien mirando.
+   Los numeros del piloto no salen de aca: viven en funes_sesiones y
+   funes_recomendaciones, que siguen siendo la fuente de verdad.
+
+   Sin POSTHOG_KEY no se carga nada. Y aunque se cargue, el proyecto tiene la
+   grabacion restringida al dominio de produccion, asi que en local esto es
+   inerte por partida doble. #}
+{% if posthog_key %}
+<script src="{{ posthog_host }}/static/array.js"></script>
+<script>
+  posthog.init({{ posthog_key | tojson }}, {
+    api_host: {{ posthog_host | tojson }},
+    // sessionStorage y no la cookie por defecto: la pagina de privacidad
+    // promete que el identificador "vive en tu navegador y se borra al cerrar
+    // la pestana", y la cookie de PostHog dura un ano. Es la opcion que
+    // mantiene esa frase cierta, y ademas el piloto no mide retencion (§1.2
+    // la saco por no ser medible en esta ventana), asi que no se pierde nada.
+    persistence: "sessionStorage",
+    // Sin perfiles de persona: nadie se identifica en Funes, y sin esto
+    // PostHog crearia uno por visitante anonimo. El replay funciona igual.
+    person_profiles: "identified_only",
+  });
+</script>
+{% endif %}
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Funes, un recomendador de libros">
@@ -376,6 +402,15 @@ function guardarSesion() {
         keepalive: true,
       });
       if (resp.ok) sesionId = (await resp.json()).sesion_id || sesionId;
+      // El id de la conversacion viaja con cada evento de PostHog. Es lo unico
+      // que permite ir de una grabacion a su fila en funes_sesiones y al reves:
+      // sin esto habria replays por un lado y numeros por el otro, sin forma de
+      // cruzarlos, y "cuando un numero sorprende hay que leer ESA charla" no se
+      // podria hacer. El origen va al lado porque las cohortes no se leen
+      // juntas, tampoco cuando se mira una grabacion.
+      if (sesionId && window.posthog) {
+        posthog.register({ sesion_funes: sesionId, origen: ORIGEN });
+      }
     } catch (err) { /* sin bitacora se sigue igual */ }
   });
   return cadenaSesion;
@@ -1945,19 +1980,25 @@ function saludo() {
   // "obras de literatura" y no la enumeracion de generos: nombra el estante
   // igual pero sin leerse como un catalogo de secciones. El cierre concuerda
   // con lo que se nombro y por eso viaja al lado, no cableado en las frases.
+  //
+  // El cierre dice "se para quien es cada una" y no "me acuerdo hasta el
+  // ultimo detalle", que era el rasgo del Funes del cuento -la memoria total-
+  // y contradecia lo que /privacidad explica de este: que es su antitesis, y
+  // que lo suyo es abstraer, no retener. Ahi el saludo prometia una cosa y la
+  // pagina de al lado explicaba la contraria.
   const esLiteratura = MACRO_FIJA === "literatura";
   const que = esLiteratura ? "obras de literatura" : "libros";
-  const cada = esLiteratura ? "de cada una" : "de cada uno";
+  const cada = esLiteratura ? "cada una" : "cada uno";
   if (!CANT_LIBROS || CANT_LIBROS < 200) {
     return MACRO_FIJA
       ? "Tengo a mi disposición una biblioteca curada de " + que +
-        " y " + cada + " me acuerdo hasta el último detalle."
-      : "Tengo a mi disposición una biblioteca curada y de cada libro me acuerdo hasta el último detalle.";
+        " y sé para quién es " + cada + "."
+      : "Tengo a mi disposición una biblioteca curada y sé para quién es cada libro.";
   }
   const redondo = Math.floor(CANT_LIBROS / 100) * 100;
   return "Tengo a mi disposición una biblioteca curada de más de " +
          redondo.toLocaleString("es-AR") + " " + que +
-         " y " + cada + " me acuerdo hasta el último detalle.";
+         " y sé para quién es " + cada + ".";
 }
 
 async function iniciar() {

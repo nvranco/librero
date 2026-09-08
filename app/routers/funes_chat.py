@@ -23,7 +23,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field, field_validator
 
 from app import db
-from app.config import ADMIN_TOKEN, FUNES_CONTACTO
+from app.config import ADMIN_TOKEN, FUNES_CONTACTO, POSTHOG_HOST, POSTHOG_KEY
 from app.funes_chat import bitacora, limite, nucleo, piloto, precios, qr
 from app.funes_chat.nucleo import ErrorFunesChat
 
@@ -305,6 +305,8 @@ async def pagina(request: Request):
         request,
         "funes_chat.html",
         {
+            "posthog_key": POSTHOG_KEY,
+            "posthog_host": POSTHOG_HOST,
             "preguntas_js": _js(nucleo.preguntas_publicas()),
             # La macro que el piloto ofrece, o null si estan las tres. El
             # cliente la siembra en `respuestas` y por eso no la pregunta.

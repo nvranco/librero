@@ -40,6 +40,16 @@ ADMIN_TOKEN = _requerida("ADMIN_TOKEN")
 DATA_DIR = Path(os.environ.get("DATA_DIR", "/data"))
 PORT = int(os.environ.get("PORT", "8000"))
 
+# La key PUBLICA de PostHog (phc_...), para el replay de las conversaciones.
+# Es publica de verdad: viaja en el fuente de la pagina y solo puede ESCRIBIR
+# eventos, no leer nada. Vacia = no se carga nada, que es el estado en local:
+# el proyecto tiene la grabacion restringida al dominio de produccion, asi que
+# probar de este lado no ensucia los datos del piloto.
+POSTHOG_KEY = os.environ.get("POSTHOG_KEY", "")
+# El host de ingesta. La cuenta esta en la region de Estados Unidos, y eso es
+# una transferencia internacional de datos que la pagina de privacidad declara.
+POSTHOG_HOST = os.environ.get("POSTHOG_HOST", "https://us.i.posthog.com")
+
 # Dia 2. Se leen ahora para no volver a tocar este archivo.
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.5-flash")

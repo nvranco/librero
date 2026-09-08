@@ -40,7 +40,9 @@
       {% endif %}
     </div>
     <p class="text-base font-semibold mt-1 leading-tight">{{ titulo }}</p>
-    <p class="text-xs text-gris leading-snug mt-0.5">{{ pregunta }}</p>
+    {# min-h de dos lineas: sin esto, la bajada que entra en una sola sube su
+       numero y la fila de cuatro queda despareja. #}
+    <p class="text-xs text-gris leading-snug mt-0.5 min-h-[2.1rem]">{{ pregunta }}</p>
 
     {% if dato.pct is none %}
       <p class="text-4xl font-bold mt-4" style="color: {{ TONOS.sin_datos }}">—</p>
@@ -191,7 +193,7 @@
     <div class="bg-papel border border-borde rounded-xl2 p-4 flex flex-col">
       <p class="text-xs font-bold uppercase tracking-wide text-gris">Alcance</p>
       <p class="text-base font-semibold mt-1 leading-tight">Cuántos entraron</p>
-      <p class="text-xs text-gris leading-snug mt-0.5">Conversaciones abiertas que entran al análisis</p>
+      <p class="text-xs text-gris leading-snug mt-0.5 min-h-[2.1rem]">Conversaciones abiertas que entran al análisis</p>
       <p class="text-5xl font-bold mt-4 tabular-nums leading-none">{{ n_validas }}</p>
       <p class="text-xs text-gris tabular-nums mt-1.5">
         {% if n_conocidos %}
