@@ -538,6 +538,37 @@ PREGUNTAS = {
 # escribieron las preguntas originales, asi que es el fallback menos raro.
 _MACRO_POR_DEFECTO = "literatura"
 
+# El piloto expone UNA sola rama. Las tres estan escritas y probadas, pero solo
+# literatura esta afinada: tiene el ancla en dos tiempos (q4a/q4b), la pregunta
+# de la forma (q1b) y la voz ya ajustada. Mientras esta constante tenga valor,
+# q0 no se pregunta, la macro la fija el servidor y el pool se corta siempre a
+# este estante.
+#
+# Volver a las tres = poner None. Todo lo que depende de esto lo lee de aca, asi
+# que no hay ningun otro lugar donde acordarse de deshacer nada.
+MACRO_UNICA = "literatura"
+
+
+def macro_del_piloto(recibida: str) -> str:
+    """La macro con la que se corre esta conversacion, venga lo que venga.
+
+    Se aplica UNA vez, lo mas afuera posible: en el validador de q0
+    (routers/funes_chat.RespuestasFijas), antes que cualquier otro campo. Dos
+    motivos, y los dos son la diferencia entre un parche y un motor partido al
+    medio:
+
+    - Si solo se fijara el corte por macro, un cliente que mande q0="historia"
+      recibiria el pool de literatura filtrado por el subgenero de historia
+      -cero libros, se afloja el filtro, y sale la estanteria entera sin
+      recortar con un vector escrito en idioma de historia-, sin error y sin
+      aviso. Fijandola arriba, todo lo de abajo (aplica, resolver, el corte, el
+      filtro por tema, la cache del ancla, la bitacora) ve un solo valor.
+    - Y si se fijara despues de validar, el servidor dejaria de preguntar q0
+      pero seguiria exigiendo que el cliente se la devuelva: un pedido sin q0
+      haria rebotar q1b y q4b con "no aplica a esta macro", que es un 422 por
+      una pregunta que nadie hizo."""
+    return MACRO_UNICA or recibida
+
 
 def _sin_consultas(pregunta: dict) -> dict:
     limpia = {k: v for k, v in pregunta.items() if k != "consultas"}
@@ -552,8 +583,26 @@ def preguntas_publicas() -> dict:
     Al cliente solo le sirven las etiquetas. Las consultas estan redactadas
     como resumenes de catalogo, asi que dejarlas en el fuente de la pagina
     mostraria justo lo que la voz de Funes tiene prohibido admitir: que atras
-    hay un formulario y una busqueda."""
-    return {clave: _sin_consultas(p) for clave, p in PREGUNTAS.items()}
+    hay un formulario y una busqueda.
+
+    Con MACRO_UNICA puesta viajan SOLO las preguntas que se hacen, y con la
+    variante ya resuelta: el HTML no lleva ni la pregunta del territorio ni la
+    redaccion de las macros que el piloto todavia no ofrece."""
+    publicas = {}
+    for clave in PREGUNTAS:
+        if not se_pregunta(clave):
+            continue
+        if not MACRO_UNICA:
+            publicas[clave] = _sin_consultas(PREGUNTAS[clave])
+            continue
+        # El orden importa: resolver() devuelve el dict VIVO de PREGUNTAS
+        # cuando la pregunta no tiene variantes, y _sin_consultas() es lo que
+        # devuelve la copia. Sacarle "variantes" antes de copiar mutaria el
+        # modulo entero, para todos los pedidos y para siempre.
+        limpia = _sin_consultas(resolver(clave, {"q0": MACRO_UNICA}))
+        limpia.pop("variantes", None)
+        publicas[clave] = limpia
+    return publicas
 
 
 def resolver(clave: str, respuestas: dict) -> dict:
@@ -604,6 +653,25 @@ def aplica(clave: str, respuestas: dict) -> bool:
     if not solo:
         return clave in PREGUNTAS
     return str(respuestas.get("q0") or "").strip() in solo
+
+
+def se_pregunta(clave: str) -> bool:
+    """Si esta pregunta se le hace HOY al lector, sin mirar ninguna respuesta.
+
+    aplica() contesta "dada la macro que eligio"; esta contesta "dado lo que el
+    piloto ofrece". Con MACRO_UNICA puesta, q0 no se pregunta -la macro la fija
+    el servidor, no la elige nadie- y de las demas quedan las de esa macro. Sin
+    la constante, se pregunta todo y decide aplica() como siempre.
+
+    Existe para que haya UN solo lugar que sepa que se pregunto: lo usan
+    preguntas_publicas() (lo que se le muestra) y _dicho_por_el_lector() (lo que
+    se le puede recordar despues). Si esos dos no coinciden, Funes le agradece
+    al lector una eleccion que nunca vio en pantalla."""
+    if not MACRO_UNICA:
+        return clave in PREGUNTAS
+    if clave == "q0":
+        return False
+    return aplica(clave, {"q0": MACRO_UNICA})
 
 
 _SYSTEM_ANCLA = (
@@ -863,9 +931,20 @@ async def cantidad_libros() -> int | None:
     if _cant_cache is not None and ahora - _cant_cache_en < _TTL_CACHE_SEGUNDOS:
         return _cant_cache
     try:
-        _cant_cache = await db.pool().fetchval(
-            "SELECT count(*) FROM funes_libros WHERE embedding IS NOT NULL"
-        )
+        # El numero tiene que ser el de los libros a los que Funes puede llegar
+        # de verdad, no el del catalogo entero: con MACRO_UNICA puesta, contar
+        # las tres macros seria prometer 3.600 libros y poder ofrecer 2.200. De
+        # paso deja afuera los que tienen macro NULL, que hoy suman al saludo y
+        # no entran a ningun pool (_filtrar_catalogo compara por igualdad).
+        if MACRO_UNICA:
+            _cant_cache = await db.pool().fetchval(
+                "SELECT count(*) FROM funes_libros "
+                "WHERE embedding IS NOT NULL AND macro = $1", MACRO_UNICA
+            )
+        else:
+            _cant_cache = await db.pool().fetchval(
+                "SELECT count(*) FROM funes_libros WHERE embedding IS NOT NULL"
+            )
         _cant_cache_en = ahora
     except Exception:
         logger.exception("funes_chat_cantidad_libros_fallo")
@@ -2089,6 +2168,12 @@ def _dicho_por_el_lector(respuestas: dict) -> str:
         # lectura que la persona nombro y que quiere repetir de ella, no una
         # opcion que eligio de una lista.
         if not elegida or clave in ("q4", "q4a", "q4b"):
+            continue
+        # Y lo que no se pregunto tampoco lo dijo nadie. Con MACRO_UNICA la q0
+        # la escribe el servidor, y colarla aca se la devolveria al lector como
+        # "lo que elegiste" -es el unico armador de prompt que no mira
+        # en_consulta-, o sea inventarle un recuerdo de una pantalla que no vio.
+        if not se_pregunta(clave):
             continue
         # resolver() y no PREGUNTAS[clave]: q1 tiene un juego de opciones por
         # macro, y el de la macro equivocada no matchearia con lo elegido.

@@ -426,6 +426,22 @@ def probar_filtro_tema() -> None:
         libro("x", "X", "literatura", genero="COCINA", tema="otro")) is None,
        "tema 'otro' no rescata a nadie")
 
+    # Este bloque describe el contrato de TRES ramas (historia no manda q1b,
+    # literatura si), asi que corre con la constante apagada: con el parche
+    # puesto la macro se fija ANTES de validar, y un cuerpo de historia nunca
+    # llega a ser un cuerpo de historia. Es el contrato que vuelve el dia que se
+    # desarrollen las otras dos, y mientras tanto lo seguimos cuidando.
+    previa = nucleo.MACRO_UNICA
+    nucleo.MACRO_UNICA = None
+    try:
+        _q1b_en_el_router()
+    finally:
+        nucleo.MACRO_UNICA = previa
+
+    _filtro_por_forma()
+
+
+def _q1b_en_el_router() -> None:
     print("\nq1b en el router: obligatoria donde se pregunta, prohibida donde no")
     lit = {"q0": "literatura", "q1": "narrativa", "q2": "corto", "q3": "trama"}
     hist = {"q0": "historia", "q1": "argentina", "q2": "corto", "q3": "trama"}
@@ -442,6 +458,8 @@ def probar_filtro_tema() -> None:
     ok(not _valida(router.RespuestasCompletas, {**lit, "q1b": "inventada"}),
        "una forma inventada se rechaza")
 
+
+def _filtro_por_forma() -> None:
     print("\nfiltro por forma (literatura): incluye")
     lit = ([libro(f"n{i}", f"N{i}", "literatura", 200, "NOVELAS", "UNIVERSAL") for i in range(90)]
            + [libro(f"p{i}", f"P{i}", "literatura", 200, "NOVELAS", "POLICIAL") for i in range(90)]
@@ -578,6 +596,24 @@ def probar_textos() -> None:
 # --------------------------------------------------------------- validadores
 
 def probar_validadores() -> None:
+    """Los validadores del router, con las tres ramas expuestas.
+
+    Todo lo de aca describe el contrato de tres macros: que una opcion de otra
+    macro se rechaza, que q0 vacia no pasa, que una macro inventada rebota. Con
+    MACRO_UNICA puesta ese contrato no rige -la macro se fija ANTES de validar,
+    asi que un cuerpo de historia nunca llega a serlo, y q0 vacia es el caso
+    normal y no un error-. Se apaga la constante para seguir cuidandolo: es el
+    que vuelve el dia que se desarrollen las otras dos ramas. Lo que rige HOY lo
+    prueba probar_macro_unica()."""
+    previa = nucleo.MACRO_UNICA
+    nucleo.MACRO_UNICA = None
+    try:
+        _validadores()
+    finally:
+        nucleo.MACRO_UNICA = previa
+
+
+def _validadores() -> None:
     print("\nvalidadores del router")
 
     def acepta(datos: dict) -> bool:
@@ -666,12 +702,21 @@ async def probar_perfiles() -> None:
                 sin_perfil.append(f"{macro}/{opcion}")
     ok(not sin_perfil, "toda opcion de q1 tiene un perfil que la elige", ", ".join(sin_perfil))
 
-    invalidas = []
-    for p in perfiles:
-        try:
-            router.RespuestasFijas(**p["respuestas"])
-        except Exception as exc:  # noqa: BLE001
-            invalidas.append(f"{p['id']}: {exc}")
+    # Con la constante apagada: el banco tiene lectores de las tres macros
+    # -sigue midiendo el motor entero, no la rama que hoy se ofrece-, y con el
+    # parche puesto los 17 de historia y divulgacion rebotarian por una razon
+    # que no tiene nada que ver con si sus respuestas son validas.
+    previa = nucleo.MACRO_UNICA
+    nucleo.MACRO_UNICA = None
+    try:
+        invalidas = []
+        for p in perfiles:
+            try:
+                router.RespuestasFijas(**p["respuestas"])
+            except Exception as exc:  # noqa: BLE001
+                invalidas.append(f"{p['id']}: {exc}")
+    finally:
+        nucleo.MACRO_UNICA = previa
     ok(not invalidas, "las respuestas de todos los perfiles son opciones validas", " | ".join(invalidas[:3]))
 
     libros = await nucleo._libros()
@@ -733,6 +778,86 @@ async def probar_http() -> None:
         ok(r.status_code == 200 and r.json().get("sesion_id"), "POST /sesion devuelve un id")
 
 
+def probar_macro_unica() -> None:
+    """El parche que expone una sola rama, probado por los dos lados.
+
+    Ningun assert de arriba se toca a proposito: el motor sigue sabiendo de las
+    tres macros y todo lo que las prueba sigue valiendo. Lo que se prueba aca es
+    la capa que las tapa -que preguntas viajan al HTML y que macro entra al
+    motor- y, en el mismo lugar, que apagar la constante devuelve las tres."""
+    print()
+    print("macro unica (el piloto expone una sola rama)")
+    original = nucleo.MACRO_UNICA
+    try:
+        nucleo.MACRO_UNICA = "literatura"
+        publicas = nucleo.preguntas_publicas()
+
+        ok("q0" not in publicas, "la pregunta del territorio no viaja al HTML")
+        ok("q4" not in publicas, "el ancla vieja (historia/divulgacion) tampoco")
+        ok(set(publicas) == {"q1", "q1b", "q2", "q3", "q4a", "q4b"},
+           "viajan las 6 preguntas de literatura y ninguna mas", str(sorted(publicas)))
+        ok("variantes" not in publicas["q1"], "la q1 viaja ya resuelta, sin variantes")
+        # El merge al reves dejaria la q1 base, que NO tiene "opciones": el
+        # cliente moriria con un KeyError en la primera pregunta.
+        ok(set(publicas["q1"].get("opciones") or {}) ==
+           {"ideas", "narrativa", "introspectivo", "distraccion"},
+           "y con las opciones de literatura, no las de otra macro")
+        ok(all("consultas" not in q for q in publicas.values()),
+           "sigue sin llevarse los textos de busqueda")
+        # No alcanza con buscar "historia" a secas: la copy de literatura la usa
+        # como sustantivo comun ("una novela, con su historia y sus
+        # personajes"). Lo que no puede viajar son los titulos y las etiquetas
+        # de las ramas que no se ofrecen.
+        crudo = json.dumps(publicas, ensure_ascii=False)
+        ajenas = [nucleo.PREGUNTAS["q1"]["variantes"][m]["titulo"]
+                  for m in ("historia", "divulgacion")]
+        ajenas += list(nucleo.PREGUNTAS["q0"]["opciones"].values())
+        colados = [t for t in ajenas if t in crudo]
+        ok(not colados, "no viaja ni un titulo ni una etiqueta de las otras dos ramas",
+           str(colados))
+
+        # La puerta del motor: venga lo que venga, entra literatura.
+        pisada = router._respuestas(router.RespuestasFijas(q0="historia"))
+        ok(pisada["q0"] == "literatura", "una q0 de otra macro se pisa, no se rechaza")
+        vacia = router._respuestas(router.RespuestasFijas())
+        ok(vacia["q0"] == "literatura", "y una q0 vacia tambien queda fijada")
+
+        # Lo que de verdad importa que pase: el cliente ya no contesta q0, asi
+        # que un pedido completo de literatura SIN q0 tiene que valer. Antes de
+        # mover el pin al validador esto era un 422 -q1b y q4b rebotaban con
+        # "no aplica a esta macro"-, o sea un error por una pregunta que nadie
+        # hizo.
+        sin_q0 = {"q1": "narrativa", "q1b": "novela", "q2": "corto", "q3": "trama",
+                  "q4a": "Stephen King", "q4b": "que enganche"}
+        ok(_valida(router.RespuestasCompletas, sin_q0),
+           "un pedido completo de literatura sin q0 pasa")
+        ok(router._respuestas(router.RespuestasCompletas(**sin_q0))["q0"] == "literatura",
+           "y llega al motor como literatura")
+
+        # Una pestana abierta de antes del deploy, ya metida en otra rama: la
+        # macro se pisa, pero la opcion que eligio de ESA rama no existe en
+        # literatura y el pedido rebota. Es lo que queremos: mejor un error que
+        # una novela servida a quien cree que pidio historia.
+        ok(not _valida(router.RespuestasFijas, {"q0": "historia", "q1": "argentina"}),
+           "una pestana vieja ya metida en historia rebota, no recibe una novela")
+
+        dicho = nucleo._dicho_por_el_lector(
+            {"q0": "literatura", "q1": "narrativa", "q1b": "novela",
+             "q2": "corto", "q3": "trama"})
+        ok("Ficcion y literatura" not in dicho.replace("ó", "o"),
+           "la voz no recibe el territorio como algo que el lector eligio", dicho[:70])
+        ok("atrape" in dicho, "pero si recibe lo que la persona contesto de verdad")
+
+        nucleo.MACRO_UNICA = None
+        vuelven = nucleo.preguntas_publicas()
+        ok(set(vuelven) == set(nucleo.PREGUNTAS), "apagar la constante devuelve las 8 preguntas")
+        ok("variantes" in vuelven["q1"], "y la q1 vuelve a viajar con sus tres variantes")
+        ok(router._respuestas(router.RespuestasFijas(q0="historia", q1="argentina"))["q0"]
+           == "historia", "y el router deja de pisar la macro")
+    finally:
+        nucleo.MACRO_UNICA = original
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--http", action="store_true", help="ademas del smoke contra el server local")
@@ -743,6 +868,7 @@ async def main() -> None:
     probar_filtro_tema()
     probar_textos()
     probar_validadores()
+    probar_macro_unica()
 
     await db.conectar()
     try:

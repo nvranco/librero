@@ -230,6 +230,13 @@ const CANT_LIBROS = {{ cant_libros_js | default('null', true) | safe }};
 // la prueba piloto: los amigos y los desconocidos de la calle no se pueden leer
 // en la misma tabla.
 const ORIGEN = {{ origen_js | safe }};
+// La macro que el piloto ofrece hoy, o null si estan las tres. Cuando tiene
+// valor, el servidor NO manda la pregunta del territorio: la respuesta se
+// siembra aca y la conversacion arranca en la primera pregunta de esa rama.
+// El default va por el mismo motivo que en CANT_LIBROS: sin el, una variable
+// que no llega deja "const MACRO_FIJA = ;" y el SyntaxError se lleva puesto
+// todo el chat, no solo el saludo.
+const MACRO_FIJA = {{ macro_fija_js | default('null', true) | safe }};
 // El orden lo manda el servidor (routers/funes_chat.py inyecta PREGUNTAS
 // entero). Antes estaba hardcodeado aca, y eso hacia que agregar una pregunta
 // en nucleo.py y olvidarse de tocar este archivo la dejara sin preguntar,
@@ -321,7 +328,10 @@ function altoCabecera() {
   return cabecera.getBoundingClientRect().height;
 }
 
-const respuestas = {};
+// Arranca con la macro ya contestada cuando el piloto ofrece una sola: es una
+// respuesta que el servidor da por el lector, no una que el lector eligio. Por
+// eso no la cuenta contestadas().
+const respuestas = MACRO_FIJA ? { q0: MACRO_FIJA } : {};
 const profundas = [];
 const yaMostrados = [];
 let recomendacionesPedidas = 0;
@@ -376,6 +386,14 @@ function guardarSesion() {
 // no este contestada se cuentan todas, asi la barra arranca con el maximo y
 // despues solo puede adelantarse; al reves -arrancar con el minimo- elegir
 // literatura la haria retroceder, que se ve como un error.
+// Cuantas de las preguntas que SE HACEN estan contestadas. No es
+// Object.keys(respuestas).length: la macro viene sembrada de arranque y no la
+// contesto nadie, asi que contarla adelantaria la barra un paso entero y le
+// pondria fecha de nacimiento a la sesion antes de la primera pregunta.
+function contestadas() {
+  return ORDEN.filter((clave) => clave in respuestas).length;
+}
+
 function pasosTotales() {
   const sabemosLaMacro = "q0" in respuestas;
   const cuentan = ORDEN.filter((clave) => !sabemosLaMacro || aplicaPregunta(clave));
@@ -432,8 +450,7 @@ function ponerBarra(pct) {
 }
 
 function actualizarBarra() {
-  const contestadas = Object.keys(respuestas).length + profundas.length;
-  ponerBarra(4 + 96 * (contestadas / pasosTotales()));
+  ponerBarra(4 + 96 * ((contestadas() + profundas.length) / pasosTotales()));
 }
 
 function esperar(ms) {
@@ -1069,7 +1086,7 @@ function avanzar() {
   // La sesion nace con la PRIMERA respuesta, no al cargar la pagina: el
   // denominador de la hipotesis del embudo es la gente que empezo a contestar,
   // no cada visita (que incluiria crawlers y rebotes instantaneos).
-  if (Object.keys(respuestas).length > 0) guardarSesion();
+  if (contestadas() > 0) guardarSesion();
   const clave = siguientePregunta();
   if (!clave) {
     pedirPreguntaProfunda();
@@ -1364,6 +1381,9 @@ async function mostrarBotonesRecomendacion() {
 // volver a describir lo que se busca. Se reinicia desde q1 y NO desde q0: la
 // macro es el estante, y quien entro a historia no cambio de idea sobre eso
 // por haber rechazado tres libros; lo que no funciono fue el resto del perfil.
+// (Con MACRO_FIJA puesta las dos reinician lo mismo, porque el estante no se
+// elige. Siguen separadas para que el dia que vuelvan las tres macros no haya
+// que reconstruir la distincion.)
 //
 // `yaMostrados` se conserva a proposito: son justamente los libros que ya
 // rechazo, y repetirselos seria lo peor que puede pasar en esta pantalla.
@@ -1403,7 +1423,9 @@ async function preguntarComoSeguir() {
   zonaInput.appendChild(cont);
 }
 
-// El cuestionario entero de nuevo, incluido el estante. La conversacion NO se
+// El cuestionario entero de nuevo, incluido el estante -salvo con MACRO_FIJA
+// puesta, donde q0 no esta en ORDEN y la macro sembrada sobrevive el borrado,
+// que es justo lo que se quiere. La conversacion NO se
 // recarga: se sigue en el mismo hilo y con la misma sesion, asi la bitacora
 // registra las dos vueltas como lo que son, una sola persona cambiando de idea,
 // y no como dos visitas sin relacion.
@@ -1904,13 +1926,26 @@ function saludo() {
   // Por debajo de 200 libros la centena de abajo miente feo (120 libros diria
   // "mas de 100") o directamente da cero, asi que ahi cae en la variante sin
   // numero, la misma que se usa si la base no contesta.
+  //
+  // Y cuando el piloto ofrece un solo estante, esta misma frase es donde se
+  // dice cual. No una linea aparte: el saludo son TRES lineas a proposito
+  // (MAX_MENSAJES_POR_RESPUESTA), y una cuarta se fusionaria con la anterior en
+  // la misma burbuja. Sale de MACRO_FIJA y no cableado, asi el dia que vuelvan
+  // las tres macros la frase se corrige sola en vez de quedar mintiendo.
+  // La coma va adentro: sin estante nombrado la frase no la lleva, y con la
+  // enumeracion adelante "teatro y de cada uno" se lee de una sola tirada.
+  const que = MACRO_FIJA === "literatura"
+    ? "novelas, cuentos, poesía y teatro," : "libros";
   if (!CANT_LIBROS || CANT_LIBROS < 200) {
-    return "Tengo a mi disposición una biblioteca curada y de cada libro me acuerdo hasta el último detalle.";
+    return MACRO_FIJA
+      ? "Tengo a mi disposición una biblioteca curada de " + que +
+        " y de cada uno me acuerdo hasta el último detalle."
+      : "Tengo a mi disposición una biblioteca curada y de cada libro me acuerdo hasta el último detalle.";
   }
   const redondo = Math.floor(CANT_LIBROS / 100) * 100;
   return "Tengo a mi disposición una biblioteca curada de más de " +
-         redondo.toLocaleString("es-AR") +
-         " libros y de cada uno me acuerdo hasta el último detalle.";
+         redondo.toLocaleString("es-AR") + " " + que +
+         " y de cada uno me acuerdo hasta el último detalle.";
 }
 
 async function iniciar() {

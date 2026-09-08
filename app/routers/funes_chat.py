@@ -97,7 +97,9 @@ class RespuestasFijas(BaseModel):
     # estar declarada aca si o si: Pydantic descarta las claves extra en
     # silencio, asi que sin este campo el front la mandaria y el nucleo nunca
     # se enteraria, sin ningun error visible.
-    q0: str = ""
+    # validate_default porque el caso que hay que atrapar es el campo AUSENTE:
+    # con MACRO_UNICA puesta, q0 no se pregunta y el cliente podria no mandarla.
+    q0: str = Field("", validate_default=True)
     q1: str = ""
     # Solo aplica en literatura; en las otras dos macros viene vacia y tiene que
     # venir vacia (ver _opcion_conocida). validate_default porque el caso que hay
@@ -122,6 +124,25 @@ class RespuestasFijas(BaseModel):
         _construir_texto_consulta y la recomendacion salia igual, pero armada
         con un texto mas pobre y sin ningun error visible. Con q0 eso ademas
         significaria saltearse el filtro duro."""
+        if info.field_name == "q0":
+            # El piloto puede estar ofreciendo una sola rama. La macro se
+            # pisa y se sigue, no se rechaza: quien manda otra es una pestana
+            # abierta de antes del deploy (/funes no manda cache headers y
+            # ruta_vieja mantiene vivos los links viejos con un 308), y
+            # cortarle la conversacion a esa persona es peor que servirle
+            # literatura. El warning es la unica senal de cuantas hay dando
+            # vueltas; si aparece seguido, ahi se decide el 422.
+            #
+            # Ojo con el alcance: se pisa la MACRO, no la conversacion. Si esa
+            # pestana ya venia con una opcion de la otra rama (q1="argentina"),
+            # el pedido rebota igual mas abajo, porque esa opcion no existe en
+            # literatura. Es lo que queremos: mejor un error que una novela
+            # servida a quien cree que pidio historia.
+            fijada = nucleo.macro_del_piloto(valor)
+            if fijada != valor and valor:
+                logger.warning("funes_chat_macro_pisada llego=%s queda=%s", valor, fijada)
+            if fijada != valor:
+                return fijada
         if valor == "":
             return valor
         # info.data trae los campos ya validados, y q0 esta declarado antes que
@@ -263,7 +284,12 @@ def _respuestas(cuerpo: RespuestasFijas) -> dict:
     agregar una pregunta en nucleo.py y olvidarse de tocar esta funcion la hacia
     desaparecer en silencio -el motor la recibia vacia, el filtro que dependia
     de ella no corria, y la recomendacion salia igual sin ningun error-. Es el
-    mismo motivo por el que el template lee ORDEN del servidor."""
+    mismo motivo por el que el template lee ORDEN del servidor.
+
+    Es tambien el UNICO lugar por donde las respuestas entran al motor (los
+    cinco endpoints pasan por aca). La macro ya viene fijada de mas arriba, del
+    validador de q0: tiene que estar puesta ANTES de que se validen las demas,
+    porque q1b y q4b se aceptan o se rechazan segun cual sea."""
     return cuerpo.model_dump(include=set(nucleo.PREGUNTAS))
 
 
@@ -279,6 +305,9 @@ async def pagina(request: Request):
         "funes_chat.html",
         {
             "preguntas_js": _js(nucleo.preguntas_publicas()),
+            # La macro que el piloto ofrece, o null si estan las tres. El
+            # cliente la siembra en `respuestas` y por eso no la pregunta.
+            "macro_fija_js": _js(nucleo.MACRO_UNICA),
             # El saludo de Funes dice cuantos libros tiene. Va como dato y no
             # escrito en el template para que acompane al catalogo solo.
             "cant_libros_js": _js(await nucleo.cantidad_libros()),

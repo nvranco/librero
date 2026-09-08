@@ -7,8 +7,21 @@
 > salen de `bench/medir_costos.py`, que lee las tarifas en vivo de OpenRouter:
 > corrélo y pegá los números, no los estimes a ojo.
 
-Última actualización: 2026-09-06 · catálogo de 1.381 libros (literatura 816 ·
-historia 368 · divulgación 197).
+Última actualización: 2026-09-08 · catálogo de 3.600 libros (literatura 2.192 ·
+historia 836 · divulgación 572).
+
+> ### El piloto expone una sola rama
+>
+> `nucleo.MACRO_UNICA = "literatura"`. Mientras esa constante tenga valor, **q0
+> no se pregunta**: la macro la fija el servidor en el validador de `q0`
+> (`app/routers/funes_chat.py`), la conversación arranca en la q1 de literatura
+> y el pool se corta siempre a esos 2.192 libros. Historia y divulgación siguen
+> escritas, probadas (`bench/probar_motor.py` las sigue midiendo enteras) y en
+> la base; lo único que no hacen es ofrecerse. Volver a las tres es poner la
+> constante en `None`, y no hay ningún otro lugar que deshacer.
+>
+> Todo lo que sigue describe el árbol completo, que es el que el motor conoce.
+> Lo que hoy ve un lector es la rama de literatura, sin su primer nodo.
 
 ---
 
@@ -24,8 +37,8 @@ es cuestión de grado se pondera.
 flowchart TD
     START([Entra al link]) --> Q0
 
-    Q0["<b>q0 · El Territorio</b><br/>¿Qué te interesa leer hoy?<br/><i>literatura · historia · divulgación</i>"]
-    Q0 -->|"DURO: macro"| POOL1["Pool: 816 / 368 / 197"]
+    Q0["<b>q0 · El Territorio</b><br/>¿Qué te interesa leer hoy?<br/><i>literatura · historia · divulgación</i><br/><b>HOY NO SE PREGUNTA</b> · la fija MACRO_UNICA"]
+    Q0 -->|"DURO: macro"| POOL1["Pool: 2.192 / 836 / 572"]
 
     POOL1 --> Q1{"<b>q1</b> · varía según la macro"}
 
@@ -73,7 +86,7 @@ revés:
 
 | # | filtro | de dónde sale | qué recorta |
 |---|---|---|---|
-| 1 | **macro** | q0 | Todo lo que no es la macro elegida |
+| 1 | **macro** | q0 —hoy fijada por `MACRO_UNICA`, no preguntada | Todo lo que no es la macro elegida |
 | 2 | **libro de referencia** | q4 | El libro que el lector nombró (por título, nunca por autor) |
 | 3 | **tema** | q1 o q1b, según la macro | Subgénero en historia · tema por exclusión en divulgación · forma en literatura |
 | 4 | **ya leídos** | "¿Ya leíste X?" | Por título+autor, no por id: otra edición del mismo libro tampoco |
@@ -87,7 +100,8 @@ macro nunca se afloja**: es lo único que el lector eligió sin ambigüedad.
 Dos reglas que no se negocian, las dos por el mismo motivo —un dato faltante no
 puede ser una condena—:
 
-- Un libro **sin `nro_paginas`** nunca se excluye (415 de 1.381 no lo tienen).
+- Un libro **sin `nro_paginas`** nunca se excluye (348 de los 2.192 de
+  literatura no lo tienen).
 - Un libro **sin `rasgos`** nunca se descarta por tema.
 
 ### Los filtros blandos: cómo se reparte el puntaje
