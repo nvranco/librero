@@ -8,6 +8,7 @@ los `max_length`, un cliente puede mandar `ya_mostrados` con 50 ids y sacarse 50
 recomendaciones, o un q4 de un megabyte que se va derecho al embedding.
 """
 
+import datetime
 import hashlib
 import json
 import logging
@@ -23,7 +24,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from app import db
 from app.config import ADMIN_TOKEN, FUNES_CONTACTO
-from app.funes_chat import bitacora, limite, nucleo, precios, qr
+from app.funes_chat import bitacora, limite, nucleo, piloto, precios, qr
 from app.funes_chat.nucleo import ErrorFunesChat
 
 logger = logging.getLogger("librero.funes_chat")
@@ -531,6 +532,47 @@ async def recargar_catalogo(token: str):
     return {"ok": True}
 
 
+def _fecha(valor: str) -> datetime.date | None:
+    """Una fecha del query string, o None si no vino o vino rota.
+
+    Una fecha invalida NO es un 422: el filtro es una comodidad para mirar, y
+    tirarle un error a quien pego mal una URL le esconde el tablero entero. Se
+    ignora y se muestra todo, que es el estado por defecto."""
+    try:
+        return datetime.date.fromisoformat(valor) if valor else None
+    except ValueError:
+        return None
+
+
+@router.get("/funes/admin/{token}/piloto", response_class=HTMLResponse)
+async def admin_piloto(request: Request, token: str, desde: str = "", hasta: str = "",
+                       origen: str = ""):
+    """El tablero de la prueba piloto: las cuatro hipotesis contra su umbral.
+
+    Es una pagina y no el JSON de al lado porque el JSON se lee con esfuerzo y
+    esto hay que poder mirarlo de un vistazo. Lo que decide -si perseverar o
+    pivotar- tiene que caber en una pantalla.
+
+    El rango va por query string y no por sesion ni por cookie: asi un recorte
+    se comparte pegando el link, que es como se discute un numero con alguien
+    mas."""
+    _validar_admin(token)
+    d, h = _fecha(desde), _fecha(hasta)
+    # Al reves se lee como un rango vacio y muestra cero de todo, que parece un
+    # bug del tablero y no un dedazo. Se dan vuelta y listo.
+    if d and h and d > h:
+        d, h = h, d
+    # Coma para poder pedir varias de una ("?origen=qr,whatsapp"). Un valor que
+    # no existe se descarta en vez de dar error, por lo mismo que las fechas: el
+    # filtro es una comodidad, y romper el tablero entero por un dedazo en la
+    # URL es peor que mostrar de mas.
+    cohortes = [x for x in (o.strip() for o in origen.split(",")) if x] or None
+    return templates.TemplateResponse(
+        "funes_piloto.html",
+        {"request": request, "token": token, "d": await piloto.calcular(d, h, cohortes)},
+    )
+
+
 @router.get("/funes/admin/{token}/bitacora")
 async def admin_bitacora(token: str):
     """La consulta de cohortes de la prueba piloto, en un solo lugar.
@@ -556,7 +598,12 @@ async def admin_bitacora(token: str):
                    AS llegaron_al_final,
                count(DISTINCT r.sesion_id) AS con_recomendacion,
                count(r.veredicto) AS calificadas,
-               count(*) FILTER (WHERE r.veredicto = 'me_la_llevo') AS me_la_llevo
+               count(*) FILTER (WHERE r.veredicto = 'me_la_llevo') AS me_la_llevo,
+               -- HF-3, la hipotesis que el documento llama "la que importa".
+               -- La columna se escribia desde el primer dia y esta consulta no
+               -- la leia: el numero mas importante del piloto no estaba en
+               -- ningun lado.
+               count(*) FILTER (WHERE r.clic_conseguir_en IS NOT NULL) AS clics
         FROM funes_sesiones s
         LEFT JOIN funes_recomendaciones r ON r.sesion_id = s.id
         GROUP BY s.origen ORDER BY sesiones DESC

@@ -38,9 +38,28 @@ feature existe solo si testea una hipótesis. Si no se puede trazar, no va.
 | ID | Hipótesis | Tipo | Métrica primaria | Se falsa si |
 |---|---|---|---|---|
 | **HF-1** | La gente termina la conversación. | Precondición | % que llega a ver una recomendación, sobre los que contestaron la primera pregunta | <50% |
-| **HF-2** | La recomendación se percibe como buena. | Valor | % de “Me la llevo” (top-box de 3) | <40% |
-| **HF-3** | La recomendación mueve a conseguir el libro. | **Valor — la que importa** | % de recomendaciones con clic en “¿Dónde lo consigo?” | <15% |
+| **HF-2** | La conversación llega a un libro que sirve. | Valor | % de **conversaciones calificadas** con al menos un “Precisa” | <60% |
+| **HF-3** | La recomendación mueve a conseguir el libro. | **Valor — la que importa** | % **de ésas** con clic en “¿Dónde lo consigo?” | <40% |
 | **HF-4** | El feedback escrito mejora la segunda recomendación. | Motor | Veredicto **pareado** 2ª vs 1ª, mismo lector | Sin diferencia, o peor |
+
+> **v0.2 — las dos cambiaron de unidad: se miden por CONVERSACIÓN, no por
+> recomendación.** Medido por recomendación, quien rechaza dos y acepta la
+> tercera puntuaba 1 de 3, cuando la conversación funcionó: el botón “dame otra”
+> existe a propósito y el rechazo es parte del diseño, así que la métrica vieja
+> castigaba al producto por ofrecer el reintento. La unidad que importa es la
+> que promete HF-0 y la que necesita la cuenta de §1.1, que razona por sesión.
+>
+> Los umbrales se movieron con la unidad, no con los datos: por conversación el
+> mismo producto puntúa más alto mecánicamente, y dejar el 40% habría sido bajar
+> la vara sin decirlo. HF-2 pasa a **≥60%** (el ancla de arriba del contraste con
+> el que §2 calculó la muestra) y HF-3 a **≥40%**, que ya era condicional. La
+> cuenta del negocio queda en 0,60 × 0,40 = **24% de conversaciones derivadas**.
+>
+> El precio: por conversación la métrica es **monótona en la cantidad de
+> reintentos** —si mañana se pasa de 3 a 5, sube sin que nada haya mejorado—.
+> Por eso el desglose de en qué intento llegó cada acierto se calcula igual
+> aunque todavía no se muestre: sin él, un motor que empeora y se compensa
+> reintentando se ve idéntico a uno que mejora.
 
 **HF-3 es a Funes lo que HV-5 es a LIBRERO: el indicador más honesto.** Un
 veredicto alto es una opinión y sale gratis; el clic es un movimiento. §8.2 del
@@ -208,9 +227,9 @@ Puesta antes de empezar, como la semana 8 de LIBRERO. Si se define después, se 
 
 | Señal | Decisión |
 |---|---|
-| HF-1 ≥50%, HF-2 ≥40%, HF-3 ≥15% | **Perseverar.** Ir por el lado oferta: integrar stock real. |
+| HF-1 ≥50%, HF-2 ≥60%, HF-3 ≥40% | **Perseverar.** Ir por el lado oferta: integrar stock real. |
 | HF-1 <50% | **Arreglar el embudo antes que nada.** Ninguna otra hipótesis se puede leer si la gente no llega al final. |
-| HF-2 bien pero HF-3 <15% | La recomendación gusta y no mueve a nadie. **Pivot de modelo:** el valor no está en derivar clientes. |
+| HF-2 bien pero HF-3 <40% | La recomendación gusta y no mueve a nadie. **Pivot de modelo:** el valor no está en derivar clientes. |
 | HF-3 bien pero 0/6 librerías nombran un monto | La demanda existe y el que paga no. **Pivot de cliente:** ¿editoriales? ¿el propio lector? |
 | Concentración: 5 libros = 40% de las recomendaciones | No es un pivot, es un bug. **Arreglar el motor** antes de leer nada. |
 | Resultado ambiguo (todo en zona gris) | **No estirar el piloto.** Elegir UNA hipótesis y correr un experimento chico dedicado. |

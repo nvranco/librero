@@ -22,7 +22,38 @@ logger = logging.getLogger("librero.funes_chat")
 # Los que el QR y los links de la campana pueden setear via ?src=. Cualquier
 # otra cosa cae a 'link': el parametro viene de afuera y no queremos que un
 # valor arbitrario ensucie las cohortes con las que se leen las hipotesis.
-ORIGENES_VALIDOS = {"qr", "amigo", "flyer", "link"}
+#
+# Cada valor nombra una DISTANCIA SOCIAL, no un canal. Es la unica particion que
+# le importa al piloto: el conocido infla el veredicto por cortesia y el
+# desconocido no, y esa diferencia es lo unico que hace legible a HF-2. Un tag
+# de canal ("whatsapp") juntaria en el mismo balde a un amigo y a un estudiante
+# de un grupo de materia -los dos extremos exactos del sesgo- y la exclusion de
+# los amigos en piloto.COHORTES_VALIDAS dejaria de funcionar sin que nada avise.
+#
+#   directo   conocido del que manda el link. Se llama asi y no "amigo" porque
+#             el parametro queda a la vista en la barra del navegador, y
+#             etiquetar a alguien de amigo en la URL que le mandas es raro. Lo
+#             que nombra sigue siendo la distancia social, no el canal. Si lo
+#             reenvia a los suyos siguen contando como directo: se los trata
+#             como mas sesgados de lo que son, y eso solo descarta datos, nunca
+#             contamina el numero.
+#   whatsapp  los grupos de materias de la facultad. Es un nombre de canal, y
+#             se banca serlo por una razon concreta: en este piloto NADIE MAS
+#             recibe el link por ahi -los conocidos van por 'directo'-, asi que
+#             el tag mapea uno a uno con una poblacion de desconocidos. El dia
+#             que se mande un whatsapp a un conocido, este tag deja de
+#             significar lo que dice y hay que partirlo.
+#   qr        cualquier codigo o volante impreso. Absorbe a 'flyer': el poster
+#             en el pasillo y el papelito en la calle terminaron siendo la
+#             misma cosa.
+#   flyer     legado. Ya no se reparte, pero hay filas guardadas con este valor
+#             y el tablero las tiene que poder mostrar.
+#   link      lo que llega sin ?src=. Es un cajon de sastre -visitas directas,
+#             crawlers, la URL compartida sin parametros-, asi que NO se le
+#             puede atribuir ninguna distancia social. Por eso los conocidos
+#             tienen que ir con su tag y no con el link pelado: mezclarlos aca
+#             deja a HF-2 sin forma de sacarlos.
+ORIGENES_VALIDOS = {"qr", "directo", "whatsapp", "flyer", "link"}
 
 
 def normalizar_origen(src: str | None) -> str:
