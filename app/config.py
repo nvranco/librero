@@ -50,6 +50,16 @@ POSTHOG_KEY = os.environ.get("POSTHOG_KEY", "")
 # una transferencia internacional de datos que la pagina de privacidad declara.
 POSTHOG_HOST = os.environ.get("POSTHOG_HOST", "https://us.i.posthog.com")
 
+# El dominio propio de Funes, sin esquema (ireneofunes.up.railway.app). Cuando
+# esta puesto, las paginas del recomendador que una persona puede compartir se
+# redirigen ahi desde cualquier otro host, y la raiz de ese dominio abre el chat.
+#
+# Vacia = no se redirige nada, y esa es la unica razon por la que es una variable
+# de entorno y no una constante: en local y en el banco el host es 127.0.0.1, y
+# una constante mandaria las pruebas contra produccion. De paso, mudarse a un
+# dominio propio de verdad es cambiar esto y no volver a deployar.
+DOMINIO_FUNES = os.environ.get("DOMINIO_FUNES", "").strip().lower()
+
 # Dia 2. Se leen ahora para no volver a tocar este archivo.
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "google/gemini-2.5-flash")

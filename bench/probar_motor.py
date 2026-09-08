@@ -576,6 +576,65 @@ def probar_empujon() -> None:
        "sin marca no se toca nada y el empujon queda vacio")
 
 
+def probar_dominio() -> None:
+    """Que la mudanza de Funes a su dominio mueva lo que se comparte y nada mas.
+
+    Esta regla vive en un middleware, o sea antes de todo el ruteo, y un error
+    aca no se ve como una pagina rota: se ve como un embudo que de golpe no
+    distingue cohortes, o como una conversacion que se corta a la mitad en la
+    pestaña de alguien. Las dos cosas se descubren tarde y no se pueden
+    reconstruir, asi que se prueban antes.
+    """
+    from app import main
+
+    print()
+    print("el dominio propio de Funes")
+
+    viejo = main.DOMINIO_FUNES
+    try:
+        main.DOMINIO_FUNES = ""
+        ok(main.destino_de_funes("librero-app-production.up.railway.app", "GET", "/funes") is None,
+           "sin la variable puesta no se redirige nada (local y banco)")
+
+        main.DOMINIO_FUNES = "ireneofunes.up.railway.app"
+        d = main.destino_de_funes
+
+        # --- lo que se comparte se muda -----------------------------------
+        VIEJO = "librero-app-production.up.railway.app"
+        ok(d(VIEJO, "GET", "/funes") == "https://ireneofunes.up.railway.app/funes",
+           "el chat se muda al dominio nuevo")
+        ok(d(VIEJO, "GET", "/funes/", "src=whatsapp")
+           == "https://ireneofunes.up.railway.app/funes?src=whatsapp",
+           "y se lleva el ?src=, que es la cohorte del piloto")
+        ok(d(VIEJO, "GET", "/funes/privacidad") is not None, "la pagina de privacidad tambien")
+        ok(d(VIEJO, "GET", "/funes/qr.png", "src=qr") is not None,
+           "y el QR, para que un codigo impreso lleve al dominio nuevo")
+
+        # --- lo que NO se muda, que es lo que importa ---------------------
+        for metodo, camino, por_que in (
+            ("POST", "/funes/sesion", "un POST del chat: mudarlo lo vuelve cross-origin y corta la charla"),
+            ("POST", "/funes/recomendar", "idem con la recomendacion"),
+            ("POST", "/funes/veredicto", "idem con el veredicto, que es la metrica del piloto"),
+            ("GET", "/funes/ml/callback", "el callback de ML: su URL esta registrada en un tercero"),
+            ("GET", "/funes/admin/UNTOKEN/piloto", "el tablero, que no se comparte con nadie"),
+            ("GET", "/babilonia", "el catalogo de una libreria: LIBRERO no se toca"),
+            ("GET", "/health", "el healthcheck de Railway"),
+        ):
+            ok(d(VIEJO, metodo, camino) is None, f"NO se muda {camino}: {por_que}")
+
+        # --- del lado del dominio nuevo -----------------------------------
+        NUEVO = "ireneofunes.up.railway.app"
+        ok(d(NUEVO, "GET", "/", "src=qr") == "https://ireneofunes.up.railway.app/funes?src=qr",
+           "la raiz del dominio propio abre el chat, con la cohorte intacta")
+        ok(d(NUEVO, "GET", "/funes") is None, "y el chat, ya en su casa, no rebota")
+        ok(d(NUEVO, "GET", "/babilonia") is None,
+           "LIBRERO sigue contestando tambien por el host nuevo: no se bloquea nada")
+        ok(d(NUEVO.upper(), "GET", "/") is not None,
+           "el host se compara en minusculas, que en HTTP no distingue")
+    finally:
+        main.DOMINIO_FUNES = viejo
+
+
 def probar_textos() -> None:
     print("\ntextos que entran al vector")
     respuestas = {"q0": "divulgacion", "q1": "vida", "q2": "corto", "q3": "explicacion", "q4": "Sheldrake"}
@@ -972,6 +1031,7 @@ async def main() -> None:
     probar_empujon()
     probar_validadores()
     probar_macro_unica()
+    probar_dominio()
 
     await db.conectar()
     try:
