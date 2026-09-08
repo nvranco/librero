@@ -529,6 +529,53 @@ def _filtro_por_forma() -> None:
 
 # ------------------------------------------------------- textos que se embeben
 
+def probar_empujon() -> None:
+    """Que el marcador del empujon nunca llegue a la pantalla.
+
+    El empujon es el cuarto mensaje: viene en la misma respuesta del LLM y se
+    guarda hasta que la persona dice que la recomendacion le sirve. La marca que
+    lo separa es la UNICA excepcion a la regla de no usar dos puntos, y se banca
+    serlo con una condicion: que el cliente la corte antes de mostrar nada.
+
+    Si no la corta, el lector lee "EMPUJON:" en pantalla y la voz de Funes hace
+    lo unico que tiene prohibido, que es mostrar que atras hay un sistema. Y
+    depende de como el modelo decida escribir una linea, o sea de algo que no
+    controlamos: por eso se prueba variante por variante y no una sola vez."""
+    print()
+    print("el empujon se corta siempre, escriba el modelo como escriba")
+
+    def corta(crudo: str) -> tuple[str, str]:
+        return nucleo.partir_voz(crudo)
+
+    # El caso que aparecio en produccion: el modelo pego la marca al final del
+    # tercer mensaje en vez de darle linea propia, y salio todo impreso.
+    voz, emp = corta(
+        "Entonces, te recomiendo Un mundo feliz, de Aldous Huxley.\n"
+        "En un futuro donde la felicidad esta garantizada por el condicionamiento.\n"
+        "Este libro te va a hacer reflexionar sobre lo que valoramos como normal. "
+        "EMPÚJON: Este libro es una distopia con una ironia filosa.")
+    ok("EMPÚJON" not in voz and "EMPUJON" not in voz.upper(),
+       "pegado al final de un mensaje: la marca no queda visible", voz[-60:])
+    ok(voz.strip().endswith("valoramos como normal."),
+       "y el mensaje que la traia se conserva, sin la marca")
+    ok(emp.startswith("Este libro es una distopia"), "el empujon sale entero", emp[:40])
+
+    for etiqueta, crudo in (
+        ("sin tilde", "Uno\nDos\nEMPUJON: Este libro tiene algo."),
+        ("con tilde en la O", "Uno\nDos\nEMPUJÓN: Este libro tiene algo."),
+        ("con tilde en la U", "Uno\nDos\nEMPÚJON: Este libro tiene algo."),
+        ("en minusculas", "Uno\nDos\nempujon: Este libro tiene algo."),
+        ("con espacio antes de los dos puntos", "Uno\nDos\nEMPUJON : Este libro tiene algo."),
+    ):
+        voz, emp = corta(crudo)
+        ok(voz == "Uno\nDos" and emp == "Este libro tiene algo.",
+           f"{etiqueta}: se corta igual", repr(voz))
+
+    voz, emp = corta("Uno\nDos\nTres.")
+    ok(voz == "Uno\nDos\nTres." and emp == "",
+       "sin marca no se toca nada y el empujon queda vacio")
+
+
 def probar_textos() -> None:
     print("\ntextos que entran al vector")
     respuestas = {"q0": "divulgacion", "q1": "vida", "q2": "corto", "q3": "explicacion", "q4": "Sheldrake"}
@@ -922,6 +969,7 @@ async def main() -> None:
     probar_filtros()
     probar_filtro_tema()
     probar_textos()
+    probar_empujon()
     probar_validadores()
     probar_macro_unica()
 

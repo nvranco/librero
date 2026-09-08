@@ -2216,21 +2216,42 @@ def _dicho_por_el_lector(respuestas: dict) -> str:
 # modelo devuelve tres mensajes en lugar de cuatro, cortar por posicion se
 # comeria el mensaje del "por que es para vos", que es el mas importante de los
 # tres. Sin marca, se pierde el empujon y no se rompe nada.
-_MARCAS_EMPUJON = ("EMPUJON:", "EMPUJÓN:")
+# La marca puede venir con cualquier combinacion de tildes (el prompt esta
+# escrito sin ellas, pero el modelo escribe en español y las pone), en
+# minusculas, y con espacio antes de los dos puntos. Se acepta todo eso: cada
+# variante que no matchea es un marcador visible en la pantalla del lector.
+_RE_EMPUJON = re.compile(r"EMP[UÚ]J[OÓ]N\s*:", re.IGNORECASE)
 
 
 def partir_voz(texto: str) -> tuple[str, str]:
-    """Devuelve (los mensajes que se muestran, el empujon) del texto crudo."""
+    """Devuelve (los mensajes que se muestran, el empujon) del texto crudo.
+
+    La marca se busca EN CUALQUIER PARTE de la linea y no solo al principio.
+    Antes se exigia que abriera una linea propia, y cuando el modelo la pegaba
+    al final del mensaje anterior -"...lo que valoramos como normal. EMPUJON:
+    Este libro es una distopia..."- no matcheaba nada y el marcador salia
+    impreso en la pantalla del lector, con el empujon entero atras. Paso en
+    produccion.
+
+    Eso convertia una desobediencia menor del modelo, sobre un formato que no
+    controlamos, en la unica cosa que la voz de Funes tiene prohibido hacer:
+    mostrar que atras hay un sistema. Ahora el corte no depende de donde puso el
+    salto de linea: lo que va antes de la marca se muestra, lo que va despues es
+    el empujon."""
     lineas = texto.split("\n")
     for i in range(len(lineas) - 1, -1, -1):
-        limpia = lineas[i].strip()
-        for marca in _MARCAS_EMPUJON:
-            if limpia.upper().startswith(marca):
-                del lineas[i]
-                return (
-                    "\n".join(l for l in lineas if l.strip()),
-                    limpia[len(marca):].strip(),
-                )
+        marca = _RE_EMPUJON.search(lineas[i])
+        if marca is None:
+            continue
+        antes = lineas[i][:marca.start()].strip()
+        empujon = lineas[i][marca.end():].strip()
+        # Si la marca venia pegada a un mensaje, ese mensaje se conserva; si
+        # tenia linea propia, la linea se va entera.
+        if antes:
+            lineas[i] = antes
+        else:
+            del lineas[i]
+        return "\n".join(l for l in lineas if l.strip()), empujon
     return texto, ""
 
 

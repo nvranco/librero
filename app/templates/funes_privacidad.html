@@ -4,9 +4,34 @@
    Funes se presenta con lo suyo. Se pisa solo aca y no se cambia en
    base.html a proposito: el panel de la libreria sigue con el suyo. #}
 {% block favicon %}<link rel="icon" href="/static/funes-favicon.svg" type="image/svg+xml">{% endblock %}
+{% block head %}
+<style>
+  /* Mismo trato que el chat: en pantalla ancha el banner llega de punta a
+     punta y el texto se lee mas grande. Abajo de 768px no cambia nada.
+
+     La columna la arman los hijos y no el envoltorio, para no estirar el
+     header con 100vw: esa unidad incluye la barra de scroll y 100% no, asi
+     que el banner saldria mas ancho que la pagina y agregaria scroll
+     horizontal.
+
+     La flecha es lo unico que necesita una regla propia. Va absoluta contra
+     el header, que ahora es tan ancho como la pestana, asi que sin esto
+     quedaria pegada al borde de la ventana y a 300px del titulo. `left` la
+     trae al borde de la columna. El max() la protege de pantallas justo por
+     encima del corte, donde la columna toca los bordes y calc() daria
+     negativo. */
+  @media (min-width: 768px) {
+    body > #envoltorio { max-width: none; }
+    #texto { max-width: 640px; margin-left: auto; margin-right: auto; width: 100%;
+             padding-left: 2rem; padding-right: 2rem; font-size: 1rem; }
+    #envoltorio header h1 { font-size: 1.75rem; }
+    #envoltorio header > a { left: max(0.5rem, calc(50% - 320px)); }
+  }
+</style>
+{% endblock %}
 
 {% block contenido %}
-<div class="min-h-screen flex flex-col">
+<div id="envoltorio" class="min-h-screen flex flex-col">
 
   <!-- La flecha va absoluta y no como primer hijo del flex: asi el titulo sigue
        centrado respecto de la pantalla y no respecto del espacio que sobra al
@@ -39,7 +64,7 @@
   <!-- Esta pagina la abre alguien que escaneo un QR en la calle y desconfia.
        Se escribe corta y en criollo a proposito: una pagina larga y notarial
        se cierra sin leer, y entonces no informo nada. -->
-  <div class="flex-1 px-5 py-6 safe-b text-sm leading-relaxed">
+  <div id="texto" class="flex-1 px-5 py-6 safe-b text-sm leading-relaxed">
     {# Cinco secciones: que es Funes, como funciona, que datos recolecta, si se
        pueden borrar y a quien escribirle. Las de datos van despues de las dos
        primeras porque el motivo de la recoleccion no se entiende sin ellas, y
