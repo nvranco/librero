@@ -370,6 +370,8 @@ let agotadoActual = false;
 // las profundas. Derivado, nunca hardcodeado: si manana se agrega una pregunta
 // en nucleo.py, la barra se reparte sola.
 let sesionId = "";
+// Si ya se le dijo a PostHog cual es esta conversacion. Ver guardarSesion().
+let avisadoAPosthog = false;
 let recomendacionActual = null;
 let promesaPrecio = null;
 // El cuarto mensaje de la voz, que viene con la recomendacion y no se
@@ -408,8 +410,21 @@ function guardarSesion() {
       // cruzarlos, y "cuando un numero sorprende hay que leer ESA charla" no se
       // podria hacer. El origen va al lado porque las cohortes no se leen
       // juntas, tampoco cuando se mira una grabacion.
-      if (sesionId && window.posthog) {
+      if (sesionId && window.posthog && !avisadoAPosthog) {
+        avisadoAPosthog = true;
         posthog.register({ sesion_funes: sesionId, origen: ORIGEN });
+        // register() solo marca los eventos que vengan DESPUES, y aca no viene
+        // ninguno: $pageview ya disparo al cargar -antes de que la sesion
+        // existiera- y la pagina nunca navega, porque es una sola pantalla que
+        // se reescribe sola. Sin este capture, ningun evento lleva el id y la
+        // grabacion queda sin forma de cruzarse con la bitacora. Medido en la
+        // primera visita real a produccion: llego $pageview y nada mas.
+        //
+        // Uno solo por conversacion, no uno por respuesta: guardarSesion()
+        // corre en cada una, y mandar un evento cada vez armaria en PostHog un
+        // embudo paralelo al de Postgres. Dos fuentes para el mismo numero es
+        // peor que una.
+        posthog.capture("funes_conversacion", { sesion_funes: sesionId, origen: ORIGEN });
       }
     } catch (err) { /* sin bitacora se sigue igual */ }
   });
