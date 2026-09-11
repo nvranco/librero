@@ -112,6 +112,23 @@ async def panel_home(request: Request, slug: str, token: str):
         """,
         libreria["id"],
     )
+
+    # "Lo que mas funciono" y "te buscaron y no lo tenias" del ciclo actual,
+    # para el panel — mismo calculo que la pagina de metricas completa
+    # (calcular_metricas es compartida a proposito), pero con los eventos
+    # recortados a desde_ciclo en vez de todo el historico: el panel muestra
+    # el ciclo actual en todo lo demas (vistas_ciclo, clics_ciclo) y mezclar
+    # un dato de toda la vida ahi rompería esa regla sin que se note.
+    filas_eventos_ciclo = await db.pool().fetch(
+        "SELECT tipo, payload, session_id, creado_en FROM eventos "
+        "WHERE libreria_id = $1 AND creado_en > $2",
+        libreria["id"], desde_ciclo,
+    )
+    filas_catalogos = await db.pool().fetch(
+        "SELECT id, nombre, color, padre_id FROM catalogos WHERE libreria_id = $1", libreria["id"]
+    )
+    metricas_ciclo = calcular_metricas(filas_eventos_ciclo, [], [], filas_catalogos)
+
     base = str(request.base_url).rstrip("/")
     return templates.TemplateResponse(
         request,
@@ -126,6 +143,8 @@ async def panel_home(request: Request, slug: str, token: str):
             "visitas_semana": visitas_semana,
             "total_semana": total_semana,
             "lotes_pendientes": lotes_pendientes,
+            "top_catalogos": metricas_ciclo["por_catalogo"][:3],
+            "top_busquedas_sin_resultado": metricas_ciclo["top_busquedas_sin_resultado"][:5],
             "url_publica": f"{base}/{slug}",
             "url_inventario": f"{base}/{slug}/panel/{token}/libros",
             "url_vender": f"{base}/{slug}/panel/{token}/vender",
