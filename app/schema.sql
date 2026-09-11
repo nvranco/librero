@@ -450,3 +450,29 @@ ALTER TABLE librerias ADD COLUMN IF NOT EXISTS funes_habilitado BOOLEAN NOT NULL
 ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS libreria_id INTEGER
     REFERENCES librerias(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS idx_funes_recomendaciones_sesion ON funes_recomendaciones(sesion_id, orden);
+
+-- Analizando el piloto de septiembre 2026 aparecio "Los extraños de M..." como
+-- la recomendacion mas repetida en cuanto se probaba _DOS_VECTORES contra las
+-- conversaciones reales: su abstracto es una ADIVINANZA ("no fue posible
+-- identificar con certeza la novela... se mantiene la hipotesis mas plausible
+-- segun su ubicacion fisica en el estante"), y un texto que no compromete nada
+-- cae cerca del centro del espacio de embeddings -exactamente lo que vuelve
+-- hub a un libro-. Un barrido sobre el catalogo entero (3.600 libros, las 3
+-- macros) encontro otros 3 con el mismo problema: el propio abstracto admite
+-- que no se sabe que libro es.
+--
+-- Se excluyen del recomendador poniendo el embedding en NULL -el mismo filtro
+-- que _libros() ya usa para "todavia no vectorizado", WHERE embedding IS NOT
+-- NULL-, no se borran: si algun dia se identifica el libro real, alcanza con
+-- corregir titulo/autor y volver a correr funes/reescribir_abstractos.py
+-- sobre ese id. El WHERE de abajo deja de matchear en cuanto corre una vez,
+-- asi que las corridas siguientes son no-op.
+UPDATE funes_libros
+SET embedding = NULL, embedding_experiencia = NULL,
+    confianza_abstracto = 'baja',
+    nota = 'Excluido del recomendador (piloto sept. 2026): el titulo no se '
+           'pudo identificar con certeza y el abstracto es una hipotesis, no '
+           'una descripcion real del libro.'
+WHERE id IN ('los-extranos-de-m', 'la-gilada', 'educacion-fisica-infantil',
+             'ciencia-ficcion-espacio')
+  AND embedding IS NOT NULL;

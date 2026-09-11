@@ -229,8 +229,7 @@
           "SUPERACION PERSONAL",
           "MATERNIDAD",
           "SEXUALIDAD",
-          "DICCIONARIOS",
-          "ENTRENAMIENTO Y PREP.FISICA"
+          "DICCIONARIOS"
         ],
         "nota": "q4 nombra dos autores. Prueba que la expansion del ancla no se quede solo con el primero."
       }
@@ -392,8 +391,7 @@
         "libros": [],
         "prohibido_generos": [
           "COCINA",
-          "DICCIONARIOS",
-          "ENTRENAMIENTO Y PREP.FISICA"
+          "DICCIONARIOS"
         ],
         "adversario": true,
         "nota": "'la vida secreta de' es titulo de dos libros del catalogo. Verifica cuantos titulos expulsa _menciono_el_libro: expulsar libros de divulgacion es inocuo aca (otra macro), pero la regla del primer tramo de titulo puede morder de mas."
