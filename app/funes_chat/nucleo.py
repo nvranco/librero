@@ -74,25 +74,48 @@ _CENTRAR = False
 # testimonio) cuando la persona pidio justamente lo tipico.
 _ALFA_CENTRADO = 1.0
 
-# Comparar cada consulta contra el texto del libro que le corresponde.
-# Cada libro tiene dos textos vectorizados: `sinopsis` (de que trata) y
-# `experiencia` (que es leerlo). Y el lector dice dos cosas distintas: elige
-# opciones que describen una experiencia ("algo corto que me atrape") y da
-# como referencia un contenido ("Sapiens"). Contra un solo parrafo que mezcla
-# las dos cosas, cada consulta compite tambien con la mitad que no le
-# corresponde. Los libros que todavia no tienen `experiencia` caen a la
-# sinopsis, asi que un catalogo a medio reescribir funciona igual.
+# Comparar el perfil (q1-q3) y el ajuste (profundas) contra `experiencia` (que
+# es leerlo) en vez de contra el `embedding` de siempre, que sale de
+# `abstracto` y mezcla eso con de que trata el libro. El lector dice dos cosas
+# distintas -elige opciones que describen una experiencia ("algo corto que me
+# atrape") y da como referencia un contenido ("Sapiens")- y contra un solo
+# parrafo que mezcla las dos, cada consulta compite tambien con la mitad que
+# no le corresponde. Los libros que todavia no tienen `experiencia` caen al
+# `embedding` de siempre (no hay `embedding_sinopsis`: esa mitad del diseño
+# original nunca se llego a construir), asi que un catalogo a medio reescribir
+# funciona igual, sin romperse. El ancla y la correccion siguen comparandose
+# contra `embedding` pase lo que pase con este flag -ver _puntaje-, otra
+# consecuencia del mismo hueco.
 #
-# APAGADO. Medido con los 24 lectores del banco sobre el catalogo ya
-# reescrito: el puntaje del juez queda igual (3,11 contra 3,12) pero el
-# acierto en la PRIMERA recomendacion cae de 4 a 1 sobre 18, y la primera es
-# la que casi todos miran. A cambio da mas variedad (66 titulos distintos
-# contra 59) y hace que las preguntas profundas decidan de verdad (cambian al
-# ganador en 10 de 24 casos contra 5), asi que no es una mala idea: es una
-# idea sin evidencia todavia. Se prende el dia que haya veredictos de gente
-# real, que es la unica vara que puede zanjar entre acertar primero y
-# mostrar mas cosas.
-_DOS_VECTORES = False
+# Estuvo apagado con esta razon: contra los 24 lectores del banco (el juez
+# offline), el puntaje quedaba igual (3,11 contra 3,12) pero el acierto en la
+# PRIMERA recomendacion caia de 4 a 1 sobre 18 -la que casi todo el mundo
+# mira-, a cambio de mas variedad (66 titulos distintos contra 59). La nota
+# de entonces pedia esperar veredictos de gente real para decidir entre
+# acertar primero y mostrar mas cosas.
+#
+# El piloto de septiembre 2026 dio esa evidencia, pero por el lado de la
+# concentracion y no del acierto: un contrafactual sobre las 236
+# recomendaciones reales (mismos filtros, mismo ya_mostrados, misma ancla,
+# reembebiendo solo lo que hacia falta) mostro que los 3 hubs que aparecieron
+# en el piloto -"La mujer justa" 21/236, "Narciso y Goldmundo" 9/236, "Hasta
+# la proxima estacion" 7/236 con el motor de siempre- caen a 4, 0 y 0 con este
+# flag puesto. El primer intento trajo un efecto secundario real: destapo un
+# libro con el titulo truncado y el abstracto adivinado ("Los extraños de
+# M...", ver schema.sql) como nuevo lider -un problema de catalogo, no de este
+# mecanismo-, que ya se excluyo aparte. Repetido despues de esa limpieza, los
+# lideres nuevos ("La estrella prohibida", "La Regenta", "Volkhavaar") son
+# fichas reales y bien escritas. _CENTRAR encima de esto no sumo casi nada en
+# ninguna de las dos corridas, asi que no vale la pena sumarle su propio
+# riesgo: sigue en False, sin cambios.
+#
+# Sigue sin haber veredictos reales de gente sobre ESTAS recomendaciones -el
+# contrafactual dice que libro hubiera ganado, no si a alguien le gusto mas o
+# menos-, asi que la caida de acierto en la primera recomendacion que broke el
+# juez offline sigue siendo una incognita real. Por eso conviene medirlo en
+# vivo contra el piloto que sigue corriendo (comparando por fecha de deploy,
+# no contra el juez) antes de confiar en esto a ciegas.
+_DOS_VECTORES = True
 
 # Si q1 puede recortar el catalogo por subgenero ademas de orientar el vector.
 # Hoy solo lo declara historia (ver PREGUNTAS["q1"]).

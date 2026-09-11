@@ -203,26 +203,30 @@ def probar_filtros() -> None:
     l["_norma"] = 1.0
     l["embedding_experiencia"] = arr2("f", [0.0, 1.0, 0.0])
     l["_norma_experiencia"] = 1.0
-    sinopsis = nucleo._coseno_con_norma([1.0, 0.0, 0.0], 1.0, l)
-    experiencia = nucleo._coseno_con_norma([1.0, 0.0, 0.0], 1.0, l, "experiencia")
-    ok(not nucleo._DOS_VECTORES, "los dos vectores estan apagados (medido, ver el comentario)")
-    ok(abs(sinopsis - 1.0) < 1e-6, "se compara contra el vector de siempre")
-    nucleo._DOS_VECTORES = True
-    try:
-        experiencia = nucleo._coseno_con_norma([1.0, 0.0, 0.0], 1.0, l, "experiencia")
-        ok(abs(experiencia) < 1e-6, "prendido, la experiencia usa su propio vector")
-    finally:
-        nucleo._DOS_VECTORES = False
-
     viejo = dict(libro("uno", "Sin reescribir", "literatura"), autor="B B")
     viejo["embedding"] = arr2("f", [1.0, 0.0, 0.0])
     viejo["_norma"] = 1.0
-    nucleo._DOS_VECTORES = True
+
+    # El mecanismo se prueba en los dos estados sin asumir cual es el de
+    # produccion (eso cambio una vez ya -_DOS_VECTORES paso a True con el
+    # piloto de septiembre 2026, ver el comentario junto a la constante- y
+    # esta prueba no tiene por que saberlo ni romperse la proxima vez).
+    previo = nucleo._DOS_VECTORES
     try:
+        nucleo._DOS_VECTORES = False
+        sinopsis = nucleo._coseno_con_norma([1.0, 0.0, 0.0], 1.0, l)
+        ok(abs(sinopsis - 1.0) < 1e-6, "se compara contra el vector de siempre")
+        experiencia_apagado = nucleo._coseno_con_norma([1.0, 0.0, 0.0], 1.0, l, "experiencia")
+        ok(abs(experiencia_apagado - 1.0) < 1e-6,
+           "apagado, 'experiencia' tambien cae al vector de siempre")
+
+        nucleo._DOS_VECTORES = True
+        experiencia = nucleo._coseno_con_norma([1.0, 0.0, 0.0], 1.0, l, "experiencia")
+        ok(abs(experiencia) < 1e-6, "prendido, la experiencia usa su propio vector")
         ok(abs(nucleo._coseno_con_norma([1.0, 0.0, 0.0], 1.0, viejo, "experiencia") - 1.0) < 1e-6,
            "un libro sin reescribir cae a su unico vector, no da cero")
     finally:
-        nucleo._DOS_VECTORES = False
+        nucleo._DOS_VECTORES = previo
 
     print("\nlibros que la persona ya leyo")
     catalogo_leidos = [
@@ -829,9 +833,18 @@ async def probar_rebusqueda() -> None:
     por puntaje. Aca se prueba justo eso, con el catalogo real y sin llamar a
     ninguna API: el vector de la correccion se fabrica copiando el embedding de
     un libro que quedo afuera del top-8, que es el caso extremo -"quiero
-    exactamente esto"- y el que antes no podia ganar nunca."""
+    exactamente esto"- y el que antes no podia ganar nunca.
+
+    _DOS_VECTORES se apaga durante esta prueba: lo que se verifica es que la
+    correccion (peso 0,35, coseno perfecto fabricado) alcanza para ganarle a
+    TODO el pool, y con dos_vectores prendido el termino de perfil compite en
+    otro eje (contra `embedding_experiencia`) que puede darle a otro libro un
+    puntaje mas alto ahi, un efecto real pero que no tiene nada que ver con lo
+    que esta prueba quiere demostrar."""
     print()
     print("re-busqueda: la correccion compite contra todo el pool")
+    previo_dos_vectores = nucleo._DOS_VECTORES
+    nucleo._DOS_VECTORES = False
     perfil = {"q0": "literatura", "q1": "narrativa", "q1b": "novela",
               "q2": "intermedio", "q3": "trama",
               "q4a": "Stephen King", "q4b": "que enganche y no pueda soltarlo"}
@@ -872,6 +885,7 @@ async def probar_rebusqueda() -> None:
        "el desglose de la bitacora trae el coseno de la correccion")
     ok(nucleo._puntaje_detalle(vector, norma, ancla, objetivo)["correccion"] is None,
        "y es None cuando no hubo correccion, que es toda primera recomendacion")
+    nucleo._DOS_VECTORES = previo_dos_vectores
 
 
 async def probar_perfiles() -> None:
