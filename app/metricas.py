@@ -11,6 +11,12 @@ from collections import Counter
 
 from app.colores import color_catalogo
 
+# Cuantos eventos como maximo viajan al HTML para "Actividad reciente". La
+# tarjeta pagina de a 15 del lado del cliente (ver metricas.html), asi que
+# esto es el techo de cuanto se puede hojear hacia atras, no el tamaño de
+# pagina.
+TOPE_EVENTOS_RECIENTES = 150
+
 
 def calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos) -> dict:
     eventos = []
@@ -108,7 +114,11 @@ def calcular_metricas(filas_eventos, filas_libros, filas_lotes, filas_catalogos)
         "lotes": filas_lotes,
         "top_busquedas_sin_resultado": top_busquedas_sin_resultado,
         "top_libros_consultados": top_libros_consultados,
-        "eventos_recientes": eventos[:40],
+        # El tope existia para no volcar el historico entero al HTML; ahora
+        # que la tarjeta pagina de a 15 (ver metricas.html) conviene un tope
+        # mas generoso, para que "cargar mas paginas" tenga con que trabajar
+        # antes de quedarse corto.
+        "eventos_recientes": eventos[:TOPE_EVENTOS_RECIENTES],
         # Solo catalogos con al menos una vista: esto es un ranking de "lo
         # que funciono", no un listado completo — un catalogo borrado que
         # solo dejo una busqueda huerfana (nombre "?") no aporta nada aca.

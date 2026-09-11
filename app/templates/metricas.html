@@ -131,32 +131,79 @@
   </div>
   {% endif %}
 
-  <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">🕒 Actividad reciente</h2>
-  <div class="bg-papel border border-borde rounded-xl2 divide-y divide-borde mb-10">
-    {% for e in eventos_recientes %}
-    <div class="px-4 py-2 text-sm flex items-start justify-between gap-3">
-      <div class="min-w-0">
-        <p class="font-medium">
-          {% if e.tipo == 'vista' %}👀 Vista{% if e.payload.src %} ({{ e.payload.src }}){% endif %}
-          {% elif e.tipo == 'busqueda' %}🔎 Búsqueda: "{{ e.payload.q }}" — {{ e.payload.resultados }} resultado{{ 's' if e.payload.resultados != 1 else '' }}
-          {% elif e.tipo == 'clic_whatsapp' %}💬 WhatsApp{% if e.payload.generico %} (genérico){% elif e.payload.titulo %}: {{ e.payload.titulo }}{% endif %}
-          {% elif e.tipo == 'inventario_reiniciado' %}🧹 Inventario reiniciado ({{ e.payload.libros_archivados }} libros)
-          {% elif e.tipo == 'lote_publicado' %}📚 Lote publicado ({{ e.payload.publicados }} libro{{ 's' if e.payload.publicados != 1 else '' }})
-          {% elif e.tipo == 'ventas_confirmadas' %}💰 Venta confirmada ({{ e.payload.cantidad }} libro{{ 's' if e.payload.cantidad != 1 else '' }})
-          {% elif e.tipo == 'catalogo_creado' %}🗂️ Catálogo creado: {{ e.payload.nombre }}
-          {% elif e.tipo == 'catalogo_editado' %}✏️ Catálogo editado: {{ e.payload.nombre }}
-          {% elif e.tipo == 'catalogo_borrado' %}🗑️ Catálogo borrado
-          {% elif e.tipo == 'lote_catalogo_asignado' %}🗂️ Lote asignado a catálogo
-          {% else %}{{ e.tipo }}
-          {% endif %}
-        </p>
+  <div class="mb-10">
+    <h2 class="text-sm font-bold text-gris uppercase tracking-wide mb-2">🕒 Actividad reciente</h2>
+    <div id="actividad-lista" class="bg-papel border border-borde rounded-xl2 divide-y divide-borde">
+      {% for e in eventos_recientes %}
+      <div class="fila-evento px-4 py-2 text-sm flex items-start justify-between gap-3" data-pagina="{{ loop.index0 // 15 }}">
+        <div class="min-w-0">
+          <p class="font-medium">
+            {% if e.tipo == 'vista' %}👀 Vista{% if e.payload.src %} ({{ e.payload.src }}){% endif %}
+            {% elif e.tipo == 'busqueda' %}🔎 Búsqueda: "{{ e.payload.q }}" — {{ e.payload.resultados }} resultado{{ 's' if e.payload.resultados != 1 else '' }}
+            {% elif e.tipo == 'clic_whatsapp' %}💬 WhatsApp{% if e.payload.generico %} (genérico){% elif e.payload.titulo %}: {{ e.payload.titulo }}{% endif %}
+            {% elif e.tipo == 'inventario_reiniciado' %}🧹 Inventario reiniciado ({{ e.payload.libros_archivados }} libros)
+            {% elif e.tipo == 'lote_publicado' %}📚 Lote publicado ({{ e.payload.publicados }} libro{{ 's' if e.payload.publicados != 1 else '' }})
+            {% elif e.tipo == 'ventas_confirmadas' %}💰 Venta confirmada ({{ e.payload.cantidad }} libro{{ 's' if e.payload.cantidad != 1 else '' }})
+            {% elif e.tipo == 'catalogo_creado' %}🗂️ Catálogo creado: {{ e.payload.nombre }}
+            {% elif e.tipo == 'catalogo_editado' %}✏️ Catálogo editado: {{ e.payload.nombre }}
+            {% elif e.tipo == 'catalogo_borrado' %}🗑️ Catálogo borrado
+            {% elif e.tipo == 'lote_catalogo_asignado' %}🗂️ Lote asignado a catálogo
+            {% else %}{{ e.tipo }}
+            {% endif %}
+          </p>
+        </div>
+        <span class="text-xs text-gris shrink-0 whitespace-nowrap">{{ e.creado_en.strftime('%d/%m %H:%M') }}</span>
       </div>
-      <span class="text-xs text-gris shrink-0 whitespace-nowrap">{{ e.creado_en.strftime('%d/%m %H:%M') }}</span>
+      {% else %}
+      <p class="px-4 py-6 text-center text-sm text-gris">Todavía no hay actividad registrada.</p>
+      {% endfor %}
     </div>
-    {% else %}
-    <p class="px-4 py-6 text-center text-sm text-gris">Todavía no hay actividad registrada.</p>
-    {% endfor %}
+    {% if eventos_recientes|length > 15 %}
+    <div class="flex items-center justify-between mt-2">
+      <button type="button" id="actividad-anterior"
+        class="tap rounded-lg px-3 py-1.5 text-sm font-medium border border-borde disabled:opacity-40 disabled:pointer-events-none">
+        ← Anterior
+      </button>
+      <span id="actividad-pagina-label" class="text-xs text-gris"></span>
+      <button type="button" id="actividad-siguiente"
+        class="tap rounded-lg px-3 py-1.5 text-sm font-medium border border-borde disabled:opacity-40 disabled:pointer-events-none">
+        Siguiente →
+      </button>
+    </div>
+    {% endif %}
   </div>
   </main>
+
+  <script>
+    // Paginacion de "Actividad reciente", del lado del cliente: los eventos
+    // ya vienen todos en el HTML (hasta TOPE_EVENTOS_RECIENTES, ver
+    // metricas.py), asi que hojear hacia atras no pide nada al servidor.
+    // `style.display` y no la clase `hidden`: las filas ya tienen `flex`, y
+    // Tailwind resuelve ese empate de especificidad a favor de `flex`, asi
+    // que `hidden` a veces no ocultaba nada.
+    (function () {
+      const filas = Array.from(document.querySelectorAll('#actividad-lista .fila-evento'));
+      const btnAnterior = document.getElementById('actividad-anterior');
+      const btnSiguiente = document.getElementById('actividad-siguiente');
+      if (!filas.length || !btnAnterior) return;
+
+      const totalPaginas = Math.max(...filas.map((f) => Number(f.dataset.pagina))) + 1;
+      let pagina = 0;
+
+      function render() {
+        filas.forEach((f) => {
+          f.style.display = Number(f.dataset.pagina) === pagina ? '' : 'none';
+        });
+        document.getElementById('actividad-pagina-label').textContent =
+          `Página ${pagina + 1} de ${totalPaginas}`;
+        btnAnterior.disabled = pagina === 0;
+        btnSiguiente.disabled = pagina === totalPaginas - 1;
+      }
+
+      btnAnterior.addEventListener('click', () => { if (pagina > 0) { pagina -= 1; render(); } });
+      btnSiguiente.addEventListener('click', () => { if (pagina < totalPaginas - 1) { pagina += 1; render(); } });
+      render();
+    })();
+  </script>
 </div>
 {% endblock %}
