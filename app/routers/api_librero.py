@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from app import db, vision
 from app.colores import PALETA_CATALOGOS
 from app.config import DATA_DIR
+from app.funes_chat import nucleo as funes_nucleo
 from app.tokens import clave_libro, slugify, titulo_sin_subtitulo
 
 _CLAVES_COLOR_VALIDAS = {c["clave"] for c in PALETA_CATALOGOS}
@@ -357,6 +358,9 @@ async def actualizar_libro(slug: str, token: str, libro_id: int, cambios: Actual
     )
     if resultado == "UPDATE 0":
         raise HTTPException(status_code=404)
+    # Titulo/autor pueden haber cambiado: el cruce contra Babilonia que usa
+    # Funes por libreria (nucleo.ids_por_libreria) queda vencido.
+    funes_nucleo.invalidar_mascara_libreria(libreria["slug"])
     return {"ok": True}
 
 
@@ -387,6 +391,7 @@ async def publicar_lote(slug: str, token: str, lote_id: int):
         "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'lote_publicado', $2::jsonb)",
         libreria["id"], json.dumps({"lote_id": lote_id, "publicados": cant_publicados}),
     )
+    funes_nucleo.invalidar_mascara_libreria(libreria["slug"])
     logger.info("lote_finalizado lote_id=%s accion=publicar publicados=%s", lote_id, cant_publicados)
     return {"ok": True, "publicados": cant_publicados}
 
@@ -417,6 +422,7 @@ async def eliminar_libro(slug: str, token: str, libro_id: int):
     )
     if resultado == "DELETE 0":
         raise HTTPException(status_code=404)
+    funes_nucleo.invalidar_mascara_libreria(libreria["slug"])
     return {"ok": True}
 
 
@@ -491,6 +497,7 @@ async def reiniciar_inventario(slug: str, token: str):
         "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'inventario_reiniciado', $2::jsonb)",
         libreria["id"], json.dumps({"libros_archivados": cant}),
     )
+    funes_nucleo.invalidar_mascara_libreria(libreria["slug"])
     logger.info("inventario_reiniciado libreria_id=%s libros=%s", libreria["id"], cant)
     return {"ok": True, "archivados": cant}
 
@@ -582,6 +589,7 @@ async def confirmar_vendidos(slug: str, token: str, datos: ConfirmarVentas):
         "INSERT INTO eventos (libreria_id, tipo, payload) VALUES ($1, 'ventas_confirmadas', $2::jsonb)",
         libreria["id"], json.dumps({"cantidad": cant}),
     )
+    funes_nucleo.invalidar_mascara_libreria(libreria["slug"])
     logger.info("ventas_confirmadas libreria_id=%s cantidad=%s", libreria["id"], cant)
     return {"ok": True, "vendidos": cant}
 

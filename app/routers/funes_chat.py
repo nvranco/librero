@@ -115,6 +115,13 @@ class RespuestasFijas(BaseModel):
     # q4b es la que se exige donde se pregunta (ver RespuestasCompletas).
     q4a: str = Field("", max_length=300)
     q4b: str = Field("", max_length=600)
+    # El slug de la libreria cuando la charla arranco en /funes/{slug}. No es
+    # una pregunta -no entra al vector, no se le muestra a nadie-, solo acota
+    # que libros puede recomendar el motor (ver nucleo._candidatos). Vacio es
+    # el Funes de siempre, sin recorte. Se valida contra la base recien en
+    # nucleo.ids_por_libreria: un slug inventado no rompe nada, simplemente no
+    # recorta (ver ahi el porque).
+    libreria: str = Field("", max_length=80)
 
     @field_validator("q0", "q1", "q1b", "q2", "q3")
     @classmethod
@@ -290,35 +297,63 @@ def _respuestas(cuerpo: RespuestasFijas) -> dict:
     Es tambien el UNICO lugar por donde las respuestas entran al motor (los
     cinco endpoints pasan por aca). La macro ya viene fijada de mas arriba, del
     validador de q0: tiene que estar puesta ANTES de que se validen las demas,
-    porque q1b y q4b se aceptan o se rechazan segun cual sea."""
-    return cuerpo.model_dump(include=set(nucleo.PREGUNTAS))
+    porque q1b y q4b se aceptan o se rechazan segun cual sea.
+
+    `libreria` se agrega aparte porque no es una pregunta -no esta en
+    nucleo.PREGUNTAS- pero igual tiene que llegar al motor (ver
+    nucleo._candidatos)."""
+    return cuerpo.model_dump(include=set(nucleo.PREGUNTAS) | {"libreria"})
 
 
-@router.get("/funes", response_class=HTMLResponse)
-async def pagina(request: Request):
+async def _contexto_chat(request: Request) -> dict:
     # ?src= separa las cohortes de la prueba piloto (QR en la calle vs. link
     # mandado a un amigo). Mismo mecanismo que usa el catalogo publico en
     # routers/publico.py, porque las dos cohortes no se pueden leer juntas: los
     # amigos inflan la opinion, los desconocidos no.
     origen = bitacora.normalizar_origen(request.query_params.get("src"))
-    return templates.TemplateResponse(
-        request,
-        "funes_chat.html",
-        {
-            "posthog_key": POSTHOG_KEY,
-            "posthog_host": POSTHOG_HOST,
-            "preguntas_js": _js(nucleo.preguntas_publicas()),
-            # La macro que el piloto ofrece, o null si estan las tres. El
-            # cliente la siembra en `respuestas` y por eso no la pregunta.
-            "macro_fija_js": _js(nucleo.MACRO_UNICA),
-            # El saludo de Funes dice cuantos libros tiene. Va como dato y no
-            # escrito en el template para que acompane al catalogo solo.
-            "cant_libros_js": _js(await nucleo.cantidad_libros()),
-            "origen_js": _js(origen),
-            "base_url": _base_absoluta(request),
-            "og_version": _version_og(),
-        },
+    return {
+        "posthog_key": POSTHOG_KEY,
+        "posthog_host": POSTHOG_HOST,
+        "preguntas_js": _js(nucleo.preguntas_publicas()),
+        # La macro que el piloto ofrece, o null si estan las tres. El
+        # cliente la siembra en `respuestas` y por eso no la pregunta.
+        "macro_fija_js": _js(nucleo.MACRO_UNICA),
+        # El saludo de Funes dice cuantos libros tiene. Va como dato y no
+        # escrito en el template para que acompane al catalogo solo.
+        "cant_libros_js": _js(await nucleo.cantidad_libros()),
+        "origen_js": _js(origen),
+        "base_url": _base_absoluta(request),
+        "og_version": _version_og(),
+    }
+
+
+@router.get("/funes", response_class=HTMLResponse)
+async def pagina(request: Request):
+    return templates.TemplateResponse(request, "funes_chat.html", await _contexto_chat(request))
+
+
+@router.get("/funes/{slug}", response_class=HTMLResponse)
+async def pagina_libreria(request: Request, slug: str):
+    """El mismo chat, acotado al catalogo de una libreria puntual (ver
+    nucleo.ids_por_libreria). Publica y sin token, igual que el catalogo
+    publico /{slug}: el QR del folleto la abre directo, nadie gestiona nada
+    aca. 404 y no una pagina vacia si la libreria no existe, no esta activa o
+    no tiene Funes habilitado -mismo criterio 404-no-401 que el resto del
+    panel, no confirmamos que la ruta existe."""
+    libreria = await db.pool().fetchrow(
+        "SELECT nombre, whatsapp, mensaje_wa_template FROM librerias "
+        "WHERE slug = $1 AND activa AND funes_habilitado AND tipo_catalogo = 'libros'",
+        slug,
     )
+    if libreria is None:
+        raise HTTPException(status_code=404)
+    contexto = await _contexto_chat(request)
+    contexto.update({
+        "libreria_slug_js": _js(slug),
+        "whatsapp_js": _js(libreria["whatsapp"]),
+        "mensaje_wa_template_js": _js(libreria["mensaje_wa_template"]),
+    })
+    return templates.TemplateResponse(request, "funes_chat.html", contexto)
 
 
 @router.get("/funes/qr.png")

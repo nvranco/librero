@@ -433,4 +433,20 @@ CREATE TABLE IF NOT EXISTS funes_leidos (
 
 CREATE INDEX IF NOT EXISTS idx_funes_libros_macro ON funes_libros(macro) WHERE embedding IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_funes_sesiones_fecha ON funes_sesiones(creado_en);
+
+-- Funes por libreria: /funes/{slug} ofrece el mismo recomendador pero acotado
+-- a los libros que esa libreria tiene publicados (cruce por titulo/autor
+-- contra funes_libros, resuelto en memoria — ver nucleo.ids_por_libreria, no
+-- hay tabla de matches ni denormalizacion). funes_habilitado es manual (se
+-- prende desde /admin, como tipo_catalogo) y solo tiene sentido con
+-- tipo_catalogo='libros': Funes hoy no sabe nada de CDs.
+ALTER TABLE librerias ADD COLUMN IF NOT EXISTS funes_habilitado BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Solo para que el panel de piloto pueda filtrar/agrupar conversaciones por
+-- libreria. El scoping real de la recomendacion NO pasa por aca (funes_chat.py
+-- nunca lee funes_sesiones para armar el pool, ver nucleo.ids_por_libreria):
+-- se cae de la misma columna extra que ya viajan q1-q4, no la usa nadie salvo
+-- la bitacora.
+ALTER TABLE funes_sesiones ADD COLUMN IF NOT EXISTS libreria_id INTEGER
+    REFERENCES librerias(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS idx_funes_recomendaciones_sesion ON funes_recomendaciones(sesion_id, orden);

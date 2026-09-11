@@ -49,6 +49,10 @@
         >{{ mensaje_wa_default }}</textarea>
       <p class="text-xs text-gris mt-1">Usá {{ '{titulo}' }} y {{ '{autor}' }} — se completan solos.</p>
     </div>
+    <label class="flex items-center gap-2 text-sm">
+      <input type="checkbox" name="funes_habilitado" class="tap w-4 h-4">
+      Habilitar Funes (recomendador con IA, solo literatura)
+    </label>
     <button type="submit"
       class="tap btn-primario w-full rounded-xl2 font-bold text-lg">
       Crear librería
@@ -73,6 +77,12 @@
             class="tap btn-secundario rounded-lg px-3 flex items-center text-sm font-medium">
             Métricas 📊
           </a>
+          {% if lib.tipo_catalogo == 'libros' %}
+          <button type="button" data-accion="toggle-funes"
+            class="tap rounded-lg px-3 flex items-center text-sm font-medium border-2 {{ 'border-celeste text-celeste' if lib.funes_habilitado else 'border-borde text-gris' }}">
+            Funes: {{ 'ON' if lib.funes_habilitado else 'OFF' }}
+          </button>
+          {% endif %}
           <button type="button" data-accion="borrar"
             class="tap rounded-lg px-3 flex items-center text-sm font-medium text-terracota border-2 border-terracota">
             Borrar
@@ -119,6 +129,27 @@
     const btnBorrar = tarjeta.querySelector('[data-accion="borrar"]');
     const btnConfirmar = tarjeta.querySelector('[data-accion="confirmar-borrar"]');
     const btnCancelar = tarjeta.querySelector('[data-accion="cancelar-borrar"]');
+    const btnFunes = tarjeta.querySelector('[data-accion="toggle-funes"]');
+
+    if (btnFunes) {
+      btnFunes.addEventListener('click', async () => {
+        btnFunes.disabled = true;
+        try {
+          const resp = await fetch(`/admin/${TOKEN_ADMIN}/librerias/${id}/funes`, { method: 'POST' });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const datos = await resp.json();
+          btnFunes.textContent = `Funes: ${datos.funes_habilitado ? 'ON' : 'OFF'}`;
+          btnFunes.classList.toggle('border-celeste', datos.funes_habilitado);
+          btnFunes.classList.toggle('text-celeste', datos.funes_habilitado);
+          btnFunes.classList.toggle('border-borde', !datos.funes_habilitado);
+          btnFunes.classList.toggle('text-gris', !datos.funes_habilitado);
+        } catch (err) {
+          alert('No se pudo cambiar. Probá de nuevo.');
+        } finally {
+          btnFunes.disabled = false;
+        }
+      });
+    }
 
     btnBorrar.addEventListener('click', () => {
       confirmar.classList.remove('hidden');

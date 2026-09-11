@@ -39,22 +39,26 @@ templates = Jinja2Templates(directory="app/templates")
 
 
 # Las paginas de Funes que alguien puede llegar a compartir, y las unicas que se
-# mudan de host. Es una lista blanca a proposito y no el prefijo /funes:
+# mudan de host. GET nada mas (ver destino_de_funes) mas un prefijo, no una
+# lista de exact-match: /funes/{slug} (el Funes de una libreria puntual, ver
+# routers/funes_chat.py:pagina_libreria) se suma sola sin listar cada slug.
 #
 #   - Los POST del chat (/funes/sesion, /funes/candidato, /funes/recomendar...)
 #     no se redirigen NUNCA. Una pestaña abierta desde antes del cambio sigue
 #     posteando al host viejo; mandarla al nuevo convierte esos fetch en
 #     cross-origin, el navegador pide CORS, no hay, y la conversacion se corta a
 #     la mitad. Contestando en los dos lados no se corta nada, y la proxima
-#     visita ya entra por el dominio nuevo sola.
-#   - /funes/ml/callback tampoco: su URL quedo registrada en la consola de
-#     MercadoLibre y el canje del token exige que coincida exacto.
+#     visita ya entra por el dominio nuevo sola. El chequeo de metodo mas abajo
+#     ya los saca a todos: son POST.
+#   - /funes/ml/... tampoco: /funes/ml/callback quedo registrado en la consola
+#     de MercadoLibre y el canje del token exige que coincida exacto.
 #   - /funes/admin/... tampoco: no se comparte con nadie, y ahi viven el tablero
 #     del piloto y el DELETE de una conversacion.
 #
 # El QR si entra: se genera contra el host por el que entro el pedido, asi que
 # redirigirlo es lo que hace que un codigo impreso lleve al dominio nuevo.
 PAGINAS_DE_FUNES = ("/funes", "/funes/privacidad", "/funes/qr.png")
+_PREFIJOS_DE_FUNES_EXCLUIDOS = ("/funes/admin/", "/funes/ml/")
 
 
 def destino_de_funes(host: str, metodo: str, camino: str, query: str = "") -> str | None:
@@ -81,7 +85,11 @@ def destino_de_funes(host: str, metodo: str, camino: str, query: str = "") -> st
         if camino == "/":
             return f"https://{DOMINIO_FUNES}/funes{cola}"
         return None
-    if metodo == "GET" and camino in PAGINAS_DE_FUNES:
+    if metodo == "GET" and (
+        camino in PAGINAS_DE_FUNES
+        or (camino.startswith("/funes/")
+            and not camino.startswith(_PREFIJOS_DE_FUNES_EXCLUIDOS))
+    ):
         return f"https://{DOMINIO_FUNES}{camino}{cola}"
     return None
 

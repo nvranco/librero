@@ -27,7 +27,7 @@ def _validar_token(token: str) -> None:
 async def _listar_librerias():
     filas = await db.pool().fetch(
         """
-        SELECT l.id, l.slug, l.nombre, l.token_panel,
+        SELECT l.id, l.slug, l.nombre, l.token_panel, l.tipo_catalogo, l.funes_habilitado,
                COUNT(li.id) FILTER (
                    WHERE li.estado = 'publicado' AND li.archivado_en IS NULL
                ) AS cant_libros
@@ -66,6 +66,7 @@ async def admin_crear(
     whatsapp: str = Form(...),
     slug: str = Form(""),
     mensaje_wa_template: str = Form(MENSAJE_WA_DEFAULT),
+    funes_habilitado: bool = Form(False),
 ):
     _validar_token(token)
 
@@ -81,14 +82,16 @@ async def admin_crear(
         try:
             await db.pool().execute(
                 """
-                INSERT INTO librerias (slug, nombre, whatsapp, token_panel, mensaje_wa_template)
-                VALUES ($1, $2, $3, $4, $5)
+                INSERT INTO librerias
+                    (slug, nombre, whatsapp, token_panel, mensaje_wa_template, funes_habilitado)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 """,
                 slug_final,
                 nombre.strip(),
                 whatsapp,
                 token_panel,
                 mensaje_wa_template.strip() or MENSAJE_WA_DEFAULT,
+                funes_habilitado,
             )
             base = str(request.base_url).rstrip("/")
             nueva = {
@@ -167,6 +170,28 @@ async def admin_metricas(request: Request, token: str, libreria_id: int):
             **metricas,
         },
     )
+
+
+@router.post("/admin/{token}/librerias/{libreria_id}/funes")
+async def admin_toggle_funes(token: str, libreria_id: int):
+    """Prende/apaga Funes para una libreria existente (togglea, no setea a un
+    valor puntual: el boton del listado no sabe el estado actual mas que por
+    lo que ya renderizo, y togglear evita una carrera con dos clicks seguidos
+    dando el mismo resultado). Bloqueado para 'cds': Funes hoy solo sabe de
+    literatura, y prenderlo ahi seria una promesa que el catalogo no cumple."""
+    _validar_token(token)
+    fila = await db.pool().fetchrow(
+        "UPDATE librerias SET funes_habilitado = NOT funes_habilitado "
+        "WHERE id = $1 AND tipo_catalogo = 'libros' "
+        "RETURNING funes_habilitado",
+        libreria_id,
+    )
+    if fila is None:
+        raise HTTPException(
+            status_code=400,
+            detail="No existe esa librería, o cataloga CDs y Funes no aplica.",
+        )
+    return {"funes_habilitado": fila["funes_habilitado"]}
 
 
 @router.post("/admin/{token}/librerias/{libreria_id}/borrar")

@@ -6,13 +6,14 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from app import db
 from app.catalogos import ordenar_jerarquico
 from app.colores import PALETA_CATALOGOS, color_catalogo
 from app.etiquetas import etiquetas
+from app.funes_chat import qr as funes_qr
 from app.metricas import calcular_metricas
 
 router = APIRouter()
@@ -464,5 +465,29 @@ async def panel_catalogos(request: Request, slug: str, token: str):
             "url_publica": f"{base}/{slug}",
             "url_qr": f"/api/{slug}/{token}/qr.png",
             "paleta": PALETA_CATALOGOS,
+        },
+    )
+
+
+@router.get("/{slug}/panel/{token}/funes-qr.png")
+async def panel_funes_qr(request: Request, slug: str, token: str):
+    """El QR de folleto para el Funes acotado a esta libreria
+    (routers/funes_chat.py:pagina_libreria). Mismo generador que el QR general
+    de Funes (app/funes_chat/qr.py) — mas grande, mas redundancia, pensado
+    para imprenta — y no el mas simple de /api/.../qr.png."""
+    libreria = await _libreria_por_slug_y_token(slug, token)
+    if not libreria["funes_habilitado"] or libreria["tipo_catalogo"] != "libros":
+        raise HTTPException(status_code=404)
+
+    base = str(request.base_url).rstrip("/")
+    if not base.startswith(("http://localhost", "http://127.")):
+        base = base.replace("http://", "https://", 1)
+    imagen = funes_qr.generar(f"{base}/funes/{slug}?src=qr")
+    return Response(
+        content=imagen,
+        media_type="image/png",
+        headers={
+            "Content-Disposition": f'inline; filename="funes-qr-{slug}.png"',
+            "Cache-Control": "public, max-age=3600",
         },
     )

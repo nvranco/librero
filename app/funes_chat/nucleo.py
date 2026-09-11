@@ -21,7 +21,7 @@ import unicodedata
 
 import httpx
 
-from app import db
+from app import db, tokens
 from app.config import OPENROUTER_API_KEY
 from app.funes_chat import bitacora
 
@@ -916,6 +916,81 @@ def invalidar_cache() -> None:
     _cant_cache = None
 
 
+# Funes por libreria: que libros de funes_libros matchean el catalogo
+# publicado de una libreria puntual. Se cachea por slug (lock + monotonic,
+# mismo patron que _libros_cache) e invalida por EVENTO -llamando
+# invalidar_mascara_libreria() desde api_librero.py cada vez que cambia el
+# catalogo publicado de esa libreria (lote publicado, libro vendido/borrado,
+# inventario reiniciado)-, no por un TTL corto: el inventario de una libreria
+# no cambia con la frecuencia del catalogo entero de Babilonia, y una venta
+# reciente tiene que dejar de ofrecerse ya. _TTL_CACHE_SEGUNDOS actua solo de
+# respaldo, por si algun endpoint nuevo se olvida de invalidar.
+_mascara_cache: dict[str, tuple[float, set[str]]] = {}
+_mascara_lock = asyncio.Lock()
+
+
+def invalidar_mascara_libreria(slug: str) -> None:
+    _mascara_cache.pop(slug, None)
+
+
+async def ids_por_libreria(slug: str) -> set[str] | None:
+    """ids de funes_libros que matchean el catalogo publicado de una libreria,
+    o None si la libreria no existe, no esta activa o no tiene Funes
+    habilitado -en cuyo caso el llamador no debe recortar nada, no que el pool
+    quede vacio.
+
+    El cruce es determinista y sin LLM: normaliza titulo/autor con
+    tokens.clave_libro() (la misma clave que ya usa el dedupe interno de
+    Librero) y busca esa clave en un indice armado sobre _libros(), que ya
+    esta entero en memoria. Los titulos que no matchean se loguean -no se
+    hace nada mas con ellos aca; ampliar Babilonia con lo que falta es trabajo
+    de curaduria manual, no de este cruce."""
+    ahora = time.monotonic()
+    cacheado = _mascara_cache.get(slug)
+    if cacheado is not None and ahora - cacheado[0] < _TTL_CACHE_SEGUNDOS:
+        return cacheado[1]
+
+    async with _mascara_lock:
+        ahora = time.monotonic()
+        cacheado = _mascara_cache.get(slug)
+        if cacheado is not None and ahora - cacheado[0] < _TTL_CACHE_SEGUNDOS:
+            return cacheado[1]
+
+        libreria = await db.pool().fetchrow(
+            "SELECT id FROM librerias WHERE slug = $1 AND activa "
+            "AND funes_habilitado AND tipo_catalogo = 'libros'",
+            slug,
+        )
+        if libreria is None:
+            return None
+
+        propios = await db.pool().fetch(
+            "SELECT titulo, autor FROM libros WHERE libreria_id = $1 "
+            "AND estado = 'publicado' AND archivado_en IS NULL",
+            libreria["id"],
+        )
+        indice: dict[tuple[str, str], str] = {}
+        for libro in await _libros():
+            indice.setdefault(tokens.clave_libro(libro["titulo"], libro["autor"]), libro["id"])
+
+        ids: set[str] = set()
+        sin_matchear = []
+        for fila in propios:
+            encontrado = indice.get(tokens.clave_libro(fila["titulo"], fila["autor"]))
+            if encontrado:
+                ids.add(encontrado)
+            else:
+                sin_matchear.append(f'{fila["titulo"]} / {fila["autor"]}')
+        if sin_matchear:
+            logger.info(
+                "funes_chat_mascara_sin_match libreria=%s sin_matchear=%s",
+                slug, sin_matchear,
+            )
+
+        _mascara_cache[slug] = (time.monotonic(), ids)
+        return ids
+
+
 _cant_cache: int | None = None
 _cant_cache_en: float = 0.0
 
@@ -1397,6 +1472,15 @@ def _filtrar_catalogo(libros: list[dict], respuestas: dict) -> tuple[list[dict],
     macro = str(respuestas.get("q0") or "").strip()
     if macro in PREGUNTAS["q0"]["opciones"]:
         libros = [l for l in libros if l["macro"] == macro]
+
+    # Funes por libreria (ver ids_por_libreria): igual que la macro, esto
+    # nunca se afloja. Recomendar un libro que la libreria no tiene rompe la
+    # promesa del folleto -"lo que te recomendamos, lo podes comprar aca"-,
+    # asi que un pool chico se queda chico en vez de completarse con el resto
+    # de Babilonia.
+    solo_ids = respuestas.get("_solo_ids")
+    if solo_ids is not None:
+        libros = [l for l in libros if l["id"] in solo_ids]
 
     # Fuera el libro que el lector puso como referencia. q4 pide "una lectura
     # que te dio una experiencia parecida a la que queres replicar", o sea que
@@ -1923,7 +2007,17 @@ async def _candidatos(
     El filtro va aca porque este es el UNICO punto por el que el catalogo entra
     al ranking — lo usan recomendar() y generar_pregunta() — asi que filtrar en
     un solo lugar alcanza para que las preguntas profundas tambien se generen
-    sobre candidatos ya recortados, que es lo que las hace pertinentes."""
+    sobre candidatos ya recortados, que es lo que las hace pertinentes.
+
+    Por el mismo motivo, aca resuelve tambien el recorte de Funes por libreria:
+    si `respuestas["libreria"]` trae un slug, se pliega a `_solo_ids` (mismo
+    patron que `_leidos` en elegir_libro) antes de filtrar, asi que tanto el
+    ranking como las preguntas profundas quedan acotados a esa libreria."""
+    libreria = str(respuestas.get("libreria") or "").strip()
+    if libreria:
+        ids = await ids_por_libreria(libreria)
+        if ids is not None:
+            respuestas = {**respuestas, "_solo_ids": ids}
     libros, pool, aflojado = _filtrar_catalogo(await _libros(), respuestas)
     # El perfil y el ancla van en vectores separados y se mezclan con un peso
     # explicito (_PESO_ANCLA). Concatenados, el ancla quedaba diluida en

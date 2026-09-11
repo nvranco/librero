@@ -290,6 +290,14 @@ const ORIGEN = {{ origen_js | safe }};
 // que no llega deja "const MACRO_FIJA = ;" y el SyntaxError se lleva puesto
 // todo el chat, no solo el saludo.
 const MACRO_FIJA = {{ macro_fija_js | default('null', true) | safe }};
+// Funes por libreria (/funes/{slug}): cuando esta seteado, la charla arranca
+// acotada a esa libreria (ver nucleo.ids_por_libreria) y el CTA final es su
+// WhatsApp en vez de una busqueda en Google (ver mostrarBotonesRecomendacion).
+// Los tres vienen juntos o ninguno: la pagina los inyecta solo cuando resuelve
+// la libreria por el slug de la URL.
+const LIBRERIA_SLUG = {{ libreria_slug_js | default('null', true) | safe }};
+const WHATSAPP = {{ whatsapp_js | default('null', true) | safe }};
+const MENSAJE_TEMPLATE = {{ mensaje_wa_template_js | default('null', true) | safe }};
 // El orden lo manda el servidor (routers/funes_chat.py inyecta PREGUNTAS
 // entero). Antes estaba hardcodeado aca, y eso hacia que agregar una pregunta
 // en nucleo.py y olvidarse de tocar este archivo la dejara sin preguntar,
@@ -385,6 +393,7 @@ function altoCabecera() {
 // respuesta que el servidor da por el lector, no una que el lector eligio. Por
 // eso no la cuenta contestadas().
 const respuestas = MACRO_FIJA ? { q0: MACRO_FIJA } : {};
+if (LIBRERIA_SLUG) respuestas.libreria = LIBRERIA_SLUG;
 const profundas = [];
 const yaMostrados = [];
 let recomendacionesPedidas = 0;
@@ -1341,6 +1350,14 @@ function urlDeBusqueda(titulo, autor) {
   return "https://www.google.com/search?q=" + encodeURIComponent(consulta);
 }
 
+// Mismo armado que el catalogo publico (templates/publico.html): si no hay
+// autor, se saca "de {autor}" del template en vez de mandar un mensaje con un
+// hueco vacio.
+function armarMensajeLibro(titulo, autor) {
+  const plantilla = autor ? MENSAJE_TEMPLATE : MENSAJE_TEMPLATE.replace(' de {autor}', '');
+  return plantilla.replace('{titulo}', titulo).replace('{autor}', autor || '');
+}
+
 // Se elige una al azar por recomendacion. Son intercambiables a proposito:
 // lo que dice algo es lo que viene despues, no la interjeccion.
 const CELEBRACIONES = ["¡Excelente!", "¡Qué bueno!", "¡Buenísimo!"];
@@ -1371,7 +1388,21 @@ async function mostrarBotonesRecomendacion() {
   }
   if (ofrecerConseguir) {
     const btnConseguir = document.createElement("a");
-    btnConseguir.href = urlDeBusqueda(tituloActual, autorActual);
+    // Con libreria (Funes acotado a su stock, ver LIBRERIA_SLUG), el libro
+    // recomendado esta SIEMPRE en su catalogo -el filtro que lo eligio nunca
+    // afloja esa condicion (ver nucleo._filtrar_catalogo)-, asi que el camino
+    // corto es preguntarle directo a esa libreria por WhatsApp, no mandar a
+    // buscarlo por ahi. Reemplaza al link de Google, no convive con el: son
+    // dos promesas distintas ("lo tenemos nosotros" vs. "buscalo vos") y acá
+    // corresponde la primera.
+    if (LIBRERIA_SLUG) {
+      const mensaje = armarMensajeLibro(tituloActual, autorActual);
+      btnConseguir.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+      btnConseguir.textContent = "Consultar por WhatsApp";
+    } else {
+      btnConseguir.href = urlDeBusqueda(tituloActual, autorActual);
+      btnConseguir.textContent = "¿Dónde lo consigo?";
+    }
     btnConseguir.target = "_blank";
     btnConseguir.rel = "noopener noreferrer";
     // Mismas clases que "Contame mas" y "Recomendame otro libro", mas
@@ -1381,7 +1412,6 @@ async function mostrarBotonesRecomendacion() {
     // validos para seguir y ahora se ven asi.
     btnConseguir.className =
       "tap rounded-xl2 px-4 py-3 w-full text-sm bg-celeste-claro border-2 border-celeste text-texto-papel text-center block";
-    btnConseguir.textContent = "¿Dónde lo consigo?";
     btnConseguir.addEventListener("click", registrarClicConseguir);
     cont.appendChild(btnConseguir);
 
