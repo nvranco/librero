@@ -332,30 +332,6 @@ async def pagina(request: Request):
     return templates.TemplateResponse(request, "funes_chat.html", await _contexto_chat(request))
 
 
-@router.get("/funes/{slug}", response_class=HTMLResponse)
-async def pagina_libreria(request: Request, slug: str):
-    """El mismo chat, acotado al catalogo de una libreria puntual (ver
-    nucleo.ids_por_libreria). Publica y sin token, igual que el catalogo
-    publico /{slug}: el QR del folleto la abre directo, nadie gestiona nada
-    aca. 404 y no una pagina vacia si la libreria no existe, no esta activa o
-    no tiene Funes habilitado -mismo criterio 404-no-401 que el resto del
-    panel, no confirmamos que la ruta existe."""
-    libreria = await db.pool().fetchrow(
-        "SELECT nombre, whatsapp, mensaje_wa_template FROM librerias "
-        "WHERE slug = $1 AND activa AND funes_habilitado AND tipo_catalogo = 'libros'",
-        slug,
-    )
-    if libreria is None:
-        raise HTTPException(status_code=404)
-    contexto = await _contexto_chat(request)
-    contexto.update({
-        "libreria_slug_js": _js(slug),
-        "whatsapp_js": _js(libreria["whatsapp"]),
-        "mensaje_wa_template_js": _js(libreria["mensaje_wa_template"]),
-    })
-    return templates.TemplateResponse(request, "funes_chat.html", contexto)
-
-
 @router.get("/funes/qr.png")
 async def qr_png(request: Request, src: str = "qr"):
     """El QR que lleva al recomendador, con el logo en el medio.
@@ -389,6 +365,35 @@ async def privacidad(request: Request):
     return templates.TemplateResponse(
         request, "funes_privacidad.html", {"contacto": FUNES_CONTACTO}
     )
+
+
+# Va DESPUES de /funes/qr.png y /funes/privacidad, y no al lado de /funes: es un
+# catch-all de un segmento y Starlette matchea en el orden en que se registran
+# las rutas, asi que arriba se come a las dos y las deja en 404 buscando una
+# libreria con slug "privacidad". Mismo cuidado que el /{slug} de LIBRERO en
+# main.py, pero adentro de /funes.
+@router.get("/funes/{slug}", response_class=HTMLResponse)
+async def pagina_libreria(request: Request, slug: str):
+    """El mismo chat, acotado al catalogo de una libreria puntual (ver
+    nucleo.ids_por_libreria). Publica y sin token, igual que el catalogo
+    publico /{slug}: el QR del folleto la abre directo, nadie gestiona nada
+    aca. 404 y no una pagina vacia si la libreria no existe, no esta activa o
+    no tiene Funes habilitado -mismo criterio 404-no-401 que el resto del
+    panel, no confirmamos que la ruta existe."""
+    libreria = await db.pool().fetchrow(
+        "SELECT nombre, whatsapp, mensaje_wa_template FROM librerias "
+        "WHERE slug = $1 AND activa AND funes_habilitado AND tipo_catalogo = 'libros'",
+        slug,
+    )
+    if libreria is None:
+        raise HTTPException(status_code=404)
+    contexto = await _contexto_chat(request)
+    contexto.update({
+        "libreria_slug_js": _js(slug),
+        "whatsapp_js": _js(libreria["whatsapp"]),
+        "mensaje_wa_template_js": _js(libreria["mensaje_wa_template"]),
+    })
+    return templates.TemplateResponse(request, "funes_chat.html", contexto)
 
 
 @router.post("/funes/sesion")

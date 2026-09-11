@@ -635,6 +635,41 @@ def probar_dominio() -> None:
         main.DOMINIO_FUNES = viejo
 
 
+def probar_rutas() -> None:
+    """Que las paginas fijas de Funes no se las coma /funes/{slug}.
+
+    Starlette matchea las rutas en el orden en que se registran, asi que un
+    catch-all de un segmento declarado arriba deja a /funes/privacidad y a
+    /funes/qr.png buscando una libreria con ese slug y devolviendo 404. Ya paso
+    una vez, y no se ve en ningun test del motor ni en ninguna conversacion: la
+    pagina que se rompe es la que nadie abre hasta que alguien la comparte.
+    """
+    from starlette.routing import Match
+
+    from app.main import app
+
+    print()
+    print("el orden de las rutas de Funes")
+
+    def resuelve(camino: str) -> str:
+        alcance = {"type": "http", "method": "GET", "path": camino,
+                   "path_params": {}, "headers": [], "root_path": ""}
+        for r in app.routes:
+            if r.matches(alcance)[0] == Match.FULL:
+                return getattr(r, "path", "")
+        return "SIN MATCH"
+
+    for camino, esperado, por_que in (
+        ("/funes", "/funes", "el chat"),
+        ("/funes/privacidad", "/funes/privacidad", "la pagina que se linkea desde el chat"),
+        ("/funes/qr.png", "/funes/qr.png", "el QR que se imprime"),
+        ("/funes/ml/callback", "/funes/ml/callback", "el callback registrado en MercadoLibre"),
+        ("/funes/babilonia", "/funes/{slug}", "y recien ahi, el Funes de una libreria"),
+    ):
+        ok(resuelve(camino) == esperado,
+           f"{camino} lo atiende {esperado}: {por_que}")
+
+
 def probar_textos() -> None:
     print("\ntextos que entran al vector")
     respuestas = {"q0": "divulgacion", "q1": "vida", "q2": "corto", "q3": "explicacion", "q4": "Sheldrake"}
@@ -1032,6 +1067,7 @@ async def main() -> None:
     probar_validadores()
     probar_macro_unica()
     probar_dominio()
+    probar_rutas()
 
     await db.conectar()
     try:
