@@ -702,7 +702,7 @@ async def admin_conversaciones(token: str, limite: int = 5, sesion: str = "",
 
     Es de solo lectura y va detras del mismo token que el resto del panel."""
     _validar_admin(token)
-    limite = max(1, min(int(limite), 25))
+    limite = max(1, min(int(limite), 2000))  # TEMP: exportacion del analisis del piloto, revertir a 25
 
     if sesion:
         sesiones = await db.pool().fetch(
