@@ -300,8 +300,14 @@ def probar_filtros() -> None:
         nucleo._castigo_repeticion(c, [a], forzar=True),
         nucleo._castigo_repeticion(c, [b], forzar=True)),
        "con varios mostrados manda el peor, no el promedio")
-    ok(nucleo._castigo_repeticion(b, [a]) == 0.0,
-       "con el peso en cero no castiga nada (queda el mecanismo, no el efecto)")
+    # _PESO_DIVERSIDAD paso de 0 a 0,25 con el piloto (ver el comentario junto a
+    # la constante): sin forzar, el mecanismo ya pesa solo con el peso de
+    # produccion, sin necesidad del parametro de prueba.
+    ok(nucleo._PESO_DIVERSIDAD > 0, "el peso de produccion ya no esta en cero")
+    ok(nucleo._castigo_repeticion(b, [a]) == 1.0,
+       "sin forzar, el peso de produccion ya castiga el mismo autor")
+    ok(nucleo._castigo_repeticion(c, [a]) < 0.1,
+       "sin forzar, otro autor y otro tema sigue sin castigo")
 
     print("\nexclusion del libro que el lector nombro en q4")
     con_titulos = [libro("a", "El túnel", "literatura"),
@@ -530,50 +536,45 @@ def _filtro_por_forma() -> None:
 # ------------------------------------------------------- textos que se embeben
 
 def probar_empujon() -> None:
-    """Que el marcador del empujon nunca llegue a la pantalla.
+    """Que el empujon nunca llegue mezclado con lo que se muestra.
 
-    El empujon es el cuarto mensaje: viene en la misma respuesta del LLM y se
-    guarda hasta que la persona dice que la recomendacion le sirve. La marca que
-    lo separa es la UNICA excepcion a la regla de no usar dos puntos, y se banca
-    serlo con una condicion: que el cliente la corte antes de mostrar nada.
-
-    Si no la corta, el lector lee "EMPUJON:" en pantalla y la voz de Funes hace
-    lo unico que tiene prohibido, que es mostrar que atras hay un sistema. Y
-    depende de como el modelo decida escribir una linea, o sea de algo que no
-    controlamos: por eso se prueba variante por variante y no una sola vez."""
+    Hasta la version anterior esto se sacaba de un texto unico buscando una
+    palabra magica ("EMPUJON:") en el medio de una linea. En produccion el
+    modelo la escribio mal de tres formas distintas en sesiones distintas
+    ("EMPUNJON:", "EMPUPON:", "EMPUMON:") y esas tres quedaron impresas en la
+    pantalla del lector, porque el regex que las buscaba solo toleraba
+    variantes de tilde. Ahora el empujon es un campo de JSON aparte
+    (_SYSTEM_VOZ + response_format json_object, igual que _SYSTEM_PREGUNTA):
+    el modelo no tiene ninguna palabra que pueda escribir mal, asi que esto
+    prueba que _armar_voz arma bien el resultado sea cual sea la forma del
+    JSON, no que reconozca variantes de una marca que ya no existe."""
     print()
-    print("el empujon se corta siempre, escriba el modelo como escriba")
+    print("el empujon queda separado de lo que se muestra")
 
-    def corta(crudo: str) -> tuple[str, str]:
-        return nucleo.partir_voz(crudo)
+    voz, emp = nucleo._armar_voz({
+        "libro": "Entonces, te recomiendo Un mundo feliz, de Aldous Huxley.",
+        "de_que_va": "En un futuro donde la felicidad esta garantizada por el condicionamiento.",
+        "por_que_es_para_vos": "Te va a hacer reflexionar sobre lo que valoramos como normal.",
+        "empujon": "Este libro es una distopia con una ironia filosa.",
+    })
+    ok(voz == "Entonces, te recomiendo Un mundo feliz, de Aldous Huxley.\n"
+             "En un futuro donde la felicidad esta garantizada por el condicionamiento.\n"
+             "Te va a hacer reflexionar sobre lo que valoramos como normal.",
+       "los tres primeros campos se unen en orden, con un salto de linea",
+       repr(voz))
+    ok(emp == "Este libro es una distopia con una ironia filosa.",
+       "el empujon sale entero y aparte", emp)
+    ok("EMPUJON" not in voz.upper() and "empujon" not in voz.lower(),
+       "y ninguna palabra marcadora aparece en lo que se muestra")
 
-    # El caso que aparecio en produccion: el modelo pego la marca al final del
-    # tercer mensaje en vez de darle linea propia, y salio todo impreso.
-    voz, emp = corta(
-        "Entonces, te recomiendo Un mundo feliz, de Aldous Huxley.\n"
-        "En un futuro donde la felicidad esta garantizada por el condicionamiento.\n"
-        "Este libro te va a hacer reflexionar sobre lo que valoramos como normal. "
-        "EMPÚJON: Este libro es una distopia con una ironia filosa.")
-    ok("EMPÚJON" not in voz and "EMPUJON" not in voz.upper(),
-       "pegado al final de un mensaje: la marca no queda visible", voz[-60:])
-    ok(voz.strip().endswith("valoramos como normal."),
-       "y el mensaje que la traia se conserva, sin la marca")
-    ok(emp.startswith("Este libro es una distopia"), "el empujon sale entero", emp[:40])
+    # Si el modelo no manda un campo (o manda otra cosa que no es texto), no
+    # se rompe: ese campo sale vacio y no entra a la union.
+    voz, emp = nucleo._armar_voz({"libro": "Uno", "de_que_va": "", "por_que_es_para_vos": "Dos"})
+    ok(voz == "Uno\nDos" and emp == "",
+       "campos vacios o ausentes no dejan lineas en blanco ni rompen nada", repr(voz))
 
-    for etiqueta, crudo in (
-        ("sin tilde", "Uno\nDos\nEMPUJON: Este libro tiene algo."),
-        ("con tilde en la O", "Uno\nDos\nEMPUJÓN: Este libro tiene algo."),
-        ("con tilde en la U", "Uno\nDos\nEMPÚJON: Este libro tiene algo."),
-        ("en minusculas", "Uno\nDos\nempujon: Este libro tiene algo."),
-        ("con espacio antes de los dos puntos", "Uno\nDos\nEMPUJON : Este libro tiene algo."),
-    ):
-        voz, emp = corta(crudo)
-        ok(voz == "Uno\nDos" and emp == "Este libro tiene algo.",
-           f"{etiqueta}: se corta igual", repr(voz))
-
-    voz, emp = corta("Uno\nDos\nTres.")
-    ok(voz == "Uno\nDos\nTres." and emp == "",
-       "sin marca no se toca nada y el empujon queda vacio")
+    voz, emp = nucleo._armar_voz({})
+    ok(voz == "" and emp == "", "un JSON vacio da voz vacia, que _generar_voz reintenta")
 
 
 def probar_dominio() -> None:

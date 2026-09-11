@@ -110,16 +110,25 @@ _FILTRO_FORMA = True
 # es una segunda opinion, es la misma. Se aplica solo de la segunda recomendacion
 # en adelante; la primera siempre es la mejor a secas.
 #
-# EN CERO por ahora. Medido con los 24 lectores del banco, forzar variedad no
-# mejora: con 0,25 el juez baja de 3,21 a 3,08 y el acierto@3 de 7 a 6 sobre 18;
-# con 0,1 el juez queda en 3,00. Tiene sentido visto de cerca: a quien nombra a
-# Austen y recibe tres Austen, el juez le pone 4 y 5, no 2. La repeticion nos
-# molesta a nosotros mirando la lista, no necesariamente a quien esta buscando
-# un libro. Lo que si es un error objetivo -el mismo titulo dos veces- se corrige
-# aparte y de forma dura, con _es_la_misma_obra en elegir_libro().
-# Queda el mecanismo listo para subirlo cuando haya veredictos de gente real,
-# que es la unica vara que puede decidir esto de verdad.
-_PESO_DIVERSIDAD = 0.0
+# Estuvo en cero desde que se escribio esto, con la razon de arriba fechada:
+# medido con los 24 lectores DEL BANCO (el juez offline), forzar variedad no
+# mejoraba -con 0,25 el juez bajaba de 3,21 a 3,08 y el acierto@3 de 7 a 6
+# sobre 18; con 0,1 el juez quedaba en 3,00-, y la nota de entonces decia
+# explicitamente que la vara correcta para decidir esto no era el juez sino
+# veredictos de gente real, que en ese momento no existian todavia.
+#
+# Ya existen. El piloto (piloto de septiembre 2026, ~250 conversaciones)
+# encontro el caso que el razonamiento del juez no podia ver: dos lectores
+# rechazaron un libro de Dan Brown y la recomendacion SIGUIENTE fue otro libro
+# del mismo Dan Brown -en una sesion, sin haber escrito ningun motivo de
+# rechazo; en la otra, incluso despues de escribir "dan brown me parece un
+# malisimo escritor" un mensaje antes-. Eso no es "el juez le pone 4 y 5":
+# es un lector real, en produccion, viendo que Funes no lo escucho. Con el
+# castigo por autor en 1,0 (ver _castigo_repeticion) y el peso en 0,25 -el
+# mismo valor ya medido arriba, no uno nuevo sin probar- ese candidato pierde
+# 0,25 de puntaje, mas que suficiente para sacarlo de en medio sin tocar el
+# resto del ranking.
+_PESO_DIVERSIDAD = 0.25
 
 # Cuanto pesan las 2 preguntas profundas (las que escribe el LLM mirando a los
 # candidatos). Antes su respuesta se pegaba al final del texto del perfil: 3 o 4
@@ -754,40 +763,53 @@ _REGLAS_DE_VOZ = (
 )
 
 
+# Hasta aca esto se le pedia al modelo como CUATRO mensajes separados por
+# '\n', con el cuarto arrancando con la palabra literal "EMPUJON:" para que el
+# cliente supiera donde cortar. Se cambio a JSON -mismo mecanismo que ya usa
+# _SYSTEM_PREGUNTA- porque la marca de texto fallaba de formas que no
+# controlamos: en produccion el modelo escribio "EMPUNJON:", "EMPUPON:" y
+# "EMPUMON:" (nunca la palabra correcta) en sesiones distintas, y como el
+# regex que buscaba la marca solo toleraba variantes de tilde, esas tres
+# quedaron impresas en la pantalla del lector tal cual, marca rota y
+# empujon completo incluidos -exactamente lo unico que esta voz tiene
+# prohibido mostrar: que atras hay un sistema. Pedirle un campo JSON en vez
+# de una palabra magica en la mitad de un texto saca el problema de raiz: el
+# modelo no tiene que "escribir bien" ningun marcador, solo llenar una clave.
 _SYSTEM_VOZ = (
     "Sos Funes, un librero que acaba de elegir un libro para alguien con quien "
     "estuvo charlando. Nunca decis que lo elegiste con filtros, opciones, base "
     "de datos, algoritmo o busqueda: para vos el libro sale de haber escuchado "
     "a esa persona. Nunca menciones que hubo un formulario ni nombres las "
     "preguntas como preguntas.\n\n"
-    "Tu intervencion son CUATRO mensajes, cada uno en su propia linea (el "
+    "Tu intervencion son CUATRO mensajes, cada uno un campo de un JSON (el "
     "cliente los muestra como mensajes de chat separados, uno debajo del "
     "otro):\n\n"
-    "1) EL LIBRO, sin preambulo. Exactamente esta forma:\n"
+    "\"libro\": EL LIBRO, sin preambulo. Exactamente esta forma:\n"
     "   Entonces, te recomiendo TITULO, de AUTOR.\n"
     "   Nada mas. Sin adjetivos, sin premisa previa, sin comillas.\n\n"
-    "2) DE QUE VA, en 1 o 2 oraciones cortas. Que pasa en el libro: la "
-    "situacion, el conflicto, quien es el que mira. Contalo como se lo "
-    "contarias a alguien parado en el mostrador, no como una contratapa. De "
-    "todo lo que hay en la sinopsis interna, elegi el angulo que mas le puede "
-    "importar a ESTA persona en particular. Pero aca todavia NO expliques por "
-    "que se lo recomendas: esto es el libro, no el argumento.\n\n"
-    "3) POR QUE ES PARA VOS, en 2 o 3 oraciones cortas y en criollo. Aca si "
-    "conectas: que hace ese libro con lo que ESA persona dijo. Usa lo que te "
-    "den: si menciono un libro o un autor de referencia, apoyate en el (por "
-    "parecido o por contraste, lo que sea cierto); si dijo cuanto queria leer "
-    "o que le importa de un libro, que se note que lo tuviste en cuenta. Este "
-    "mensaje puede ser mas abstracto que el anterior: hablar de la clase de "
-    "lectura que es y de que se lleva quien la hace.\n\n"
-    "4) EL EMPUJON: UNA sola oracion, con esta forma exacta:\n"
+    "\"de_que_va\": DE QUE VA, en 1 o 2 oraciones cortas. Que pasa en el "
+    "libro: la situacion, el conflicto, quien es el que mira. Contalo como "
+    "se lo contarias a alguien parado en el mostrador, no como una "
+    "contratapa. De todo lo que hay en la sinopsis interna, elegi el angulo "
+    "que mas le puede importar a ESTA persona en particular. Pero aca "
+    "todavia NO expliques por que se lo recomendas: esto es el libro, no el "
+    "argumento.\n\n"
+    "\"por_que_es_para_vos\": POR QUE ES PARA VOS, en 2 o 3 oraciones cortas "
+    "y en criollo. Aca si conectas: que hace ese libro con lo que ESA "
+    "persona dijo. Usa lo que te den: si menciono un libro o un autor de "
+    "referencia, apoyate en el (por parecido o por contraste, lo que sea "
+    "cierto); si dijo cuanto queria leer o que le importa de un libro, que "
+    "se note que lo tuviste en cuenta. Este campo puede ser mas abstracto "
+    "que el anterior: hablar de la clase de lectura que es y de que se "
+    "lleva quien la hace.\n\n"
+    "\"empujon\": UNA sola oracion, con esta forma exacta:\n"
     "   Este libro PARTICULARIDAD, y tambien VUELTA DE TUERCA.\n"
-    "   La linea arranca con la palabra EMPUJON y dos puntos, y la oracion "
-    "empieza literalmente con 'Este libro'. Esa marca es la UNICA excepcion a "
-    "la regla de los dos puntos, porque el cliente la corta antes de mostrar "
-    "nada y ningun lector la ve.\n"
+    "   La oracion empieza literalmente con 'Este libro'. Nadie la lee al "
+    "toque: el cliente la guarda aparte y la muestra solo despues, nunca "
+    "junto con los otros tres campos.\n"
     "   Lo lee UNICAMENTE quien ya dijo que la recomendacion le sirve: "
     "alguien que YA decidio. No lo convenzas de nuevo, no repitas el "
-    "argumento del mensaje 3 y no lo felicites por elegir bien.\n"
+    "argumento de por_que_es_para_vos y no lo felicites por elegir bien.\n"
     "   LA PARTICULARIDAD es un rasgo del libro que a esta persona le puede "
     "importar: la forma (esta en verso, son tres monologos, lo cuenta el "
     "que perdio), el tono, la atmosfera, el mecanismo que lo sostiene. Sale "
@@ -816,11 +838,14 @@ _SYSTEM_VOZ = (
     "Nunca inventes datos del libro que no esten en la sinopsis interna que "
     "te pasan. Nada de trama, final, personajes ni escenas que no "
     "aparezcan ahi.\n\n"
-    "Formato: los cuatro mensajes separados por un solo salto de linea "
-    "('\\n'). "
-    "NUNCA partas un mensaje en mitad de una oracion, de una sigla o de un "
+    "Devolve UNICAMENTE un JSON valido, sin texto adicional, sin markdown, "
+    "con esta forma exacta:\n"
+    '{"libro": "...", "de_que_va": "...", "por_que_es_para_vos": "...", '
+    '"empujon": "..."}\n\n'
+    "Cada campo es UN SOLO string, sin saltos de linea adentro ni barras "
+    "invertidas. NUNCA partas una oracion en mitad de una sigla o de un "
     "nombre compuesto: si el autor se llama 'H. G. Wells', el nombre entero "
-    "queda en un solo mensaje. Espanol rioplatense, sin markdown, sin listas, "
+    "queda en el mismo campo. Espanol rioplatense, sin markdown, sin listas, "
     "sin comillas alrededor del titulo. Breve, que es una charla y no un "
     "monologo." + _REGLAS_DE_VOZ
 )
@@ -2152,15 +2177,37 @@ _SYSTEM_LEIDO = (
 )
 
 
+# Bug real de produccion (piloto de septiembre 2026, sesion 28c3beb9): el
+# lector rechazo una recomendacion escribiendo "Algun clasico o libro viejo"
+# -un PEDIDO, ya afirmativo- y esto lo reformulo como "Busca una lectura
+# fresca y actual" -el sentido CONTRARIO-. La causa era el unico ejemplo que
+# tenia el prompt de antes ("'muy denso y viejo' se convierte en 'busca algo
+# agil y contemporaneo'"): ensenaba que la palabra "viejo" siempre es una
+# queja para invertir, y el modelo aplico esa regla tambien cuando "viejo"
+# era lo que el lector queria, no lo que le sobraba. El texto que llega aca
+# puede ser cualquiera de las dos cosas y nada en el motivo_rechazo lo
+# distingue de antemano, asi que el prompt tiene que decidirlo el primero.
 _SYSTEM_REFORMULAR = (
-    "Convertis la queja de un lector sobre un libro que no le cerro en una "
-    "descripcion AFIRMATIVA de lo que si esta buscando.\n\n"
-    "Reglas:\n"
+    "Convertis lo que un lector escribio al pedir otra recomendacion en una "
+    "sola oracion AFIRMATIVA que describe lo que esta buscando.\n\n"
+    "Primero fijate que tipo de texto es -son cosas distintas y pedimos cosas "
+    "distintas para cada una:\n"
+    "- Si YA es un pedido en positivo ('quiero fantasia', 'una autora mujer', "
+    "'algo mas romantico', 'un clasico o algo viejo'), el lector te esta "
+    "diciendo derecho lo que quiere: dejalo como esta, solo prolijizado en "
+    "una oracion ('busca fantasia', 'busca una autora mujer', 'busca un "
+    "clasico o un libro de otra epoca'). NO le des vuelta el sentido.\n"
+    "- Si es una QUEJA sobre el libro que le mostraron ('muy denso y "
+    "aburrido', 'no me gusto el tono', 'me parecio malisimo'), ahi si "
+    "convertila en el rasgo contrario que esta buscando ('busca algo agil y "
+    "ameno').\n\n"
+    "Reglas para los dos casos:\n"
     "- Nunca nombres el libro ni el autor rechazado.\n"
     "- Nunca uses negaciones ('no quiero', 'nada de', 'menos', 'sin').\n"
-    "- Escribi lo que busca, no lo que rechaza: 'muy denso y viejo' se "
-    "convierte en 'busca algo agil y contemporaneo'.\n"
     "- Una sola oracion corta, en espanol rioplatense, sin comillas.\n"
+    "- Si no estas seguro de si es pedido o queja, tratalo como pedido y "
+    "dejalo como esta: repetir lo que ya dijo es un error mas barato que "
+    "invertirlo al reves.\n"
     "Devolve solo esa oracion, sin ningun texto adicional."
 )
 
@@ -2303,53 +2350,29 @@ def _dicho_por_el_lector(respuestas: dict) -> str:
     return "\n".join(partes)
 
 
-# El cuarto mensaje viene pegado a los otros tres en la misma respuesta del
-# LLM —una sola llamada, sin costo extra— pero NO se muestra con ellos: se
-# guarda hasta que la persona dice que la recomendacion le sirve. Por eso el
-# modelo lo marca y aca se lo saca del texto, en vez de contar lineas: si el
-# modelo devuelve tres mensajes en lugar de cuatro, cortar por posicion se
-# comeria el mensaje del "por que es para vos", que es el mas importante de los
-# tres. Sin marca, se pierde el empujon y no se rompe nada.
-# La marca puede venir con cualquier combinacion de tildes (el prompt esta
-# escrito sin ellas, pero el modelo escribe en español y las pone), en
-# minusculas, y con espacio antes de los dos puntos. Se acepta todo eso: cada
-# variante que no matchea es un marcador visible en la pantalla del lector.
-_RE_EMPUJON = re.compile(r"EMP[UÚ]J[OÓ]N\s*:", re.IGNORECASE)
+# El cuarto campo (el empujon) viaja en la misma respuesta del LLM -una sola
+# llamada, sin costo extra- pero NO se muestra con los otros tres: se guarda
+# hasta que la persona dice que la recomendacion le sirve.
+def _armar_voz(datos: dict) -> tuple[str, str]:
+    """A partir del JSON que devolvio el LLM, arma (los mensajes que se
+    muestran, el empujon).
+
+    Antes esto se sacaba de un texto unico buscando una palabra magica
+    ("EMPUJON:") en el medio: cuando el modelo la escribia mal -"EMPUNJON:",
+    "EMPUPON:", "EMPUMON:", tres variantes distintas vistas en produccion, y
+    ninguna una tilde de mas o de menos, que era lo unico que el regex
+    toleraba- la marca completa quedaba impresa en la pantalla del lector.
+    Con un campo de JSON el modelo no tiene una palabra que pueda escribir
+    mal: si no la llena, el campo esta vacio y listo, nunca aparece rota."""
+    libro_msg = str(datos.get("libro") or "").strip()
+    de_que_va = str(datos.get("de_que_va") or "").strip()
+    por_que = str(datos.get("por_que_es_para_vos") or "").strip()
+    empujon = str(datos.get("empujon") or "").strip()
+    voz = "\n".join(p for p in (libro_msg, de_que_va, por_que) if p)
+    return voz, empujon
 
 
-def partir_voz(texto: str) -> tuple[str, str]:
-    """Devuelve (los mensajes que se muestran, el empujon) del texto crudo.
-
-    La marca se busca EN CUALQUIER PARTE de la linea y no solo al principio.
-    Antes se exigia que abriera una linea propia, y cuando el modelo la pegaba
-    al final del mensaje anterior -"...lo que valoramos como normal. EMPUJON:
-    Este libro es una distopia..."- no matcheaba nada y el marcador salia
-    impreso en la pantalla del lector, con el empujon entero atras. Paso en
-    produccion.
-
-    Eso convertia una desobediencia menor del modelo, sobre un formato que no
-    controlamos, en la unica cosa que la voz de Funes tiene prohibido hacer:
-    mostrar que atras hay un sistema. Ahora el corte no depende de donde puso el
-    salto de linea: lo que va antes de la marca se muestra, lo que va despues es
-    el empujon."""
-    lineas = texto.split("\n")
-    for i in range(len(lineas) - 1, -1, -1):
-        marca = _RE_EMPUJON.search(lineas[i])
-        if marca is None:
-            continue
-        antes = lineas[i][:marca.start()].strip()
-        empujon = lineas[i][marca.end():].strip()
-        # Si la marca venia pegada a un mensaje, ese mensaje se conserva; si
-        # tenia linea propia, la linea se va entera.
-        if antes:
-            lineas[i] = antes
-        else:
-            del lineas[i]
-        return "\n".join(l for l in lineas if l.strip()), empujon
-    return texto, ""
-
-
-async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> str:
+async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> tuple[str, str]:
     dicho = _dicho_por_el_lector(respuestas)
     referencia, valorado = partes_del_ancla(respuestas)
     resumen_profundas = "\n".join(
@@ -2374,6 +2397,7 @@ async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> 
     )
     body = {
         "model": _MODELO_VOZ,
+        "response_format": {"type": "json_object"},
         "messages": [
             {"role": "system", "content": _SYSTEM_VOZ},
             {"role": "user", "content": mensaje_usuario},
@@ -2394,13 +2418,17 @@ async def _generar_voz(respuestas: dict, profundas: list[dict], libro: dict) -> 
                 )
             resp.raise_for_status()
             payload = resp.json()
-            texto = payload["choices"][0]["message"]["content"].strip()
+            texto_crudo = payload["choices"][0]["message"]["content"]
+            datos = _parsear_json_llm(texto_crudo)
+            voz, empujon = _armar_voz(datos)
+            if not voz:
+                raise ValueError("Voz vacia tras parsear el JSON.")
             latencia_ms = round((time.monotonic() - inicio) * 1000)
             logger.info(
                 "funes_chat_voz_ok intento=%s modelo=%s latencia_ms=%s libro=%r",
                 intento, _MODELO_VOZ, latencia_ms, libro["id"],
             )
-            return texto
+            return voz, empujon
         except Exception as exc:  # noqa: BLE001
             ultimo_error = exc
             latencia_ms = round((time.monotonic() - inicio) * 1000)
@@ -2633,7 +2661,7 @@ async def recomendar(
                                   motivo_rechazo, leidos, libro_fijado)
     mejor = eleccion["libro"]
     candidatos = eleccion["candidatos"]
-    voz, empujon = partir_voz(await _generar_voz(respuestas, profundas, mejor))
+    voz, empujon = await _generar_voz(respuestas, profundas, mejor)
 
     mostrados_tras_este = len(ya_mostrados) + 1
     agotado = (
